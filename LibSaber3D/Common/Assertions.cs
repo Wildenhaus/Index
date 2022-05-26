@@ -44,72 +44,6 @@ namespace Saber3D
 
     #endregion
 
-    #region Fail Methods
-
-    /// <summary>
-    ///   Immediately causes a failed assertion.
-    /// </summary>
-    [DebuggerHidden]
-    public static void Fail()
-      => ThrowAssertionFailedException();
-
-    /// <summary>
-    ///   Immediately causes a failed assertion.
-    /// </summary>
-    /// <param name="reason">
-    ///   The reason for the failure.
-    /// </param>
-    [DebuggerHidden]
-    public static void Fail( string reason )
-      => ThrowAssertionFailedException( reason );
-
-    /// <summary>
-    ///   Immediately causes a failed assertion and returns the default
-    ///   value of the specified generic data type.
-    /// </summary>
-    /// <typeparam name="T">
-    ///   The generic data type to "return".
-    /// </typeparam>
-    /// <returns>
-    ///   The default value of the generic data type.
-    /// </returns>
-    /// <remarks>
-    ///   This is a convenience method for when you want to immediately punt
-    ///   from a call that is designed to return a value.
-    /// </remarks>
-    [DebuggerHidden]
-    public static T FailReturn<T>()
-    {
-      ThrowAssertionFailedException();
-      return default( T );
-    }
-
-    /// <summary>
-    ///   Immediately causes a failed assertion and returns the default
-    ///   value of the specified generic data type.
-    /// </summary>
-    /// <typeparam name="T">
-    ///   The generic data type to "return".
-    /// </typeparam>
-    /// <param name="reason">
-    ///   The reasoin for the failure.
-    /// </param>
-    /// <returns>
-    ///   The default value of the generic data type.
-    /// </returns>
-    /// <remarks>
-    ///   This is a convenience method for when you want to immediately punt
-    ///   from a call that is designed to return a value.
-    /// </remarks>
-    [DebuggerHidden]
-    public static T FailReturn<T>( string reason )
-    {
-      ThrowAssertionFailedException( reason );
-      return default( T );
-    }
-
-    #endregion
-
     #region Helper Methods
 
     /// <summary>
@@ -117,7 +51,7 @@ namespace Saber3D
     /// </summary>
     [DebuggerHidden]
     [MethodImpl( MethodImplOptions.NoInlining )]
-    private static void ThrowAssertionFailedException()
+    internal static void ThrowAssertionFailedException()
     {
       throw new AssertionFailedException();
     }
@@ -130,7 +64,7 @@ namespace Saber3D
     /// </param>
     [DebuggerHidden]
     [MethodImpl( MethodImplOptions.NoInlining )]
-    private static void ThrowAssertionFailedException( string reason )
+    internal static void ThrowAssertionFailedException( string reason )
     {
       throw new AssertionFailedException( reason );
     }

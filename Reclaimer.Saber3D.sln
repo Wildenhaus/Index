@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reclaimer.Blam", "..\Reclai
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reclaimer.Core", "..\Reclaimer\Reclaimer.Core\Reclaimer.Core.csproj", "{951882C4-1854-4D1E-9441-CF745B82F3AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reclaimer.Saber3D", "Reclaimer.Saber3D\Reclaimer.Saber3D.csproj", "{E30EE36F-76DD-4C4B-B034-1660DCB2A168}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reclaimer.Saber3D", "Reclaimer.Saber3D\Reclaimer.Saber3D.csproj", "{E30EE36F-76DD-4C4B-B034-1660DCB2A168}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Studio", "..\Studio\Studio\Studio.csproj", "{DA5BFC64-CDE9-4F6C-A09F-A740954E84DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testbed", "Testbed\Testbed.csproj", "{49478492-0C0C-45DA-B55F-FE1D9BA4C80F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{DA5BFC64-CDE9-4F6C-A09F-A740954E84DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA5BFC64-CDE9-4F6C-A09F-A740954E84DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA5BFC64-CDE9-4F6C-A09F-A740954E84DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49478492-0C0C-45DA-B55F-FE1D9BA4C80F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49478492-0C0C-45DA-B55F-FE1D9BA4C80F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49478492-0C0C-45DA-B55F-FE1D9BA4C80F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49478492-0C0C-45DA-B55F-FE1D9BA4C80F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
