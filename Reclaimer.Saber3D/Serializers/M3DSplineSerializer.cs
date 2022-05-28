@@ -59,6 +59,7 @@ namespace Saber3D.Serializers
             splineData.Data = ReadSplineData( reader, splineData.SizeInBytes );
             break;
           default:
+            continue;
             Fail( $"Unknown M3DSpline Property Sentinel: {( ushort ) sentinel:X}" );
             break;
         }

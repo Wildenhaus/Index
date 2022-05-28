@@ -51,10 +51,12 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      _ = reader.ReadByte(); // Unk
+      var propertyFlags = reader.ReadBitArray( animList.Count );
+
       var serializer = new M3DSplineSerializer();
       for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].PTranslation = serializer.Deserialize( reader );
+        if ( propertyFlags[ i ] )
+          animList[ i ].PTranslation = serializer.Deserialize( reader );
     }
 
     private void ReadIniRotationProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -73,10 +75,12 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      _ = reader.ReadByte(); // Unk
+      var propertyFlags = reader.ReadBitArray( animList.Count );
+
       var serializer = new M3DSplineSerializer();
       for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].PRotation = serializer.Deserialize( reader );
+        if ( propertyFlags[ i ] )
+          animList[ i ].PRotation = serializer.Deserialize( reader );
     }
 
     private void ReadIniScaleProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -95,10 +99,12 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      var unk_01 = reader.ReadByte(); // Unk
+      var propertyFlags = reader.ReadBitArray( animList.Count );
+
       var serializer = new M3DSplineSerializer();
       for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].PScale = serializer.Deserialize( reader );
+        if ( propertyFlags[ i ] )
+          animList[ i ].PScale = serializer.Deserialize( reader );
     }
 
     private void ReadIniVisibilityProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -117,10 +123,12 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      var unk_01 = reader.ReadByte(); // Unk
+      var propertyFlags = reader.ReadBitArray( animList.Count );
+
       var serializer = new M3DSplineSerializer();
       for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].PVisibility = serializer.Deserialize( reader );
+        if ( propertyFlags[ i ] )
+          animList[ i ].PVisibility = serializer.Deserialize( reader );
     }
 
   }
