@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Saber3D.Common;
 using Saber3D.Data;
 using static Saber3D.Assertions;
@@ -43,8 +41,8 @@ namespace Saber3D.Serializers
       ReadBoundingBoxProperty( reader, template );
       ReadLodDefinitionProperty( reader, template );
       ReadTexListProperty( reader, template );
-      ReadGeometryMngProperty( reader, template );
-      ReadExternDataProperty( reader, template );
+      //ReadGeometryMngProperty( reader, template );
+      //ReadExternDataProperty( reader, template );
     }
 
     #endregion
@@ -64,9 +62,9 @@ namespace Saber3D.Serializers
       template.PropertyCount = reader.ReadUInt32();
       template.PropertyFlags = ( TemplatePropertyFlags ) reader.ReadUInt16();
 
-      foreach ( var flag in Enum.GetValues( typeof( TemplatePropertyFlags ) ).Cast<TemplatePropertyFlags>() )
-        if ( template.PropertyFlags.HasFlag( flag ) )
-          Console.WriteLine( "  {0}", flag );
+      //foreach ( var flag in Enum.GetValues( typeof( TemplatePropertyFlags ) ).Cast<TemplatePropertyFlags>() )
+      //  if ( template.PropertyFlags.HasFlag( flag ) )
+      //    Console.WriteLine( "  {0}", flag );
 
     }
 

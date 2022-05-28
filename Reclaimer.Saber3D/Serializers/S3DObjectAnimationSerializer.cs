@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Saber3D.Common;
 using Saber3D.Data;
@@ -18,14 +17,22 @@ namespace Saber3D.Serializers
       for ( var i = 0; i < count; i++ )
         animList.Add( new S3DObjectAnimation() );
 
-      ReadIniTranslationProperty( reader, animList );
-      ReadPTranslationProperty( reader, animList );
-      ReadIniRotationProperty( reader, animList );
-      ReadPRotationProperty( reader, animList );
-      ReadIniScaleProperty( reader, animList );
-      ReadPScaleProperty( reader, animList );
-      ReadIniVisibilityProperty( reader, animList );
-      ReadPVisibilityProperty( reader, animList );
+      if ( propertyCount > 0 )
+        ReadIniTranslationProperty( reader, animList );
+      if ( propertyCount > 1 )
+        ReadPTranslationProperty( reader, animList );
+      if ( propertyCount > 2 )
+        ReadIniRotationProperty( reader, animList );
+      if ( propertyCount > 3 )
+        ReadPRotationProperty( reader, animList );
+      if ( propertyCount > 4 )
+        ReadIniScaleProperty( reader, animList );
+      if ( propertyCount > 5 )
+        ReadPScaleProperty( reader, animList );
+      if ( propertyCount > 6 )
+        ReadIniVisibilityProperty( reader, animList );
+      if ( propertyCount > 7 )
+        ReadPVisibilityProperty( reader, animList );
     }
 
     private void ReadIniTranslationProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -44,7 +51,10 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      throw new NotImplementedException();
+      _ = reader.ReadByte(); // Unk
+      var serializer = new M3DSplineSerializer();
+      for ( var i = 0; i < animList.Count; i++ )
+        animList[ i ].PTranslation = serializer.Deserialize( reader );
     }
 
     private void ReadIniRotationProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -63,7 +73,10 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      throw new NotImplementedException();
+      _ = reader.ReadByte(); // Unk
+      var serializer = new M3DSplineSerializer();
+      for ( var i = 0; i < animList.Count; i++ )
+        animList[ i ].PRotation = serializer.Deserialize( reader );
     }
 
     private void ReadIniScaleProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -82,7 +95,10 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      throw new NotImplementedException();
+      var unk_01 = reader.ReadByte(); // Unk
+      var serializer = new M3DSplineSerializer();
+      for ( var i = 0; i < animList.Count; i++ )
+        animList[ i ].PScale = serializer.Deserialize( reader );
     }
 
     private void ReadIniVisibilityProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -101,8 +117,10 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
+      var unk_01 = reader.ReadByte(); // Unk
+      var serializer = new M3DSplineSerializer();
       for ( var i = 0; i < animList.Count; i++ )
-        reader.BaseStream.Position += 0x2A;
+        animList[ i ].PVisibility = serializer.Deserialize( reader );
     }
 
   }

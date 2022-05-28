@@ -15,60 +15,43 @@ namespace Saber3D
       {
         //@"G:\h2a\re files\banshee__h.tpl",
         //@"G:\h2a\re files\dervish__h.tpl",
-        @"G:\h2a\d\shared\_database_\bldgbottom_bulletingscreen__screen_act.tpl",
+        //@"G:\h2a\d\shared\_database_\bldgbottom_bulletingscreen__screen_act.tpl",
+        //@"G:\h2a\re files\dc_vine_anim_01__lian_l_act.tpl",
+        //@"G:\h2a\re files\brute_tartarus_boss__h.tpl",
+        @"G:\h2a\re files\charge_rings.tpl",
+        //@"G:\h2a\re files\ext_antena_lamp__blink_act.tpl",
       };
 
-      files = Directory.GetFiles( @"G:\h2a\d\shared\", "*.tpl", SearchOption.AllDirectories );
+      //files = Directory.GetFiles( @"G:\h2a\d\shared\", "*.tpl", SearchOption.AllDirectories );
 
       var count = 0;
       var success = 0;
       foreach ( var filePath in files )
       {
-        try
-        {
-          count++;
-          Console.WriteLine( filePath );
-          var file = File.OpenRead( filePath );
-          //var stream = CreateOgmStreamSegment( file );
-          var stream = CreateSerTplStreamSegment( file );
-          stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
+        //try
+        //{
+        count++;
+        Console.WriteLine( filePath );
+        var file = File.OpenRead( filePath );
+        //var stream = CreateOgmStreamSegment( file );
+        var stream = CreateSerTplStreamSegment( file );
+        stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
 
-          var reader = new BinaryReader( stream );
+        var reader = new BinaryReader( stream );
 
-          var s = new S3DTemplateSerializer();
-          var tpl = s.Deserialize( reader );
-          success++;
-          Console.Title = $"{success}/{count}";
-
-          //if ( true )
-          //{
-          //  Console.WriteLine( tpl.Name );
-          //  Console.WriteLine( "  {0,10}: {1}", "name", tpl.PropertyFlags[ 0 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "nameClass", tpl.PropertyFlags[ 1 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "state", tpl.PropertyFlags[ 2 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "affixes", tpl.PropertyFlags[ 3 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "ps", tpl.PropertyFlags[ 4 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "skin", tpl.PropertyFlags[ 5 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "trackAnim", tpl.PropertyFlags[ 6 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "OnReadAnimExtra", tpl.PropertyFlags[ 7 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "bbox", tpl.PropertyFlags[ 8 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "lodDef", tpl.PropertyFlags[ 9 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "TexList", tpl.PropertyFlags[ 10 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "geomMng", tpl.PropertyFlags[ 11 ] );
-          //  Console.WriteLine( "  {0,10}: {1}", "externData", tpl.PropertyFlags[ 12 ] );
-          //  //Console.WriteLine( "NameClass: {0}", tpl.NameClass );
-          //  //Console.WriteLine( "State: {0}", tpl.Unk_State );
-          //  //Console.WriteLine( "Affixes: {0}", tpl.Affixes );
-          //  //Console.WriteLine( "Ps: {0}", tpl.Unk_Ps );
-          //}
-        }
-        catch ( Exception ex )
-        {
-          Console.WriteLine( "Failed to read {0}", filePath );
-          Console.WriteLine( ex.Message );
-          //return;
-        }
+        var s = new S3DTemplateSerializer();
+        var tpl = s.Deserialize( reader );
+        success++;
+        Console.Title = $"{success}/{count}";
+        //}
+        //catch ( Exception ex )
+        //{
+        //  Console.WriteLine( "Failed to read {0}", filePath );
+        //  Console.WriteLine( ex.Message );
+        //  //return;
+        //}
       }
+      Console.WriteLine( $"{success}/{count}" );
     }
 
     private static readonly byte[] MAGIC_1SERtpl = new byte[]

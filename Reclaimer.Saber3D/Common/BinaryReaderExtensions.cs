@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections;
+using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Text;
@@ -15,6 +17,15 @@ namespace Saber3D.Common
       var value = reader.ReadByte();
       reader.BaseStream.Position -= 1;
       return value;
+    }
+
+    public static BitArray ReadBitArray( this BinaryReader reader, int count )
+    {
+      var readLen = ( int ) Math.Ceiling( count / 8f );
+      var buffer = new byte[ readLen ];
+      reader.Read( buffer, 0, readLen );
+
+      return new BitArray( buffer );
     }
 
     public static Matrix4x4 ReadMatrix4x4( this BinaryReader reader )

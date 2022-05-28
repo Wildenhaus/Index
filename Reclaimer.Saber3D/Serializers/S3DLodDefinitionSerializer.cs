@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Saber3D.Data;
+using static Saber3D.Assertions;
 
 namespace Saber3D.Serializers
 {
@@ -13,6 +14,7 @@ namespace Saber3D.Serializers
       // Read Counts
       var count = reader.ReadUInt32();
       var propertyCount = reader.ReadUInt32();
+      Assert( count < 0x1000 );
 
       // Create Objects
       for ( var i = 0; i < count; i++ )

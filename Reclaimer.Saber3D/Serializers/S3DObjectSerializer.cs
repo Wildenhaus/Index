@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Saber3D.Common;
 using Saber3D.Data;
@@ -162,11 +160,7 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      var objFlagLen = ( int ) Math.Ceiling( objects.Count / 8f );
-      var objFlagData = new byte[ objFlagLen ];
-      reader.Read( objFlagData, 0, objFlagLen );
-
-      var objFlags = new BitArray( objFlagData );
+      var objFlags = reader.ReadBitArray( objects.Count );
 
       for ( var i = 0; i < objects.Count; i++ )
       {
