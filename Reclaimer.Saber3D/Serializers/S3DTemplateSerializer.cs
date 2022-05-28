@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Saber3D.Common;
 using Saber3D.Data;
@@ -38,6 +39,7 @@ namespace Saber3D.Serializers
       ReadPsProperty( reader, template );
       ReadSkinProperty( reader, template );
       ReadTrackAnimProperty( reader, template );
+      ReadOnReadAnimExtraProperty( reader, template );
       ReadBoundingBoxProperty( reader, template );
       ReadLodDefinitionProperty( reader, template );
       ReadTexListProperty( reader, template );
@@ -144,14 +146,13 @@ namespace Saber3D.Serializers
       template.AnimTrack = serializer.Deserialize( reader );
     }
 
-    //private void ReadOnReadAnimExtraProperty( BinaryReader reader, S3DTemplate template )
-    //{
-    //  if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.OnReadAnimExtra ) )
-    //    return;
+    private void ReadOnReadAnimExtraProperty( BinaryReader reader, S3DTemplate template )
+    {
+      if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.OnReadAnimExtra ) )
+        return;
 
-    //  Fail( "Unread property: OnReadAnimExtra" );
-    //  Console.WriteLine( "TPL OnReadAnimExtra Read" );
-    //}
+      throw new NotImplementedException();
+    }
 
     private void ReadBoundingBoxProperty( BinaryReader reader, S3DTemplate template )
     {
@@ -176,7 +177,7 @@ namespace Saber3D.Serializers
         return;
 
       var count = reader.ReadUInt32();
-      var unk0 = reader.ReadUInt16();
+      var unk0 = reader.ReadUInt16(); // Always 0?
       var endOffset = reader.ReadUInt32();
 
       template.TexList = new List<string>( ( int ) count );
