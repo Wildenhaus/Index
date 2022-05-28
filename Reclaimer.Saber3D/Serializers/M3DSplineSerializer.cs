@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Saber3D.Common;
 using Saber3D.Data;
 using static Saber3D.Assertions;
 
@@ -41,7 +42,7 @@ namespace Saber3D.Serializers
             splineData.SplineType = ( SplineType ) reader.ReadByte();
             break;
           case PropertySentinel.Unk_01:
-            splineData.Unk_01 = reader.ReadByte();
+            splineData.CompressedDataSize = reader.ReadByte();
             break;
           case PropertySentinel.Unk_02:
             splineData.Unk_02 = reader.ReadByte();
@@ -56,10 +57,9 @@ namespace Saber3D.Serializers
             splineData.SizeInBytes = reader.ReadUInt32();
             break;
           case PropertySentinel.Data:
-            splineData.Data = ReadSplineData( reader, splineData.SizeInBytes );
+            splineData.Data = ReadSplineData( reader, splineData );
             break;
           default:
-            continue;
             Fail( $"Unknown M3DSpline Property Sentinel: {( ushort ) sentinel:X}" );
             break;
         }
@@ -72,15 +72,41 @@ namespace Saber3D.Serializers
       return splineData;
     }
 
-    private float[] ReadSplineData( BinaryReader reader, uint sizeInBytes )
+    private float[] ReadSplineData( BinaryReader reader, M3DSplineData splineData )
     {
-      var elementCount = sizeInBytes / sizeof( float );
+      // TODO: Verify this is the correct way to uncompess the data.
+      // If CompressedDataSize > 0, the data has been compressed.
+      // This appears to be SNorm compression (float -> int16).
+      if ( splineData.CompressedDataSize == 2 )
+      {
+        var elementCount = splineData.SizeInBytes / sizeof( short );
 
-      var data = new float[ elementCount ];
-      for ( var i = 0; i < elementCount; i++ )
-        data[ i ] = reader.ReadSingle();
+        var data = new float[ elementCount ];
+        for ( var i = 0; i < elementCount; i++ )
+          data[ i ] = reader.ReadInt16().ConvertToSNormFloat();
 
-      return data;
+        // TODO: Odd SizeInBytes values seem to be an issue for a few files.
+        // I'm just skipping the last byte in these cases.
+        var elementRemainder = splineData.SizeInBytes % sizeof( short );
+        if ( elementRemainder > 0 )
+          reader.ReadByte();
+
+        return data;
+      }
+      else if ( splineData.CompressedDataSize != 0 )
+      {
+        return FailReturn<float[]>( $"Unknown compressed data size for M3DSpline: {splineData.CompressedDataSize}" );
+      }
+      else
+      {
+        var elementCount = splineData.SizeInBytes / sizeof( float );
+
+        var data = new float[ elementCount ];
+        for ( var i = 0; i < elementCount; i++ )
+          data[ i ] = reader.ReadSingle();
+
+        return data;
+      }
     }
 
     private M3DSpline CreateSpline( M3DSplineData splineData )
@@ -129,7 +155,8 @@ namespace Saber3D.Serializers
       // Assert Valid SizeInBytes
       var count = splineData.Count;
       var sizeInBytes = splineData.SizeInBytes;
-      Assert( sizeInBytes % count == 0, "Invalid M3DSpline SizeInBytes." );
+      if ( splineData.CompressedDataSize == 0 )
+        Assert( sizeInBytes % count == 0, "Invalid M3DSpline SizeInBytes." );
     }
 
     #endregion

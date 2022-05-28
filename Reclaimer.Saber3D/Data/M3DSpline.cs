@@ -219,7 +219,7 @@ namespace Saber3D.Data
   {
 
     public SplineType SplineType;
-    public byte Unk_01;
+    public byte CompressedDataSize;
     public byte Unk_02;
     public byte Unk_03;
     public uint Count;
