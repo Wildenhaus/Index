@@ -15,28 +15,44 @@ namespace Saber3D.Serializers
       var objectCount = reader.ReadUInt16();
 
       var unk_01 = reader.ReadUInt16();
-      var unk_02 = reader.ReadUInt16(); // Section Count?
+      var propertyCount = reader.ReadUInt16();
       var unk_03 = reader.ReadUInt16();
 
       for ( var i = 0; i < objectCount; i++ )
         objects.Add( new S3DObject() );
 
-      ReadIdProperty( reader, objects );
-      ReadReadNameProperty( reader, objects );
-      ReadStateProperty( reader, objects );
-      ReadParentIdProperty( reader, objects );
-      ReadNextIdProperty( reader, objects );
-      ReadPrevIdProperty( reader, objects );
-      ReadChildIdProperty( reader, objects );
-      ReadAnimNumberProperty( reader, objects );
-      ReadReadAffixesProperty( reader, objects );
-      ReadMatrixLTProperty( reader, objects );
-      ReadMatrixModelProperty( reader, objects );
-      ReadGeomDataProperty( reader, objects );
-      ReadUnkNamesProperty( reader, objects );
-      ReadObbProperty( reader, objects );
-      ReadNameProperty( reader, objects );
-      ReadAffixesProperty( reader, objects );
+      if ( propertyCount > 0 )
+        ReadIdProperty( reader, objects );
+      if ( propertyCount > 1 )
+        ReadReadNameProperty( reader, objects );
+      if ( propertyCount > 2 )
+        ReadStateProperty( reader, objects );
+      if ( propertyCount > 3 )
+        ReadParentIdProperty( reader, objects );
+      if ( propertyCount > 4 )
+        ReadNextIdProperty( reader, objects );
+      if ( propertyCount > 5 )
+        ReadPrevIdProperty( reader, objects );
+      if ( propertyCount > 6 )
+        ReadChildIdProperty( reader, objects );
+      if ( propertyCount > 7 )
+        ReadAnimNumberProperty( reader, objects );
+      if ( propertyCount > 8 )
+        ReadReadAffixesProperty( reader, objects );
+      if ( propertyCount > 9 )
+        ReadMatrixLTProperty( reader, objects );
+      if ( propertyCount > 10 )
+        ReadMatrixModelProperty( reader, objects );
+      if ( propertyCount > 11 )
+        ReadGeomDataProperty( reader, objects );
+      if ( propertyCount > 12 )
+        ReadUnkNamesProperty( reader, objects );
+      if ( propertyCount > 13 )
+        ReadObbProperty( reader, objects );
+      if ( propertyCount > 14 )
+        ReadNameProperty( reader, objects );
+      if ( propertyCount > 15 )
+        ReadAffixesProperty( reader, objects );
     }
 
     private void ReadIdProperty( BinaryReader reader, List<S3DObject> objects )
