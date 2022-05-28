@@ -3,6 +3,9 @@
 
   public class S3DObjectLodRoot
   {
+
+    public short ObjectId { get; set; }
+
   }
 
 }

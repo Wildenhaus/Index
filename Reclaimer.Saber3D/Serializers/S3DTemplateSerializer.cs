@@ -53,25 +53,22 @@ namespace Saber3D.Serializers
 
     private void ReadPropertyCount( BinaryReader reader, S3DTemplate template )
     {
-      /* Property Count:
-       * These values are immediately after the TPL1 signature.
+      /* These values are immediately after the TPL1 signature.
        * uint32 PropertyCount
-       *   - Likely the max index for properties.
+       *   - Max index of the properties.
        * uint16 PropertyFlags
        *   - A BitField denoting which properties are present.
        */
 
       template.PropertyCount = reader.ReadUInt32();
       template.PropertyFlags = ( TemplatePropertyFlags ) reader.ReadUInt16();
-
-      //foreach ( var flag in Enum.GetValues( typeof( TemplatePropertyFlags ) ).Cast<TemplatePropertyFlags>() )
-      //  if ( template.PropertyFlags.HasFlag( flag ) )
-      //    Console.WriteLine( "  {0}", flag );
-
     }
 
     private void ReadNameProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* This is the name of the Template.
+       * Pascal String (int32)
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.Name ) )
         return;
 
@@ -80,6 +77,9 @@ namespace Saber3D.Serializers
 
     private void ReadNameClassProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* Not sure what this is. Haven't encountered any files with it yet.
+       * RTTI states that it's a Pascal String (int32)
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.NameClass ) )
         return;
 
@@ -88,6 +88,10 @@ namespace Saber3D.Serializers
 
     private void ReadStateProperty( BinaryReader reader, S3DTemplate template )
     {
+      // TODO
+      /* Not sure what this is. It is present in a majority of files.
+       * 48 bits in length. Possibly bitfield flags.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.State ) )
         return;
 
@@ -97,6 +101,12 @@ namespace Saber3D.Serializers
 
     private void ReadAffixesProperty( BinaryReader reader, S3DTemplate template )
     {
+      // TODO
+      /* A bunch of export/attribute strings. Not sure what they're used for.
+       * RTTI says this uses a special string serializer.
+       * There seems to be a delimiter between each string. It might be deserialized to a list.
+       * Represented as a Pascal String (int32)
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.Affixes ) )
         return;
 
@@ -105,6 +115,11 @@ namespace Saber3D.Serializers
 
     private void ReadPsProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* Some sort of scripting tied to the Template.
+       * Most of the time this is just a one-line script denoting a base type.
+       * RTTI says it uses a special serializer.
+       * Represented as a Pascal String (int32)
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.PS ) )
         return;
 
@@ -113,6 +128,10 @@ namespace Saber3D.Serializers
 
     private void ReadSkinProperty( BinaryReader reader, S3DTemplate template )
     {
+      // TODO
+      /* Not sure what this is. Maybe skinning data, but tied to the whole template.
+       * It's a list of 4x4 matrices. Sometimes it cuts off early.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.Skin ) )
         return;
 
@@ -120,6 +139,7 @@ namespace Saber3D.Serializers
       var unk_0 = reader.ReadUInt16();
       var unk_1 = reader.ReadByte();
 
+      // Sometimes the count is positive, but the data ends immediately after.
       var endFlag = reader.ReadUInt16();
       if ( endFlag != 0xFFFF )
       {
@@ -139,6 +159,8 @@ namespace Saber3D.Serializers
 
     private void ReadTrackAnimProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* Animation Tracks for the Template.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.TrackAnim ) )
         return;
 
@@ -148,6 +170,9 @@ namespace Saber3D.Serializers
 
     private void ReadOnReadAnimExtraProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* Not sure what this is. No files seem to use it.
+       * Keeping it here so we can throw an exception if it ever pops up.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.OnReadAnimExtra ) )
         return;
 
@@ -156,6 +181,8 @@ namespace Saber3D.Serializers
 
     private void ReadBoundingBoxProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* Bounding box for the whole Template.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.BoundingBox ) )
         return;
 
@@ -164,6 +191,8 @@ namespace Saber3D.Serializers
 
     private void ReadLodDefinitionProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* Level-od-detail definitions for the Template.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.LodDefinition ) )
         return;
 
@@ -173,6 +202,10 @@ namespace Saber3D.Serializers
 
     private void ReadTexListProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* A list of common textures that the Template references.
+       * Not sure how it's used.
+       * Its a list of Pascal Strings (int16)
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.TextureList ) )
         return;
 
@@ -191,6 +224,9 @@ namespace Saber3D.Serializers
 
     private void ReadGeometryMngProperty( BinaryReader reader, S3DTemplate template )
     {
+      /* Geometry (Multi-Node Graph?) Data
+       * Contains most of the model info.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.GeometryMNG ) )
         return;
 
@@ -200,11 +236,14 @@ namespace Saber3D.Serializers
 
     private void ReadExternDataProperty( BinaryReader reader, S3DTemplate template )
     {
+      // TODO
+      /* External Data. Not quite sure what it's used for.
+       * Not being deserialized yet.
+       */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.ExternData ) )
         return;
 
-      Fail( "Unread property: externData" );
-
+      throw new NotImplementedException();
     }
 
     #endregion

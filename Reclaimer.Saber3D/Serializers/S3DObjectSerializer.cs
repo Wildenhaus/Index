@@ -14,9 +14,9 @@ namespace Saber3D.Serializers
     {
       var objectCount = reader.ReadUInt16();
 
-      var unk_01 = reader.ReadUInt16();
+      var unk_01 = reader.ReadUInt16(); // always 0, padding?
       var propertyCount = reader.ReadUInt16();
-      var unk_03 = reader.ReadUInt16();
+      var unk_03 = reader.ReadUInt16(); // always 0, padding?
 
       for ( var i = 0; i < objectCount; i++ )
         objects.Add( new S3DObject() );

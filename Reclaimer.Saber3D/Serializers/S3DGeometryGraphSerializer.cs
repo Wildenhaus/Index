@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using Saber3D.Common;
 using Saber3D.Data;
 
 namespace Saber3D.Serializers
@@ -22,9 +24,9 @@ namespace Saber3D.Serializers
       var unk_03 = reader.ReadUInt16();
 
       ReadObjectsProperty( reader, graph );
-      //ReadObjectPropsProperty( reader, graph );
-      //ReadObjectPsProperty( reader, graph );
-      //ReadLodRootsProperty( reader, graph );
+      ReadObjectPropsProperty( reader, graph );
+      ReadObjectPsProperty( reader, graph );
+      ReadLodRootsProperty( reader, graph );
     }
 
     private void ReadObjectsProperty( BinaryReader reader, S3DGeometryGraph graph )
@@ -37,27 +39,45 @@ namespace Saber3D.Serializers
       graph.Objects = objectSerializer.Deserialize( reader );
     }
 
-    //private void ReadObjectPropsProperty( BinaryReader reader, S3DGeometryGraph graph )
-    //{
-    //  // Read Sentinel
-    //  if ( reader.ReadByte() == 0 )
-    //    return;
+    private void ReadObjectPropsProperty( BinaryReader reader, S3DGeometryGraph graph )
+    {
+      // TODO: This is a hack
+      // The count and sentinel seem to be shared. That is, if this section exists,
+      // the sentinel will be the least significant bit of the count.
+      // This section only seems to be present in ss_prop__h.tpl
+      // I'd imagine the flags that denote
+      var count = reader.ReadByte();
+      if ( count != 8 )
+        return;
 
-    //  throw new NotImplementedException();
-    //}
+      var unk_01 = reader.ReadByte();
+      var unk_02 = reader.ReadByte();
+      var unk_03 = reader.ReadByte();
+      var unk_04 = reader.ReadByte();
 
-    //private void ReadObjectPsProperty( BinaryReader reader, S3DGeometryGraph graph )
-    //{
-    //  // Read Sentinel
-    //  if ( reader.ReadByte() == 0 )
-    //    return;
+      var props = graph.ObjectProps = new string[ count ];
 
-    //  throw new NotImplementedException();
-    //}
+      for ( var i = 0; i < count; i++ )
+      {
+        var unk_05 = reader.ReadUInt32();
+        props[ i ] = reader.ReadPascalString32();
+      }
+    }
 
-    //private void ReadLodRootsProperty( BinaryReader reader, S3DGeometryGraph graph )
-    //{
-    //}
+    private void ReadObjectPsProperty( BinaryReader reader, S3DGeometryGraph graph )
+    {
+      // Read Sentinel
+      if ( reader.ReadByte() == 0 )
+        return;
+
+      throw new NotImplementedException();
+    }
+
+    private void ReadLodRootsProperty( BinaryReader reader, S3DGeometryGraph graph )
+    {
+      var serializer = new S3DObjectLodRootSerializer( graph );
+      graph.LodRoots = serializer.Deserialize( reader );
+    }
 
   }
 

@@ -7,6 +7,8 @@ namespace Saber3D.Data
   {
 
     public List<S3DObject> Objects { get; set; }
+    public string[] ObjectProps { get; set; }
+    public List<S3DObjectLodRoot> LodRoots { get; set; }
 
   }
 
