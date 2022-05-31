@@ -49,7 +49,7 @@ namespace Saber3D.Serializers
         return;
 
       var count = reader.ReadUInt32();
-      var unk0 = reader.ReadUInt16(); // Always 0?
+      var unk0 = reader.ReadUInt16(); // TODO: Always 0?
       var endOffset = reader.ReadUInt32();
 
       scene.TextureList = new List<string>( ( int ) count );

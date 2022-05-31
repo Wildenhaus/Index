@@ -30,20 +30,20 @@ namespace Saber3D.Serializers
 
     private void ReadObjectIdProperty( BinaryReader reader, List<S3DLodDefinition> lodDefs )
     {
-      for ( var i = 0; i < lodDefs.Count; i++ )
-        lodDefs[ i ].ObjectId = reader.ReadUInt16();
+      foreach ( var lodDef in lodDefs )
+        lodDef.ObjectId = reader.ReadUInt16();
     }
 
     private void ReadIndexProperty( BinaryReader reader, List<S3DLodDefinition> lodDefs )
     {
-      for ( var i = 0; i < lodDefs.Count; i++ )
-        lodDefs[ i ].Index = reader.ReadByte();
+      foreach ( var lodDef in lodDefs )
+        lodDef.Index = reader.ReadByte();
     }
 
     private void ReadIsLastLodProperty( BinaryReader reader, List<S3DLodDefinition> lodDefs )
     {
-      for ( var i = 0; i < lodDefs.Count; i++ )
-        lodDefs[ i ].IsLastLodUpToInfinity = reader.ReadBoolean();
+      foreach ( var lodDef in lodDefs )
+        lodDef.IsLastLodUpToInfinity = reader.ReadBoolean();
     }
 
   }

@@ -22,6 +22,13 @@ namespace Saber3D.Serializers
 
     private M3DSplineData ReadSplineProperties( BinaryReader reader )
     {
+      /* Splines use 16-bit sentinels to denote each property.
+       * After the sentinel is a uint32 offset to the next sentinel,
+       * relative to the 1SERtpl signature, and then the data.
+       * 
+       * The actual spline data is a list of floats. Sometimes those
+       * floats are compressed into int16 values (see ReadSplineData).
+       */
       var splineData = new M3DSplineData();
 
       while ( true )
@@ -41,7 +48,7 @@ namespace Saber3D.Serializers
           case PropertySentinel.SplineType:
             splineData.SplineType = ( SplineType ) reader.ReadByte();
             break;
-          case PropertySentinel.Unk_01:
+          case PropertySentinel.CompressedDataSize:
             splineData.CompressedDataSize = reader.ReadByte();
             break;
           case PropertySentinel.Unk_02:
@@ -86,19 +93,18 @@ namespace Saber3D.Serializers
           data[ i ] = reader.ReadInt16().ConvertToSNormFloat();
 
         // TODO: Odd SizeInBytes values seem to be an issue for a few files.
-        // I'm just skipping the last byte in these cases.
+        // I'm just skipping the last byte in these cases. Verify this is correct.
         var elementRemainder = splineData.SizeInBytes % sizeof( short );
         if ( elementRemainder > 0 )
           reader.ReadByte();
 
         return data;
       }
-      else if ( splineData.CompressedDataSize != 0 )
-      {
-        return FailReturn<float[]>( $"Unknown compressed data size for M3DSpline: {splineData.CompressedDataSize}" );
-      }
       else
       {
+        Assert( splineData.CompressedDataSize == 0,
+          $"Unknown compressed data size for M3DSpline: {splineData.CompressedDataSize}" );
+
         var elementCount = splineData.SizeInBytes / sizeof( float );
 
         var data = new float[ elementCount ];
@@ -166,9 +172,9 @@ namespace Saber3D.Serializers
     private enum PropertySentinel : ushort
     {
       SplineType = 0xF0,
-      Unk_01 = 0xF1,
-      Unk_02 = 0xF2,
-      Unk_03 = 0xF3,
+      CompressedDataSize = 0xF1,
+      Unk_02 = 0xF2, // TODO: Appears to be a dimension of the data.
+      Unk_03 = 0xF3, // TODO: Same as above.
       Count = 0xF4,
       SizeInBytes = 0xF5,
       Data = 0xF6

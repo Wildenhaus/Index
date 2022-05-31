@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Saber3D.Common;
 using Saber3D.Data;
-using static Saber3D.Assertions;
 
 namespace Saber3D.Serializers
 {
@@ -11,29 +11,66 @@ namespace Saber3D.Serializers
 
     private S3DGeometryGraph GeometryGraph { get; }
 
-    public S3DObjectLodRootSerializer( S3DGeometryGraph geometryGraph )
-    {
-      GeometryGraph = geometryGraph;
-    }
-
     protected override void OnDeserialize( BinaryReader reader, List<S3DObjectLodRoot> lodRoots )
     {
-      var count = GeometryGraph.Objects.Count;
+      var count = reader.ReadUInt32();
+      var propertyCount = reader.ReadUInt32();
 
       for ( var i = 0; i < count; i++ )
         lodRoots.Add( new S3DObjectLodRoot() );
 
-      ReadObjectIdProperty( reader, lodRoots );
+      ReadObjectIdsProperty( reader, lodRoots );
+      ReadMaxObjectLodIndicesProperty( reader, lodRoots );
+      ReadLodDistancesProperty( reader, lodRoots );
+      ReadBoundingBoxProperty( reader, lodRoots );
+      // TODO: skip[float] property?
     }
 
-    private void ReadObjectIdProperty( BinaryReader reader, List<S3DObjectLodRoot> lodRoots )
+    private void ReadObjectIdsProperty( BinaryReader reader, List<S3DObjectLodRoot> lodRoots )
     {
-      var endOffset = reader.ReadUInt32();
+      if ( reader.ReadByte() == 0 )
+        return;
 
-      for ( var i = 0; i < lodRoots.Count; i++ )
-        lodRoots[ i ].ObjectId = reader.ReadInt16();
+      foreach ( var lodRoot in lodRoots )
+      {
+        var count = reader.ReadInt32();
+        lodRoot.ObjectIds = new List<uint>( count );
+        for ( var i = 0; i < count; i++ )
+          lodRoot.ObjectIds.Add( reader.ReadUInt32() );
+      }
+    }
 
-      Assert( reader.BaseStream.Position == endOffset );
+    private void ReadMaxObjectLodIndicesProperty( BinaryReader reader, List<S3DObjectLodRoot> lodRoots )
+    {
+      if ( reader.ReadByte() == 0 )
+        return;
+
+      foreach ( var lodRoot in lodRoots )
+      {
+        var count = reader.ReadInt32();
+        lodRoot.MaxObjectLodIndices = new List<uint>( count );
+        for ( var i = 0; i < count; i++ )
+          lodRoot.MaxObjectLodIndices.Add( reader.ReadUInt32() );
+      }
+    }
+
+    private void ReadLodDistancesProperty( BinaryReader reader, List<S3DObjectLodRoot> lodRoots )
+    {
+      if ( reader.ReadByte() == 0 )
+        return;
+
+      var serializer = new S3DLodDistanceSerializer();
+      foreach ( var lodRoot in lodRoots )
+        lodRoot.LodDistances = serializer.Deserialize( reader );
+    }
+
+    private void ReadBoundingBoxProperty( BinaryReader reader, List<S3DObjectLodRoot> lodRoots )
+    {
+      if ( reader.ReadByte() == 0 )
+        return;
+
+      foreach ( var lodRoot in lodRoots )
+        lodRoot.BoundingBox = new M3DBox( reader.ReadVector3(), reader.ReadVector3() );
     }
 
   }

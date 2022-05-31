@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Saber3D.Common;
 using Saber3D.Data;
 
@@ -10,24 +11,36 @@ namespace Saber3D.Serializers
 
     protected override void OnDeserialize( BinaryReader reader, S3DAnimRooted anim )
     {
-      var unk_01 = reader.ReadUInt32();
-      var propertyFlags = reader.ReadBitArray( 4 );
+      var propertyCount = reader.ReadUInt32();
+      var properties = ( AnimRootedProperty ) reader.ReadByte();
 
-      if ( propertyFlags[ 0 ] )
-        reader.ReadVector3();
-      if ( propertyFlags[ 1 ] )
+      if ( properties.HasFlag( AnimRootedProperty.IniTranslation ) )
+        anim.IniTranslation = reader.ReadVector3();
+
+      if ( properties.HasFlag( AnimRootedProperty.PTranslation ) )
       {
         var serializer = new M3DSplineSerializer();
-        serializer.Deserialize( reader );
-      }
-      if ( propertyFlags[ 2 ] )
-        reader.ReadVector4();
-      if ( propertyFlags[ 4 ] )
-      {
-        var serializer = new M3DSplineSerializer();
-        serializer.Deserialize( reader );
+        anim.PTranslation = serializer.Deserialize( reader );
       }
 
+      if ( properties.HasFlag( AnimRootedProperty.IniRotation ) )
+        anim.IniRotation = reader.ReadVector4();
+
+      if ( properties.HasFlag( AnimRootedProperty.PRotation ) )
+      {
+        var serializer = new M3DSplineSerializer();
+        anim.PRotation = serializer.Deserialize( reader );
+      }
+
+    }
+
+    [Flags]
+    private enum AnimRootedProperty : byte
+    {
+      IniTranslation = 1 << 0,
+      PTranslation = 1 << 1,
+      IniRotation = 1 << 2,
+      PRotation = 1 << 3
     }
 
   }

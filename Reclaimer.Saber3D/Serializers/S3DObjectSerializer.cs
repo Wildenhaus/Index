@@ -14,9 +14,9 @@ namespace Saber3D.Serializers
     {
       var objectCount = reader.ReadUInt16();
 
-      var unk_01 = reader.ReadUInt16(); // always 0, padding?
+      var unk_01 = reader.ReadUInt16(); // TODO: always 0, padding?
       var propertyCount = reader.ReadUInt16();
-      var unk_03 = reader.ReadUInt16(); // always 0, padding?
+      var unk_03 = reader.ReadUInt16(); // TODO: always 0, padding?
 
       for ( var i = 0; i < objectCount; i++ )
         objects.Add( new S3DObject() );
@@ -61,8 +61,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].Id = reader.ReadInt16();
+      foreach ( var obj in objects )
+        obj.Id = reader.ReadInt16();
     }
 
     private void ReadReadNameProperty( BinaryReader reader, List<S3DObject> objects )
@@ -71,8 +71,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].ReadName = reader.ReadPascalString32();
+      foreach ( var obj in objects )
+        obj.ReadName = reader.ReadPascalString32();
     }
 
     private void ReadStateProperty( BinaryReader reader, List<S3DObject> objects )
@@ -83,10 +83,10 @@ namespace Saber3D.Serializers
 
       for ( var i = 0; i < objects.Count; i++ )
       {
-        _ = reader.ReadUInt16();
-        _ = reader.ReadUInt16();
-        _ = reader.ReadUInt16();
-        _ = reader.ReadByte();
+        _ = reader.ReadUInt16(); // Unk
+        _ = reader.ReadUInt16(); // Unk
+        _ = reader.ReadUInt16(); // Unk
+        _ = reader.ReadByte();   // Unk
       }
     }
 
@@ -96,8 +96,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].ParentId = reader.ReadInt16();
+      foreach ( var obj in objects )
+        obj.ParentId = reader.ReadInt16();
     }
 
     private void ReadNextIdProperty( BinaryReader reader, List<S3DObject> objects )
@@ -106,8 +106,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].NextId = reader.ReadInt16();
+      foreach ( var obj in objects )
+        obj.NextId = reader.ReadInt16();
     }
 
     private void ReadPrevIdProperty( BinaryReader reader, List<S3DObject> objects )
@@ -116,8 +116,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].PrevId = reader.ReadInt16();
+      foreach ( var obj in objects )
+        obj.PrevId = reader.ReadInt16();
     }
 
     private void ReadChildIdProperty( BinaryReader reader, List<S3DObject> objects )
@@ -126,8 +126,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].ChildId = reader.ReadInt16();
+      foreach ( var obj in objects )
+        obj.ChildId = reader.ReadInt16();
     }
 
     private void ReadAnimNumberProperty( BinaryReader reader, List<S3DObject> objects )
@@ -136,8 +136,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].AnimNumber = reader.ReadInt16();
+      foreach ( var obj in objects )
+        obj.AnimNumber = reader.ReadInt16();
     }
 
     private void ReadReadAffixesProperty( BinaryReader reader, List<S3DObject> objects )
@@ -146,8 +146,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].ReadAffixes = reader.ReadPascalString32();
+      foreach ( var obj in objects )
+        obj.ReadAffixes = reader.ReadPascalString32();
     }
 
     private void ReadMatrixLTProperty( BinaryReader reader, List<S3DObject> objects )
@@ -156,8 +156,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].MatrixLT = reader.ReadMatrix4x4();
+      foreach ( var obj in objects )
+        obj.MatrixLT = reader.ReadMatrix4x4();
     }
 
     private void ReadMatrixModelProperty( BinaryReader reader, List<S3DObject> objects )
@@ -166,8 +166,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].MatrixModel = reader.ReadMatrix4x4();
+      foreach ( var obj in objects )
+        obj.MatrixModel = reader.ReadMatrix4x4();
     }
 
     private void ReadGeomDataProperty( BinaryReader reader, List<S3DObject> objects )
@@ -182,8 +182,8 @@ namespace Saber3D.Serializers
       {
         if ( objFlags[ i ] )
         {
-          var unk_01 = reader.ReadUInt32(); // 0x00000003
-          var unk_02 = reader.ReadByte(); //0x7
+          var unk_01 = reader.ReadUInt32(); // TODO: 0x00000003
+          var unk_02 = reader.ReadByte(); // TODO: 0x7
           Assert( unk_01 == 0x3, "3 val not found" );
           Assert( unk_02 == 0x7, "7 val not found" );
 
@@ -203,8 +203,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].UnkName = reader.ReadPascalString32();
+      foreach ( var obj in objects )
+        obj.UnkName = reader.ReadPascalString32();
     }
 
     private void ReadObbProperty( BinaryReader reader, List<S3DObject> objects )
@@ -216,35 +216,29 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
+      foreach ( var obj in objects )
         for ( var j = 0; j < 60; j++ )
           reader.ReadByte();
     }
 
     private void ReadNameProperty( BinaryReader reader, List<S3DObject> objects )
     {
-      // TODO: Move this into M3DOBB serializer/data class
-      // TODO: This seems to be all zeroes
-
       // Read Sentinel
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].Name = reader.ReadPascalString16();
+      foreach ( var obj in objects )
+        obj.Name = reader.ReadPascalString16();
     }
 
     private void ReadAffixesProperty( BinaryReader reader, List<S3DObject> objects )
     {
-      // TODO: Move this into M3DOBB serializer/data class
-      // TODO: This seems to be all zeroes
-
       // Read Sentinel
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < objects.Count; i++ )
-        objects[ i ].Affixes = reader.ReadPascalString16();
+      foreach ( var obj in objects )
+        obj.Affixes = reader.ReadPascalString16();
     }
 
   }

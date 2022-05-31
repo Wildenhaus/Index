@@ -41,8 +41,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].IniTranslation = reader.ReadVector3();
+      foreach ( var anim in animList )
+        anim.IniTranslation = reader.ReadVector3();
     }
 
     private void ReadPTranslationProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -65,8 +65,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].IniRotation = reader.ReadVector4();
+      foreach ( var anim in animList )
+        anim.IniRotation = reader.ReadVector4();
     }
 
     private void ReadPRotationProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -89,8 +89,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].IniScale = reader.ReadVector3();
+      foreach ( var anim in animList )
+        anim.IniScale = reader.ReadVector3();
     }
 
     private void ReadPScaleProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
@@ -113,8 +113,8 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      for ( var i = 0; i < animList.Count; i++ )
-        animList[ i ].IniVisibility = reader.ReadSingle();
+      foreach ( var anim in animList )
+        anim.IniVisibility = reader.ReadSingle();
     }
 
     private void ReadPVisibilityProperty( BinaryReader reader, List<S3DObjectAnimation> animList )
