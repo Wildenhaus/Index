@@ -8,7 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Reclaimer.Saber3D\Reclaimer.Saber3D.csproj" />
+    <PackageReference Include="Aspose.3D" Version="22.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LibH2A\LibH2A.csproj" />
   </ItemGroup>
 
 </Project>

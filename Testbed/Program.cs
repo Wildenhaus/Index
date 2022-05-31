@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Saber3D.Serializers;
+using Testbed;
 
 namespace Saber3D
 {
@@ -10,12 +11,28 @@ namespace Saber3D
   {
 
     // Change this
-    const string DATA_PATH = @"G:\h2a\re files\d\";
+    const string DATA_PATH = @"G:\h2a\d\";
 
     public static void Main( string[] args )
     {
       ReadTpls();
       ReadScns();
+
+      //ExportLevelGeometry( @"G:\h2a\d\03a_oldmombasa\_scene_\03a_oldmombasa.lg", @"F:\test.fbx" );
+    }
+
+    private static void ExportLevelGeometry( string lgPath, string outFbxPath )
+    {
+      var file = File.OpenRead( lgPath );
+      var stream = CreateSerLgStreamSegment( file );
+      stream.Position = FindDataOffset( stream, MAGIC_SCN1 );
+
+      var outstream = FbxConverter.Convert( stream );
+      using ( var outfile = File.Create( outFbxPath ) )
+      {
+        outstream.CopyTo( outfile );
+        outfile.Flush();
+      }
     }
 
     private static void ReadScns()

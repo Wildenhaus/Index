@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\Reclaimer\Reclaimer.Blam\Reclaimer.Blam.csproj" />
     <ProjectReference Include="..\..\Reclaimer\Reclaimer.Core\Reclaimer.Core.csproj" />
     <ProjectReference Include="..\..\Reclaimer\Reclaimer\Reclaimer.csproj" />
+    <ProjectReference Include="..\LibH2A\LibH2A.csproj" />
   </ItemGroup>
 
 </Project>
