@@ -25,13 +25,6 @@ namespace Saber3D.Serializers
       var unk_02 = reader.ReadUInt16(); // TODO
       var unk_03 = reader.ReadUInt16(); // TODO
 
-      //if ( unk_01 != 1 )
-      //  System.Diagnostics.Debugger.Break();
-      //if ( unk_02 != 2 )
-      //  System.Diagnostics.Debugger.Break();
-      //if ( unk_03 != 3 && unk_03 != 2 )
-      //  System.Diagnostics.Debugger.Break();
-
       ReadObjectsProperty( reader, graph );
 
       if ( graphType == GraphType.Props )
