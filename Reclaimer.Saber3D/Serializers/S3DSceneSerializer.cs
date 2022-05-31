@@ -24,6 +24,7 @@ namespace Saber3D.Serializers
       ReadTextureListProperty( reader, scene );
       ReadPsProperty( reader, scene );
       ReadInstMaterialInfoListProperty( reader, scene );
+      ReadGeometryMngProperty( reader, scene );
     }
 
     private void ReadPropertyCount( BinaryReader reader, S3DScene scene )
@@ -107,9 +108,6 @@ namespace Saber3D.Serializers
       /* Geometry (Multi-Node Graph?) Data
        * Contains most of the model info.
        */
-      if ( !scene.PropertyFlags[ 3 ] )
-        return;
-
       var geometryGraphSerializer = new S3DGeometryGraphSerializer();
       scene.GeometryGraph = geometryGraphSerializer.Deserialize( reader );
     }
