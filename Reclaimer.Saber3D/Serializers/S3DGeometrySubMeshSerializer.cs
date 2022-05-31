@@ -104,10 +104,15 @@ namespace Saber3D.Serializers
         if ( hasAdditionalData )
         {
           var seekFlags = reader.ReadUInt32();
-          while ( seekFlags > 0 )
+
+          for ( var i = 0; i < 32; i++ )
           {
-            reader.BaseStream.Position += 0x8;
-            seekFlags >>= 1;
+            if ( ( seekFlags & 1 ) != 0 )
+            {
+              _ = reader.ReadInt32();
+              _ = reader.ReadInt32();
+            }
+            seekFlags = ( seekFlags << 1 ) | ( seekFlags >> 31 );
           }
         }
       }
