@@ -22,7 +22,7 @@ namespace Saber3D.Serializers
       var sectionEndOffset = reader.ReadUInt32();
 
       for ( var i = 0; i < count; i++ )
-        meshes.Add( new S3DGeometryMesh() );
+        meshes.Add( new S3DGeometryMesh() { Id = ( uint ) i } );
 
       while ( reader.BaseStream.Position < sectionEndOffset )
       {

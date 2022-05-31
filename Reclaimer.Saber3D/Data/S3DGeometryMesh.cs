@@ -5,6 +5,7 @@ namespace Saber3D.Data
 
   public class S3DGeometryMesh
   {
+    public uint Id { get; set; }
     public ushort Unk_01 { get; set; } // TODO
     public S3DMeshFlags Flags { get; set; } // TODO: This is a guess
     public S3DGeometryMeshBuffer[] Buffers { get; set; }
