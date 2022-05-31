@@ -43,7 +43,7 @@ namespace Saber3D.Serializers
       ReadBoundingBoxProperty( reader, template );
       ReadLodDefinitionProperty( reader, template );
       ReadTexListProperty( reader, template );
-      //ReadGeometryMngProperty( reader, template );
+      ReadGeometryMngProperty( reader, template );
       //ReadExternDataProperty( reader, template );
     }
 
@@ -95,8 +95,8 @@ namespace Saber3D.Serializers
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.State ) )
         return;
 
-      var unk0 = reader.ReadUInt16();
-      var unk1 = reader.ReadUInt32();
+      var unk0 = reader.ReadUInt16(); // TODO
+      var unk1 = reader.ReadUInt32(); // TODO
     }
 
     private void ReadAffixesProperty( BinaryReader reader, S3DTemplate template )
@@ -136,8 +136,8 @@ namespace Saber3D.Serializers
         return;
 
       var count = reader.ReadUInt32();
-      var unk_0 = reader.ReadUInt16();
-      var unk_1 = reader.ReadByte();
+      var unk_0 = reader.ReadUInt16(); // TODO
+      var unk_1 = reader.ReadByte(); // TODO
 
       // Sometimes the count is positive, but the data ends immediately after.
       var endFlag = reader.ReadUInt16();
@@ -191,7 +191,7 @@ namespace Saber3D.Serializers
 
     private void ReadLodDefinitionProperty( BinaryReader reader, S3DTemplate template )
     {
-      /* Level-od-detail definitions for the Template.
+      /* Level-of-detail definitions for the Template.
        */
       if ( !template.PropertyFlags.HasFlag( TemplatePropertyFlags.LodDefinition ) )
         return;
@@ -210,7 +210,7 @@ namespace Saber3D.Serializers
         return;
 
       var count = reader.ReadUInt32();
-      var unk0 = reader.ReadUInt16(); // Always 0?
+      var unk0 = reader.ReadUInt16(); // TODO: Always 0?
       var endOffset = reader.ReadUInt32();
 
       template.TexList = new List<string>( ( int ) count );
