@@ -9,47 +9,74 @@ namespace Saber3D
   public static class Program
   {
 
+    // Change this
+    const string DATA_PATH = @"G:\h2a\re files\d\";
+
     public static void Main( string[] args )
     {
-      var files = new string[]
-      {
-        //@"G:\h2a\re files\banshee__h.tpl",
-        //@"G:\h2a\re files\dervish__h.tpl",
-        //@"G:\h2a\d\shared\_database_\bldgbottom_bulletingscreen__screen_act.tpl",
-        //@"G:\h2a\re files\dc_vine_anim_01__lian_l_act.tpl",
-        //@"G:\h2a\re files\brute_tartarus_boss__h.tpl",
-        @"G:\h2a\re files\charge_rings.tpl",
-        //@"G:\h2a\re files\ext_antena_lamp__blink_act.tpl",
-      };
+      ReadTpls();
+      ReadScns();
+    }
 
-      //files = Directory.GetFiles( @"G:\h2a\d\shared\", "*.tpl", SearchOption.AllDirectories );
+    private static void ReadScns()
+    {
+      var files = Directory.GetFiles( DATA_PATH, "*.lg", SearchOption.AllDirectories );
 
       var count = 0;
       var success = 0;
       foreach ( var filePath in files )
       {
-        //try
-        //{
-        count++;
-        Console.WriteLine( filePath );
-        var file = File.OpenRead( filePath );
-        //var stream = CreateOgmStreamSegment( file );
-        var stream = CreateSerTplStreamSegment( file );
-        stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
+        try
+        {
+          count++;
+          Console.WriteLine( filePath );
+          var file = File.OpenRead( filePath );
+          var stream = CreateSerLgStreamSegment( file );
+          stream.Position = FindDataOffset( stream, MAGIC_SCN1 );
 
-        var reader = new BinaryReader( stream );
+          var reader = new BinaryReader( stream );
+          new S3DSceneSerializer().Deserialize( reader );
 
-        var s = new S3DTemplateSerializer();
-        var tpl = s.Deserialize( reader );
-        success++;
-        Console.Title = $"{success}/{count}";
-        //}
-        //catch ( Exception ex )
-        //{
-        //  Console.WriteLine( "Failed to read {0}", filePath );
-        //  Console.WriteLine( ex.Message );
-        //  //return;
-        //}
+          success++;
+          Console.Title = $"{success}/{count}";
+        }
+        catch ( Exception ex )
+        {
+          Console.WriteLine( "Failed to read {0}", filePath );
+          Console.WriteLine( ex.Message );
+        }
+      }
+      Console.WriteLine( $"{success}/{count}" );
+
+    }
+
+    private static void ReadTpls()
+    {
+      var files = Directory.GetFiles( DATA_PATH, "*.tpl", SearchOption.AllDirectories );
+
+      var count = 0;
+      var success = 0;
+      foreach ( var filePath in files )
+      {
+        try
+        {
+          count++;
+          Console.WriteLine( filePath );
+          var file = File.OpenRead( filePath );
+          var stream = CreateSerTplStreamSegment( file );
+          stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
+
+          var reader = new BinaryReader( stream );
+          new S3DTemplateSerializer().Deserialize( reader );
+
+          success++;
+          Console.Title = $"{success}/{count}";
+        }
+        catch ( Exception ex )
+        {
+          Console.WriteLine( "Failed to read {0}", filePath );
+          Console.WriteLine( ex.Message );
+        }
       }
       Console.WriteLine( $"{success}/{count}" );
     }
@@ -59,9 +86,19 @@ namespace Saber3D
       0x31, 0x53, 0x45, 0x52, 0x74, 0x70, 0x6C, 0x00
         };
 
+    private static readonly byte[] MAGIC_1SERlg = new byte[]
+        {
+      0x31, 0x53, 0x45, 0x52, 0x6C, 0x67
+        };
+
     private static readonly byte[] MAGIC_TPL1 = new byte[]
     {
       0x54, 0x50, 0x4C, 0x31
+    };
+
+    private static readonly byte[] MAGIC_SCN1 = new byte[]
+    {
+      0x53, 0x43, 0x4E, 0x31
     };
 
     private static readonly byte[] MAGIC_OGM1 = new byte[]
@@ -94,30 +131,20 @@ namespace Saber3D
       return found;
     }
 
-    private static Stream CreateTplStreamSegment( Stream stream )
-    {
-      var memoryStream = new MemoryStream();
-      stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
-      stream.CopyTo( memoryStream );
-
-      memoryStream.Position = 0;
-      return memoryStream;
-    }
-
-    private static Stream CreateOgmStreamSegment( Stream stream )
-    {
-      var memoryStream = new MemoryStream();
-      stream.Position = FindDataOffset( stream, MAGIC_OGM1 );
-      stream.CopyTo( memoryStream );
-
-      memoryStream.Position = 0;
-      return memoryStream;
-    }
-
     private static Stream CreateSerTplStreamSegment( Stream stream )
     {
       var memoryStream = new MemoryStream();
       stream.Position = FindDataOffset( stream, MAGIC_1SERtpl );
+      stream.CopyTo( memoryStream );
+
+      memoryStream.Position = 0;
+      return memoryStream;
+    }
+
+    private static Stream CreateSerLgStreamSegment( Stream stream )
+    {
+      var memoryStream = new MemoryStream();
+      stream.Position = FindDataOffset( stream, MAGIC_1SERlg );
       stream.CopyTo( memoryStream );
 
       memoryStream.Position = 0;
