@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Saber3D.Common;
 using Saber3D.Data;
 using static Saber3D.Assertions;
@@ -29,10 +28,13 @@ namespace Saber3D.Serializers
 
       if ( graphType == GraphType.Props )
         ReadObjectPropsProperty( reader, graph );
-      //ReadObjectPsProperty( reader, graph );
+
 
       if ( graphType == GraphType.Grass )
+      {
+        ReadObjectPsProperty( reader, graph );
         ReadLodRootsProperty( reader, graph );
+      }
 
       ReadData( reader, graph );
     }
@@ -70,11 +72,23 @@ namespace Saber3D.Serializers
 
     private void ReadObjectPsProperty( BinaryReader reader, S3DGeometryGraph graph )
     {
-      // Read Sentinel
-      if ( reader.ReadByte() == 0 )
-        return;
+      var count = reader.ReadInt32();
+      var unk_01 = reader.ReadByte();
 
-      throw new NotImplementedException();
+      // TODO: This is a hack.
+      // Not yet sure how to tell if this property is present.
+      if ( unk_01 != 0x1 )
+      {
+        reader.BaseStream.Position -= 5;
+        return;
+      }
+
+      for ( var i = 0; i < count; i++ )
+      {
+        _ = reader.ReadInt32();
+        _ = reader.ReadPascalString32();
+      }
+
     }
 
     private void ReadLodRootsProperty( BinaryReader reader, S3DGeometryGraph graph )
