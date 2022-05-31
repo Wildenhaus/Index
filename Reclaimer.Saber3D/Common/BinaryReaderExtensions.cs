@@ -131,6 +131,29 @@ namespace Saber3D.Common
     public static string ReadPascalString32( this BinaryReader reader )
       => ReadPascalString( reader, sizeof( uint ) );
 
+    /// <summary>
+    ///   Reads a null-terminated string.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <returns>
+    ///   The value of the string.
+    /// </returns>
+    public static string ReadStringNullTerminated( this BinaryReader reader )
+    {
+      var builder = new StringBuilder();
+
+      var c = reader.ReadByte();
+      while ( c != 0 )
+      {
+        builder.Append( ( char ) c );
+        c = reader.ReadByte();
+      }
+
+      return builder.ToString();
+    }
+
   }
 
 }
