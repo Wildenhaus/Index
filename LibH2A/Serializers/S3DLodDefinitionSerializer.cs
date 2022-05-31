@@ -20,11 +20,11 @@ namespace Saber3D.Serializers
       for ( var i = 0; i < count; i++ )
         lodDefs.Add( new S3DLodDefinition() );
 
-      _ = reader.ReadByte(); // Delimiter
+      _ = reader.ReadByte(); // TODO: Delimiter, verify
       ReadObjectIdProperty( reader, lodDefs );
-      _ = reader.ReadByte(); // Delimiter
+      _ = reader.ReadByte(); // TODO: Delimiter, verify
       ReadIndexProperty( reader, lodDefs );
-      _ = reader.ReadByte(); // Delimiter
+      _ = reader.ReadByte(); // TODO: Delimiter, verify
       ReadIsLastLodProperty( reader, lodDefs );
     }
 

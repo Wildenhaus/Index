@@ -93,6 +93,8 @@ namespace Saber3D.Serializers.Materials
 
     private object ParseNestedValue( string propertyName, StringReader reader )
     {
+      // TODO: This reflection is slow and ugly.
+
       var property = GetProperty( propertyName );
 
       // Create Serializer

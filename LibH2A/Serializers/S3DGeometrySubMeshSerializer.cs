@@ -100,6 +100,8 @@ namespace Saber3D.Serializers
 
         /* Not sure what this data is, but we're just gonna seek past it for now.
          * It has something to do with a flag set earlier in the file.
+         * This implementation of looping 32-bits and doing a left rotate seems to be correct.
+         * That's how it's done in the disassembly.
          */
         if ( hasAdditionalData )
         {
@@ -140,15 +142,16 @@ namespace Saber3D.Serializers
       //while ( reader.BaseStream.Position < endOffset )
       //{
       //  var unk_01 = reader.ReadUInt16();
-      //  var flags = reader.ReadUInt32();
+      //  var seekFlags = reader.ReadUInt32();
 
-      //  for ( var i = 0; i < 31; i++ )
+      //  for ( var i = 0; i < 32; i++ )
       //  {
-      //    if ( ( ( flags >> i ) & 1 ) != 0 )
+      //    if ( ( seekFlags & 1 ) != 0 )
       //    {
-      //      var unk_03 = reader.ReadUInt32();
-      //      var unk_04 = reader.ReadUInt32();
+      //      _ = reader.ReadInt32();
+      //      _ = reader.ReadInt32();
       //    }
+      //    seekFlags = ( seekFlags << 1 ) | ( seekFlags >> 31 );
       //  }
 
       //  var unk_05 = reader.ReadPascalString32();
@@ -177,8 +180,8 @@ namespace Saber3D.Serializers
         var count = reader.ReadByte();
         for ( var i = 0; i < count; i++ )
         {
-          var unk_01 = reader.ReadByte();
-          var unk_02 = reader.ReadUInt16();
+          var unk_01 = reader.ReadByte(); // TODO
+          var unk_02 = reader.ReadUInt16(); // TODO
         }
       }
     }

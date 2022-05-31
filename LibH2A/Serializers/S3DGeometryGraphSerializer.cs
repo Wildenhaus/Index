@@ -20,6 +20,10 @@ namespace Saber3D.Serializers
       ReadSignature( reader, SIGNATURE_OGM1 );
 
       // TODO: These are guesses.
+      /* The "GraphType" seems to denote the presence of some of these properties.
+       * ReadObjectPsProperty() is very hacky, and doesn't seem to correlate with
+       * either of these types.
+       */
       var graphType = ( GraphType ) reader.ReadUInt16();
       var unk_02 = reader.ReadUInt16(); // TODO
       var unk_03 = reader.ReadUInt16(); // TODO
@@ -32,7 +36,7 @@ namespace Saber3D.Serializers
 
       if ( graphType == GraphType.Grass )
       {
-        ReadObjectPsProperty( reader, graph );
+        ReadObjectPsProperty( reader, graph ); // TODO: This is hacky.
         ReadLodRootsProperty( reader, graph );
       }
 
@@ -73,7 +77,7 @@ namespace Saber3D.Serializers
     private void ReadObjectPsProperty( BinaryReader reader, S3DGeometryGraph graph )
     {
       var count = reader.ReadInt32();
-      var unk_01 = reader.ReadByte();
+      var unk_01 = reader.ReadByte(); // TODO
 
       // TODO: This is a hack.
       // Not yet sure how to tell if this property is present.
@@ -85,8 +89,8 @@ namespace Saber3D.Serializers
 
       for ( var i = 0; i < count; i++ )
       {
-        _ = reader.ReadInt32();
-        _ = reader.ReadPascalString32();
+        _ = reader.ReadInt32(); // TODO
+        _ = reader.ReadPascalString32(); // TODO
       }
 
     }

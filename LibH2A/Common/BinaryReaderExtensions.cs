@@ -12,6 +12,16 @@ namespace Saber3D.Common
   public static class BinaryReaderExtensions
   {
 
+    /// <summary>
+    ///   Peeks the next byte in the stream.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <returns>
+    ///   The next byte in the stream.
+    /// </returns>
+    [DebuggerHidden]
     public static byte PeekByte( this BinaryReader reader )
     {
       var value = reader.ReadByte();
@@ -19,6 +29,19 @@ namespace Saber3D.Common
       return value;
     }
 
+    /// <summary>
+    ///   Reads a <see cref="BitArray" /> from the stream.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <param name="count">
+    ///   The number of bits in the <see cref="BitArray" />.
+    /// </param>
+    /// <returns>
+    ///   The read <see cref="BitArray"/>.
+    /// </returns>
+    [DebuggerHidden]
     public static BitArray ReadBitArray( this BinaryReader reader, int count )
     {
       var readLen = ( int ) Math.Ceiling( count / 8f );
@@ -28,6 +51,16 @@ namespace Saber3D.Common
       return new BitArray( buffer );
     }
 
+    /// <summary>
+    ///   Reads a <see cref="Matrix4x4" /> from the stream.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <returns>
+    ///   The read <see cref="Matrix4x4" />.
+    /// </returns>
+    [DebuggerHidden]
     public static Matrix4x4 ReadMatrix4x4( this BinaryReader reader )
     {
       return new Matrix4x4(
@@ -50,6 +83,16 @@ namespace Saber3D.Common
         );
     }
 
+    /// <summary>
+    ///   Reads a <see cref="Vector3" /> from the stream.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <returns>
+    ///   The read <see cref="Vector3" />
+    /// </returns>
+    [DebuggerHidden]
     public static Vector3 ReadVector3( this BinaryReader reader )
     {
       return new Vector3(
@@ -59,6 +102,16 @@ namespace Saber3D.Common
         );
     }
 
+    /// <summary>
+    ///   Reads a <see cref="Vector4" /> from the stream.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <returns>
+    ///   The read <see cref="Vector4" />.
+    /// </returns>
+    [DebuggerHidden]
     public static Vector4 ReadVector4( this BinaryReader reader )
     {
       return new Vector4(
@@ -140,6 +193,7 @@ namespace Saber3D.Common
     /// <returns>
     ///   The value of the string.
     /// </returns>
+    [DebuggerHidden]
     public static string ReadStringNullTerminated( this BinaryReader reader )
     {
       var builder = new StringBuilder();

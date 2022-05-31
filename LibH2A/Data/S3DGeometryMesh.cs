@@ -18,6 +18,12 @@ namespace Saber3D.Data
     public uint SubBufferOffset;
   }
 
+  // TODO
+  /* These are just guesses based on what I've found in the disassembly.
+   * At a glance, they don't appear to be correct though.
+   * Figuring these out would make reading/converting the mesh data
+   * a lot cleaner.
+   */
   [Flags]
   public enum S3DMeshFlags : ulong
   {

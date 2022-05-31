@@ -54,8 +54,8 @@ namespace Saber3D.Serializers
     {
       foreach ( var mesh in meshes )
       {
-        mesh.Unk_01 = reader.ReadUInt16();
-        mesh.Flags = ( S3DMeshFlags ) reader.ReadUInt64();
+        mesh.Unk_01 = reader.ReadUInt16(); // TODO
+        mesh.Flags = ( S3DMeshFlags ) reader.ReadUInt64(); // TODO: This is a guess.
       }
     }
 
@@ -82,7 +82,7 @@ namespace Saber3D.Serializers
     private enum MeshSentinel : ushort
     {
       MeshInfo = 0x0000,
-      // TODO: 0x0001
+      // TODO: 0x0001 doesn't seem to be used anywhere. Verify.
       BufferInfo = 0x0002
     }
 

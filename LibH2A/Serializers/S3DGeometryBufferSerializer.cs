@@ -62,15 +62,15 @@ namespace Saber3D.Serializers
       {
         buffer.BufferInfo = new S3DGeometryBufferInfo
         {
-          Unk_01 = reader.ReadUInt16(),
-          Unk_02 = reader.ReadByte(),
+          Unk_01 = reader.ReadUInt16(), // TODO
+          Unk_02 = reader.ReadByte(), // TODO
           BufferType = ( S3DGeometryBufferType ) reader.ReadByte(),
-          Unk_04 = reader.ReadByte(),
-          Unk_05 = reader.ReadByte(),
-          Unk_06 = reader.ReadByte(),
-          Unk_07 = reader.ReadByte(),
-          Unk_08 = reader.ReadByte(),
-          Unk_09 = reader.ReadByte(),
+          Unk_04 = reader.ReadByte(), // TODO
+          Unk_05 = reader.ReadByte(), // TODO
+          Unk_06 = reader.ReadByte(), // TODO
+          Unk_07 = reader.ReadByte(), // TODO
+          Unk_08 = reader.ReadByte(), // TODO
+          Unk_09 = reader.ReadByte(), // TODO
         };
       }
     }

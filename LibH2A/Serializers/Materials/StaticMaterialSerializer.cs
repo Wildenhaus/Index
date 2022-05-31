@@ -66,6 +66,8 @@ namespace Saber3D.Serializers.Materials
 
     protected void ReadNestedType( BinaryReader reader, T obj, string propertyName )
     {
+      // TODO: This reflection is slow and ugly.
+
       var property = GetProperty( propertyName );
 
       // Create Serializer

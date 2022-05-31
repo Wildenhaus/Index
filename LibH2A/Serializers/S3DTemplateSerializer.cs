@@ -17,14 +17,6 @@ namespace Saber3D.Serializers
 
     #endregion
 
-    #region Constructor
-
-    public S3DTemplateSerializer()
-    {
-    }
-
-    #endregion
-
     #region Overrides
 
     protected override void OnDeserialize( BinaryReader reader, S3DTemplate template )
@@ -44,7 +36,7 @@ namespace Saber3D.Serializers
       ReadLodDefinitionProperty( reader, template );
       ReadTexListProperty( reader, template );
       ReadGeometryMngProperty( reader, template );
-      //ReadExternDataProperty( reader, template );
+      //ReadExternDataProperty( reader, template ); // TODO
     }
 
     #endregion

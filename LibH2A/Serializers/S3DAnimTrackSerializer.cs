@@ -38,6 +38,8 @@ namespace Saber3D.Serializers
 
     private void ReadObjMapListProperty( BinaryReader reader, S3DAnimTrack animTrack )
     {
+      // TODO: This is never used?
+      // RTTI states this is a dsVECTOR<dsVECTOR<short,8>>
       throw new NotImplementedException();
     }
 

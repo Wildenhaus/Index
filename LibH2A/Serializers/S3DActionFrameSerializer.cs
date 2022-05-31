@@ -11,6 +11,7 @@ namespace Saber3D.Serializers
 
     protected override void OnDeserialize( BinaryReader reader, List<S3DActionFrame> obj )
     {
+      // TODO: This is never used?
       throw new NotImplementedException();
     }
 

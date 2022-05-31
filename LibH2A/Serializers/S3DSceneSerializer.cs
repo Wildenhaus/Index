@@ -90,7 +90,7 @@ namespace Saber3D.Serializers
         return;
 
       var count = reader.ReadUInt32();
-      var unk_01 = reader.ReadByte();
+      var unk_01 = reader.ReadByte(); // TODO
 
       var list = scene.InstMaterialInfoList = new List<string>();
       for ( var i = 0; i < count; i++ )

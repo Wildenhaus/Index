@@ -83,10 +83,10 @@ namespace Saber3D.Serializers
 
       for ( var i = 0; i < objects.Count; i++ )
       {
-        _ = reader.ReadUInt16(); // Unk
-        _ = reader.ReadUInt16(); // Unk
-        _ = reader.ReadUInt16(); // Unk
-        _ = reader.ReadByte();   // Unk
+        _ = reader.ReadUInt16(); // TODO: Unk
+        _ = reader.ReadUInt16(); // TODO: Unk
+        _ = reader.ReadUInt16(); // TODO: Unk
+        _ = reader.ReadByte();   // TODO: Unk
       }
     }
 
