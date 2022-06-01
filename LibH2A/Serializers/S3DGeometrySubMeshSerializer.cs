@@ -206,9 +206,9 @@ namespace Saber3D.Serializers
         );
 
         submesh.Scale = new Vector3(
-          x: reader.ReadInt16().ConvertToSNormFloat(),
-          y: reader.ReadInt16().ConvertToSNormFloat(),
-          z: reader.ReadInt16().ConvertToSNormFloat()
+          x: reader.ReadInt16(),
+          y: reader.ReadInt16(),
+          z: reader.ReadInt16()
         );
       }
     }
