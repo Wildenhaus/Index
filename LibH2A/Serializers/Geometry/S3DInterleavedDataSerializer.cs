@@ -73,6 +73,8 @@ namespace Saber3D.Serializers.Geometry
         data.Tangent2 = ReadTangent( reader );
       if ( Flags.HasFlag( S3DGeometryBufferFlags._TANG3 ) )
         data.Tangent3 = ReadTangent( reader );
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._TANG4 ) )
+        data.Tangent4 = ReadTangent( reader );
     }
 
     private Vector4 ReadTangent( BinaryReader reader )
@@ -91,10 +93,10 @@ namespace Saber3D.Serializers.Geometry
         var z = reader.ReadSByte().SNormToFloat();
         var w = reader.ReadSByte().SNormToFloat();
 
-        Assert( x >= -1 && x <= 1, "Tangent X coord out of bounds." );
-        Assert( y >= -1 && y <= 1, "Tangent Y coord out of bounds." );
-        Assert( z >= -1 && z <= 1, "Tangent Z coord out of bounds." );
-        Assert( w >= -1 && w <= 1, "Tangent W coord out of bounds." );
+        Assert( x >= -1.01 && x <= 1.01, "Tangent X coord out of bounds." );
+        Assert( y >= -1.01 && y <= 1.01, "Tangent Y coord out of bounds." );
+        Assert( z >= -1.01 && z <= 1.01, "Tangent Z coord out of bounds." );
+        Assert( w >= -1.01 && w <= 1.01, "Tangent W coord out of bounds." );
 
         return new Vector4( x, y, z, w );
       }
@@ -164,14 +166,30 @@ namespace Saber3D.Serializers.Geometry
       }
       else
       {
-        // Fairly sure this is correct
-        var u = reader.ReadInt16().SNormToFloat();
-        var v = 1 - reader.ReadInt16().SNormToFloat();
+        if ( isCompressed )
+        {
+          // Fairly sure this is correct
+          // Broken position?
+          var u = reader.ReadInt16().SNormToFloat();
+          var v = 1 - reader.ReadInt16().SNormToFloat();
 
-        Assert( u >= 0 && u <= 1, "UV U coord out of bounds." );
-        Assert( v >= 0 && v <= 1, "UV V coord out of bounds." );
+          //Assert( u >= 0 && u <= 1, "UV U coord out of bounds." );
+          //Assert( v >= 0 && v <= 1, "UV V coord out of bounds." );
 
-        return new Vector4( u, v, 0, 0 );
+          return new Vector4( u, v, 0, 0 );
+        }
+        else
+        {
+          // Fairly sure this is correct
+          // Broken position?
+          var u = reader.ReadInt16().SNormToFloat();
+          var v = 1 - reader.ReadInt16().SNormToFloat();
+
+          //Assert( u >= -2 && u <= 2, "UV U coord out of bounds." );
+          //Assert( v >= -2 && v <= 2, "UV V coord out of bounds." );
+
+          return new Vector4( u, v, 0, 0 );
+        }
       }
     }
 

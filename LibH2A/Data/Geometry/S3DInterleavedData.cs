@@ -12,6 +12,7 @@ namespace Saber3D.Data.Geometry
     public Vector4 Tangent1 { get; set; }
     public Vector4 Tangent2 { get; set; }
     public Vector4 Tangent3 { get; set; }
+    public Vector4 Tangent4 { get; set; }
 
     public Vector4 Color0 { get; set; }
     public Vector4 Color1 { get; set; }
