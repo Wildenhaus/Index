@@ -2,9 +2,8 @@
 using System.IO;
 using System.Linq;
 using Saber3D.Serializers;
-using Testbed;
 
-namespace Saber3D
+namespace Testbed
 {
 
   public static class Program
@@ -18,22 +17,37 @@ namespace Saber3D
       ReadTpls();
       ReadScns();
 
-      //ExportLevelGeometry( @"G:\h2a\d\03a_oldmombasa\_scene_\03a_oldmombasa.lg", @"F:\test.fbx" );
+      //ExportModelGeometry( @"G:\h2a\d\shared\_database_\dervish__h.tpl", @"F:\test.fbx" );
+      //ExportLevelGeometry( @"G:\h2a\d\03b_newmombasa\_scene_\03b_newmombasa.lg", @"F:\test.fbx" );
     }
 
-    private static void ExportLevelGeometry( string lgPath, string outFbxPath )
+    private static void ExportModelGeometry( string tplPath, string outFbxPath )
     {
-      var file = File.OpenRead( lgPath );
-      var stream = CreateSerLgStreamSegment( file );
-      stream.Position = FindDataOffset( stream, MAGIC_SCN1 );
+      var file = File.OpenRead( tplPath );
+      var stream = CreateSerTplStreamSegment( file );
+      stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
 
-      var outstream = FbxConverter.Convert( stream );
+      var outstream = FbxConverter.ConvertTpl( stream );
       using ( var outfile = File.Create( outFbxPath ) )
       {
         outstream.CopyTo( outfile );
         outfile.Flush();
       }
     }
+
+    //private static void ExportLevelGeometry( string lgPath, string outFbxPath )
+    //{
+    //  var file = File.OpenRead( lgPath );
+    //  var stream = CreateSerLgStreamSegment( file );
+    //  stream.Position = FindDataOffset( stream, MAGIC_SCN1 );
+
+    //  var outstream = FbxConverter.ConvertScn( stream );
+    //  using ( var outfile = File.Create( outFbxPath ) )
+    //  {
+    //    outstream.CopyTo( outfile );
+    //    outfile.Flush();
+    //  }
+    //}
 
     private static void ReadScns()
     {
@@ -52,7 +66,7 @@ namespace Saber3D
           stream.Position = FindDataOffset( stream, MAGIC_SCN1 );
 
           var reader = new BinaryReader( stream );
-          new S3DSceneSerializer().Deserialize( reader );
+          var scn = new S3DSceneSerializer().Deserialize( reader );
 
           success++;
           Console.Title = $"{success}/{count}";
@@ -73,27 +87,38 @@ namespace Saber3D
 
       var count = 0;
       var success = 0;
+
       foreach ( var filePath in files )
       {
-        try
-        {
-          count++;
-          Console.WriteLine( filePath );
-          var file = File.OpenRead( filePath );
-          var stream = CreateSerTplStreamSegment( file );
-          stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
+        //try
+        //{
 
-          var reader = new BinaryReader( stream );
-          new S3DTemplateSerializer().Deserialize( reader );
 
-          success++;
-          Console.Title = $"{success}/{count}";
-        }
-        catch ( Exception ex )
-        {
-          Console.WriteLine( "Failed to read {0}", filePath );
-          Console.WriteLine( ex.Message );
-        }
+        if ( filePath.Contains( "cannon__h.tpl" ) )
+          continue;
+        if ( filePath.Contains( "scorpion__h.tpl" ) )
+          continue;
+
+        count++;
+        Console.WriteLine( filePath );
+
+        var file = File.OpenRead( filePath );
+        var stream = CreateSerTplStreamSegment( file );
+        stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
+
+        //FbxConverter.ConvertTpl( stream );
+        var reader = new BinaryReader( stream );
+        new S3DTemplateSerializer().Deserialize( reader );
+
+        success++;
+        Console.Title = $"{success}/{count}";
+        //}
+        //catch ( Exception ex )
+        //{
+        //  Console.WriteLine( filePath );
+        //  //Console.WriteLine( "  Failed to read {0}", filePath );
+        //  Console.WriteLine( "    {0}", ex.Message );
+        //}
       }
       Console.WriteLine( $"{success}/{count}" );
     }

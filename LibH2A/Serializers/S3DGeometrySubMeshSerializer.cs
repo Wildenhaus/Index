@@ -200,9 +200,9 @@ namespace Saber3D.Serializers
       foreach ( var submesh in submeshes )
       {
         submesh.Position = new Vector3(
-          x: reader.ReadInt16().ConvertToSNormFloat(),
-          y: reader.ReadInt16().ConvertToSNormFloat(),
-          z: reader.ReadInt16().ConvertToSNormFloat()
+          x: reader.ReadInt16().SNormToFloat(),
+          y: reader.ReadInt16().SNormToFloat(),
+          z: reader.ReadInt16().SNormToFloat()
         );
 
         submesh.Scale = new Vector3(

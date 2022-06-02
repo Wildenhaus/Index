@@ -90,7 +90,7 @@ namespace Saber3D.Serializers
 
         var data = new float[ elementCount ];
         for ( var i = 0; i < elementCount; i++ )
-          data[ i ] = reader.ReadInt16().ConvertToSNormFloat();
+          data[ i ] = reader.ReadInt16().SNormToFloat();
 
         // TODO: Odd SizeInBytes values seem to be an issue for a few files.
         // I'm just skipping the last byte in these cases. Verify this is correct.
