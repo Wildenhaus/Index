@@ -3,9 +3,11 @@ using System.IO;
 using System.Linq;
 using Aspose.ThreeD;
 using Aspose.ThreeD.Entities;
+using Aspose.ThreeD.Shading;
 using Aspose.ThreeD.Utilities;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
+using Saber3D.Data.Materials;
 using Saber3D.Serializers;
 
 namespace Testbed
@@ -22,6 +24,8 @@ namespace Testbed
 
     public static Stream ConvertTpl( Stream inStream )
     {
+      MaterialCache.Clear();
+
       var reader = new BinaryReader( inStream );
       var tpl = new S3DTemplateSerializer().Deserialize( reader );
       var graph = tpl.GeometryGraph;
@@ -40,6 +44,8 @@ namespace Testbed
 
     public static Stream ConvertScn( Stream inStream )
     {
+      MaterialCache.Clear();
+
       var reader = new BinaryReader( inStream );
       var scn = new S3DSceneSerializer().Deserialize( reader );
       var graph = scn.GeometryGraph;
@@ -217,11 +223,12 @@ namespace Testbed
           }
           break;
           case S3DGeometryElementType.Unknown:
-            throw new System.Exception();
             break;
         }
 
       }
+
+      ApplySubMeshMaterials( entityNode, submesh );
 
       /* TODO:
        * I have these commented out because they can sometimes result in a scale of 0.
@@ -237,6 +244,43 @@ namespace Testbed
 
       //var scale = submesh.Scale;
       //entityNode.Transform.Scale = new Vector3( scale.X, scale.Y, scale.Z );
+    }
+
+    // TODO: Make this non-static
+    private static Dictionary<string, PbrSpecularMaterial> MaterialCache = new Dictionary<string, PbrSpecularMaterial>();
+
+    private static void ApplySubMeshMaterials( Node entityNode, S3DGeometrySubMesh submesh )
+    {
+      if ( submesh.Material is null )
+        return;
+
+      if ( submesh.Material.Layer0 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer0 );
+      if ( submesh.Material.Layer1 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer1 );
+      if ( submesh.Material.Layer2 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer2 );
+      if ( submesh.Material.Layer3 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer3 );
+    }
+
+    private static void ApplySubMeshMaterial( Node entityNode, S3DMaterialLayer layer )
+    {
+      if ( MaterialCache.TryGetValue( layer.TextureName, out var mat ) )
+      {
+        entityNode.Materials.Add( mat );
+        return;
+      }
+
+      mat = new PbrSpecularMaterial();
+      mat.Name = layer.TextureName;
+
+      mat.DiffuseTexture = new Texture( layer.TextureName + ".png" );
+      mat.NormalTexture = new TextureBase( layer.TextureName + "_nm.png" );
+      mat.NormalTexture = new TextureBase( layer.TextureName + "_spec.png" );
+
+      MaterialCache.Add( mat.Name, mat );
+      entityNode.Materials.Add( mat );
     }
 
   }
