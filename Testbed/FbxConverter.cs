@@ -84,6 +84,12 @@ namespace Testbed
       var entityNode = new Node( parentObject.Name, entity );
       parentNode.AddChildNode( entityNode );
 
+      var tan0 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan1 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan2 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan3 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan4 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var uv0 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
       var uv1 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
       var uv2 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
       var uv3 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
@@ -91,7 +97,10 @@ namespace Testbed
       var vertexNormals = entity.CreateElement( VertexElementType.Normal, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementNormal;
 
       var faceMap = new Dictionary<int, int>();
-      var vertCount = 0;
+
+      var vertBuffers = mesh.Buffers.Select( x => buffers[ ( int ) x.BufferId ] ).Where( x => x.ElementType == S3DGeometryElementType.Vertex ).ToArray();
+      if ( vertBuffers.Length > 1 )
+        throw new System.Exception();
 
       foreach ( var meshBuffer in mesh.Buffers )
       {
@@ -104,7 +113,8 @@ namespace Testbed
         {
           case S3DGeometryElementType.Vertex:
           {
-            var startIndex = submeshBufferInfo.VertexOffset + meshBuffer.SubBufferOffset / buffer.ElementSize;
+            var offset = submeshBufferInfo.VertexOffset;
+            var startIndex = offset + meshBuffer.SubBufferOffset / buffer.ElementSize;
             var endIndex = startIndex + submeshBufferInfo.VertexCount;
 
             for ( var i = startIndex; i < endIndex; i++ )
@@ -115,10 +125,9 @@ namespace Testbed
 
               entity.ControlPoints.Add( vert );
               vertexNormals.Data.Add( norm );
-              faceMap.Add( ( int ) i, faceMap.Count );
+              faceMap.Add( ( int ) offset++, faceMap.Count );
             }
 
-            vertCount += submeshBufferInfo.VertexCount;
           }
           break;
           case S3DGeometryElementType.Face:
@@ -126,29 +135,90 @@ namespace Testbed
             var startIndex = submeshBufferInfo.FaceOffset + meshBuffer.SubBufferOffset / buffer.ElementSize;
             var endIndex = startIndex + submeshBufferInfo.FaceCount;
 
+            var faces = buffer.Elements.Skip( ( int ) startIndex ).Take( submeshBufferInfo.FaceCount ).Cast<S3DFace>();
+            var faceIds = faces.SelectMany( x => x );
+            var min = faceIds.Min( x => x );
+            var max = faceIds.Max( x => x );
+            if ( min != submeshBufferInfo.VertexOffset )
+              throw new System.Exception();
+            if ( buffer.ElementSize != 6 )
+              throw new System.Exception();
+
             for ( var i = startIndex; i < endIndex; i++ )
             {
               var element = buffer.Elements[ i ] as S3DFace;
 
-
-              entity.CreatePolygon( element.Select( x => faceMap[ x ] ).ToArray() );
-              //switch ( element )
-              //{
-              //  case S3DEdge edge:
-              //    break;
-              //  case S3DFaceTri tri:
-              //    entity.CreatePolygon( faceMap[ tri.VertexA ], faceMap[ tri.VertexB ], faceMap[ tri.VertexC ] );
-              //    break;
-              //  case S3DFaceQuad quad:
-              //    entity.CreatePolygon( faceMap[ quad.VertexA ], faceMap[ quad.VertexB ], faceMap[ quad.VertexC ], faceMap[ quad.VertexD ] );
-              //    break;
-              //  case S3DFaceNgon ngon:
-              //    entity.CreatePolygon( ngon.Select( x => faceMap[ x ] ).Cast<int>().ToArray() );
-              //    break;
-              //}
+              entity.CreatePolygon( faceMap[ element[ 0 ] ], faceMap[ element[ 1 ] ], faceMap[ element[ 2 ] ] );
             }
           }
           break;
+          case S3DGeometryElementType.Interleaved:
+          {
+            var startIndex = submeshBufferInfo.VertexOffset + meshBuffer.SubBufferOffset / buffer.ElementSize;
+            var endIndex = startIndex + submeshBufferInfo.VertexCount;
+
+            for ( var i = startIndex; i < endIndex; i++ )
+            {
+              var element = buffer.Elements[ i ] as S3DInterleavedData;
+
+              if ( element.Tangent0.HasValue )
+              {
+                var t = element.Tangent0.Value;
+                tan0.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+              if ( element.Tangent1.HasValue )
+              {
+                var t = element.Tangent1.Value;
+                tan1.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+              if ( element.Tangent2.HasValue )
+              {
+                var t = element.Tangent2.Value;
+                tan2.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+              if ( element.Tangent3.HasValue )
+              {
+                var t = element.Tangent3.Value;
+                tan3.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+              if ( element.Tangent4.HasValue )
+              {
+                var t = element.Tangent4.Value;
+                tan4.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+
+              if ( element.UV0.HasValue )
+              {
+                var uv = element.UV0.Value;
+                uv0.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV1.HasValue )
+              {
+                var uv = element.UV1.Value;
+                uv1.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV2.HasValue )
+              {
+                var uv = element.UV2.Value;
+                uv2.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV3.HasValue )
+              {
+                var uv = element.UV3.Value;
+                uv3.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV4.HasValue )
+              {
+                var uv = element.UV4.Value;
+                uv4.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+            }
+
+          }
+          break;
+          case S3DGeometryElementType.Unknown:
+            throw new System.Exception();
+            break;
         }
 
       }
