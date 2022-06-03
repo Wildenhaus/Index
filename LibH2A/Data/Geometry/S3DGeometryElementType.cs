@@ -8,7 +8,7 @@
 
     Face,
     Vertex,
-    Material
+    Interleaved
 
   }
 

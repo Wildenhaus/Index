@@ -1,14 +1,23 @@
-﻿using Saber3D.Data.Geometry;
+﻿using System.Diagnostics;
+using Saber3D.Data.Geometry;
 
 namespace Saber3D.Data
 {
 
+  [DebuggerDisplay( "Buffer<{ElementType},{ElementSize}>[{Count}]" )]
   public class S3DGeometryBuffer
   {
 
+    public ushort FlagSize { get; set; } // DEBUG
     public S3DGeometryBufferFlags Flags { get; set; }
     public ushort ElementSize { get; set; }
     public uint BufferLength { get; set; }
+
+    // TODO: Debug, remove this
+    public byte BufferType
+    {
+      get => ( byte ) ( ( ( ( ulong ) Flags ) >> 8 ) & 0xFF );
+    }
 
     public long StartOffset { get; set; }
     public long EndOffset { get; set; }

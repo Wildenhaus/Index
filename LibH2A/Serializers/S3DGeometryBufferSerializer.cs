@@ -65,7 +65,7 @@ namespace Saber3D.Serializers
          * This is usually 0x3B or 0x3F in length.
          * It appears that it's always stored as a 64-bit int.
          */
-        var flagCount = reader.ReadUInt16(); // TODO: We don't actually need to read based on this, do we?
+        var flagCount = buffer.FlagSize = reader.ReadUInt16(); // TODO: We don't actually need to read based on this, do we?
         buffer.Flags = ( S3DGeometryBufferFlags ) reader.ReadUInt64();
       }
     }
@@ -88,6 +88,7 @@ namespace Saber3D.Serializers
       {
         buffer.StartOffset = reader.BaseStream.Position;
         buffer.EndOffset = buffer.StartOffset + buffer.BufferLength;
+
 
         buffer.Elements = S3DGeometryElementSerializer.Deserialize( reader, buffer );
       }

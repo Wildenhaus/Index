@@ -46,7 +46,7 @@ namespace Saber3D.Serializers.Geometry
           var serializer = new S3DVertexSerializer( buffer );
           return DeserializeElements( reader, buffer, serializer.Deserialize );
         }
-        case S3DGeometryElementType.Material:
+        case S3DGeometryElementType.Interleaved:
         {
           var serializer = new S3DInterleavedDataSerializer( buffer );
           return DeserializeElements( reader, buffer, serializer.Deserialize );
@@ -76,9 +76,20 @@ namespace Saber3D.Serializers.Geometry
 
       if ( flags.HasFlag( S3DGeometryBufferFlags._VERT ) )
         return S3DGeometryElementType.Vertex;
-      else if ( flags.HasFlag( S3DGeometryBufferFlags._TEX0 ) )
-        return S3DGeometryElementType.Material;
-      else if ( flags == S3DGeometryBufferFlags._FACE ) // TODO: Is there a better way to detect this?
+
+      if ( flags.HasFlag( S3DGeometryBufferFlags._TANG0 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TANG1 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TANG2 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TANG3 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TEX0 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TEX1 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TEX2 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TEX3 )
+        || flags.HasFlag( S3DGeometryBufferFlags._TEX4 )
+        )
+        return S3DGeometryElementType.Interleaved;
+
+      if ( flags == S3DGeometryBufferFlags._FACE ) // TODO: Is there a better way to detect this?
         return S3DGeometryElementType.Face;
       else return S3DGeometryElementType.Unknown;
     }
