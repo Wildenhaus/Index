@@ -6,6 +6,14 @@ using static Saber3D.Assertions;
 namespace Saber3D.Files
 {
 
+  /* H2A Decompression Stream
+   * Original implementation by Zatarita
+   * 
+   * Pck files are stored as a series of chunks. Sometimes those chunks
+   * are compressed with ZLib. In either case, this class provides an abstraction
+   * to read these chunked files as if they were raw.
+   */
+
   public class H2ADecompressionStream : Stream
   {
 
