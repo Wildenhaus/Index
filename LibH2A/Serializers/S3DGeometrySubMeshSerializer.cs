@@ -233,17 +233,17 @@ namespace Saber3D.Serializers
 
     private void ReadTransformInfo( BinaryReader reader, List<S3DGeometrySubMesh> submeshes )
     {
-      // TODO: Sometimes this can overrun.
-      /* I was thinking this was Transform data, but it looks like it
-       * might just be indices to something.
-       * Can confirm that the dll is reading 2 pairs of 3xInt16.
-       * 
-       * As for overrunning, there appears to be flags somewhere that
-       * denotes if an element is present.
+      // TODO:
+      /* This is probably transform data, but sometimes it behaves inconsistently when
+       * applied to a mesh vs level geometry.
        */
 
       foreach ( var submesh in submeshes )
       {
+        var mesh = GeometryGraph.Meshes[ ( int ) submesh.MeshId ];
+        if ( !mesh.Flags.HasFlag( S3DGeometryMeshFlags.HasTransformInfo ) )
+          continue;
+
         submesh.Position = new Vector3(
           x: reader.ReadInt16().SNormToFloat(),
           y: reader.ReadInt16().SNormToFloat(),

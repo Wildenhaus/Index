@@ -26,7 +26,7 @@ namespace Saber3D.Data
     Unk_01 = 1ul << 0x00,
     Unk_02 = 1ul << 0x01,
     Unk_03 = 1ul << 0x02,
-    Unk_04 = 1ul << 0x03,
+    HasTransformInfo = 1ul << 0x03,
     Unk_05 = 1ul << 0x04,
     Unk_06 = 1ul << 0x05,
     Unk_07 = 1ul << 0x06,
