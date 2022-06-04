@@ -139,8 +139,7 @@ namespace Saber3D.Serializers
       foreach ( var submesh in submeshes )
       {
         var unk_01 = reader.ReadUInt16();
-        if ( reader.ReadByte() == 0 )
-          continue;
+        var count = reader.ReadByte();
 
         while ( true )
         {
@@ -151,27 +150,37 @@ namespace Saber3D.Serializers
           {
             case 0x0000:
             {
-              _ = reader.ReadInt16();
-              _ = reader.ReadInt16();
-              _ = reader.ReadByte();
-              _ = reader.ReadByte();
+              for ( var i = 0; i < count; i++ )
+              {
+                _ = reader.ReadInt16();
+                _ = reader.ReadInt16();
+                _ = reader.ReadByte();
+                _ = reader.ReadByte();
+              }
             }
             break;
             case 0x0001:
             {
-              _ = reader.ReadByte();
-              _ = reader.ReadByte();
+              for ( var i = 0; i < count; i++ )
+              {
+                _ = reader.ReadByte();
+                _ = reader.ReadByte();
+              }
             }
             break;
             case 0x0002:
             {
-              _ = reader.ReadByte();
-              _ = reader.ReadByte();
+              for ( var i = 0; i < count; i++ )
+              {
+                _ = reader.ReadByte();
+                _ = reader.ReadByte();
+              }
             }
             break;
             case 0x0003:
             {
-              _ = reader.ReadPascalString32();
+              for ( var i = 0; i < count; i++ )
+                _ = reader.ReadPascalString32();
             }
             break;
             case 0xFFFF:
