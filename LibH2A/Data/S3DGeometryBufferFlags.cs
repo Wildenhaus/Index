@@ -3,6 +3,14 @@
 namespace Saber3D.Data
 {
 
+  /* These flags denote how the geometry buffers are shaped.
+   * Named flags are based on strings found in the disassembly.
+   * 
+   * For additional research, there is a spreadsheet that tracks
+   * data that has been encountered:
+   * https://docs.google.com/spreadsheets/d/1YAFcRvIEESG6aeuveKjJKSIPZGbV2F4LRl4yNKBtcvw/edit?usp=sharing
+   */
+
   [Flags]
   public enum S3DGeometryBufferFlags : ulong
   {
