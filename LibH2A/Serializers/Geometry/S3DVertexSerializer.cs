@@ -98,10 +98,10 @@ namespace Saber3D.Serializers.Geometry
          * If the vertex is compressed to an int16, they leave it be for now.
          */
         vertex.Position = new Vector4(
-          x: reader.ReadInt16(),
-          y: reader.ReadInt16(),
-          z: reader.ReadInt16(),
-          w: 1
+          x: reader.ReadInt16().SNormToFloat(),
+          y: reader.ReadInt16().SNormToFloat(),
+          z: reader.ReadInt16().SNormToFloat(),
+          w: 0
           );
       }
       else
