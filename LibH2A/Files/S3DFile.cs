@@ -66,7 +66,7 @@ namespace Saber3D.Files
 
     protected S3DFile( string name, Stream stream, bool keepStreamOpen = false )
     {
-      _name = name;
+      _name = SanitizeName( name );
       _stream = stream;
 
       if ( _stream != null )
@@ -120,6 +120,17 @@ namespace Saber3D.Files
     {
       Assert( Reader.ReadInt32() == SIGNATURE_SER, "1SER signature not found." );
       Assert( Reader.ReadInt32() == fileSignature, "File signature not found." );
+    }
+
+    private static string SanitizeName( string name )
+    {
+      if ( name.Contains( ">" ) )
+        name = name.Substring( name.LastIndexOf( ">" ) + 1 );
+
+      if ( name.Contains( ":" ) )
+        name = name.Substring( name.LastIndexOf( ":" ) + 1 );
+
+      return Path.GetFileName( name );
     }
 
     #endregion
