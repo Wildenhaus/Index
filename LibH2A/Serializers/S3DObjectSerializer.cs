@@ -191,6 +191,8 @@ namespace Saber3D.Serializers
           geomData.SplitIndex = reader.ReadUInt32();
           geomData.NumSplits = reader.ReadUInt32();
           geomData.BoundingBox = new M3DBox( reader.ReadVector3(), reader.ReadVector3() );
+
+          objects[ i ].GeomData = geomData;
         }
       }
 
