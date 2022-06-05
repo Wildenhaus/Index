@@ -116,6 +116,9 @@ namespace Saber3D.Files
           break;
       }
 
+      if ( offset == _position )
+        return _position;
+
       Assert( offset >= 0, "Seek offset must be positive." );
       Assert( offset < _length, "Seek offset was out of bounds." );
 
@@ -267,7 +270,7 @@ namespace Saber3D.Files
       if ( _isCompressed )
         DecompressChunk( chunkIndex );
 
-      _position = chunkIndex * CHUNK_SIZE;
+      _position = CurrentChunk.StartOffset;
     }
 
     private int ReadCompressed( byte[] buffer, int offset, int size )
