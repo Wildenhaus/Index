@@ -280,6 +280,9 @@ namespace Saber3D.Files
 
       while ( bytesRead < size )
       {
+        if ( _position == _length )
+          return bytesRead;
+
         var remainingChunkBytes = CurrentChunk.Length - _decompressStream.Position;
         if ( remainingChunkBytes <= 0 )
         {
@@ -303,6 +306,9 @@ namespace Saber3D.Files
 
       while ( bytesRead < size )
       {
+        if ( _position == _length )
+          return bytesRead;
+
         var remainingChunkBytes = CurrentChunk.EndOffset - _baseStream.Position;
         if ( remainingChunkBytes <= 0 )
         {
