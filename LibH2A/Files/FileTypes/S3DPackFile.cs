@@ -159,7 +159,7 @@ namespace Saber3D.Files
     private IEnumerable<IS3DArchiveFileEntry> ReadSubEntries( IS3DArchiveFileEntry parentEntry )
     {
       /* A lot of times, 1SERpak files contain 1SERpak files. There's definitely a better
-       * way to do this, but for now I'm just reading 1 level deep and only including non-reference
+       * way to do this, but for now I'm just reading recursively and only including non-reference
        * files (files that actually have data instead of referencing other files).
        */
 
