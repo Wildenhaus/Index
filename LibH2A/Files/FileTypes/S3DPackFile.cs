@@ -140,22 +140,30 @@ namespace Saber3D.Files
       for ( var i = 0; i < entryCount; i++ )
         entries.Add( new S3DArchiveEntryFile( this, names[ i ], offsets[ i ], sizes[ i ] ) );
 
-      var subEntries = new List<IS3DArchiveFileEntry>();
+      var finalEntries = new List<IS3DArchiveFileEntry>();
       foreach ( var entry in entries )
-        if ( entry.SizeInBytes > 0 )
-          subEntries.AddRange( ReadSubEntries( entry ) );
+      {
+        if ( entry.SizeInBytes == 0 )
+          continue;
 
-      return subEntries;
+        var subEntries = ReadSubEntries( entry );
+        if ( subEntries.Any() )
+          finalEntries.AddRange( subEntries );
+        else
+          finalEntries.Add( entry );
+      }
+
+      return finalEntries;
     }
 
-    private IEnumerable<IS3DArchiveFileEntry> ReadSubEntries( IS3DArchiveFileEntry entry )
+    private IEnumerable<IS3DArchiveFileEntry> ReadSubEntries( IS3DArchiveFileEntry parentEntry )
     {
       /* A lot of times, 1SERpak files contain 1SERpak files. There's definitely a better
        * way to do this, but for now I'm just reading 1 level deep and only including non-reference
        * files (files that actually have data instead of referencing other files).
        */
 
-      BaseStream.Position = entry.Offset;
+      BaseStream.Position = parentEntry.Offset;
       var subEntryOffset = BaseStream.Position;
 
       if ( Reader.ReadInt32() != SIGNATURE_SER || Reader.ReadInt32() != SIGNATURE_PAK )
@@ -193,7 +201,20 @@ namespace Saber3D.Files
         if ( sizes[ i ] > 0 )
           entries.Add( new S3DArchiveEntryFile( this, names[ i ], offsets[ i ], sizes[ i ] ) );
 
-      return entries;
+      var finalEntries = new List<IS3DArchiveFileEntry>();
+      foreach ( var entry in entries )
+      {
+        if ( entry.SizeInBytes == 0 )
+          continue;
+
+        var subEntries = ReadSubEntries( entry );
+        if ( subEntries.Any() )
+          finalEntries.AddRange( subEntries );
+        else
+          finalEntries.Add( entry );
+      }
+
+      return finalEntries;
     }
 
     #endregion

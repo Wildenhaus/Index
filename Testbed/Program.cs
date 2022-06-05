@@ -113,7 +113,6 @@ namespace Testbed
       {
         try
         {
-
           count++;
           Console.WriteLine( file.Name );
 
