@@ -13,6 +13,9 @@ namespace Saber3D.Serializers
 
     #region Constants
 
+    private const uint SIGNATURE_1SER = 0x52455331; //1SER
+    private const uint SIGNATURE_TPL = 0x006C7074; //TPL.
+
     private const uint SIGNATURE_TPL1 = 0x314C5054; //TPL1
 
     #endregion
@@ -21,6 +24,8 @@ namespace Saber3D.Serializers
 
     protected override void OnDeserialize( BinaryReader reader, S3DTemplate template )
     {
+      ReadSerTplHeader( reader );
+
       ReadSignature( reader, SIGNATURE_TPL1 );
       ReadPropertyCount( reader, template );
 
@@ -42,6 +47,35 @@ namespace Saber3D.Serializers
     #endregion
 
     #region Private Methods
+
+    private void ReadSerTplHeader( BinaryReader reader )
+    {
+      ReadSignature( reader, SIGNATURE_1SER );
+      ReadSignature( reader, SIGNATURE_TPL );
+
+      _ = reader.ReadUInt64(); // Unk count
+      _ = reader.ReadUInt64(); // Unk count
+      _ = reader.ReadUInt64(); // Unk size
+
+      _ = reader.ReadInt32(); // Unk flags
+      _ = reader.ReadInt64(); // Guid Low
+      _ = reader.ReadInt64(); // Guid High
+      _ = reader.ReadInt32(); // Unk
+
+      var stringCount = reader.ReadInt32(); // Unk
+      _ = reader.ReadInt32(); // Unk
+
+      for ( var i = 0; i < stringCount; i++ )
+      {
+        _ = reader.ReadUInt16(); // Unk
+        _ = reader.ReadByte(); // Unk
+
+        _ = reader.ReadByte(); // Delimiter?
+        _ = reader.ReadInt64(); // Unk
+        _ = reader.ReadInt64(); // Unk
+        _ = reader.ReadPascalString32();
+      }
+    }
 
     private void ReadPropertyCount( BinaryReader reader, S3DTemplate template )
     {
