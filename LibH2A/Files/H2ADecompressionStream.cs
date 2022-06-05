@@ -23,9 +23,9 @@ namespace Saber3D.Files
     private const long OFFSET_COMPRESSION_TYPE = 0x4;
     private const long OFFSET_CHUNK_OFFSETS = 0x8;
 
-    private const int HEADER_SIZE = 0x600000;
-    private const int CHUNK_SIZE = 0x8000;
-    private const int MAX_CHUNK_COUNT = ( HEADER_SIZE - sizeof( long ) ) / sizeof( long );
+    private const long HEADER_SIZE = 0x600000;
+    private const long CHUNK_SIZE = 0x8000;
+    private const long MAX_CHUNK_COUNT = ( HEADER_SIZE - sizeof( long ) ) / sizeof( long );
 
     #endregion
 
@@ -147,6 +147,7 @@ namespace Saber3D.Files
 
       _position += chunkPosition;
 
+      Assert( _position == offset );
       return _position;
     }
 
@@ -270,7 +271,7 @@ namespace Saber3D.Files
       if ( _isCompressed )
         DecompressChunk( chunkIndex );
 
-      _position = CurrentChunk.StartOffset;
+      _position = chunkIndex * CHUNK_SIZE;
     }
 
     private int ReadCompressed( byte[] buffer, int offset, int size )
