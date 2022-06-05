@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Saber3D.Data;
+using Saber3D.Serializers.Geometry;
 using static Saber3D.Assertions;
 
 namespace Saber3D.Serializers
@@ -31,8 +32,8 @@ namespace Saber3D.Serializers
 
         switch ( sentinel )
         {
-          case BufferSentinel.BufferTypeInfo:
-            ReadBufferTypeInfo( reader, buffers );
+          case BufferSentinel.BufferFlags:
+            ReadBufferFlags( reader, buffers );
             break;
           case BufferSentinel.BufferElementSizes:
             ReadBufferElementSizes( reader, buffers );
@@ -41,7 +42,7 @@ namespace Saber3D.Serializers
             ReadBufferLengths( reader, buffers );
             break;
           case BufferSentinel.BufferData:
-            ReadBufferOffsets( reader, buffers );
+            ReadBufferData( reader, buffers );
             break;
           default:
             Fail( $"Unknown Buffer Sentinel: {sentinel:X}" );
@@ -56,22 +57,16 @@ namespace Saber3D.Serializers
           "Reader position does not match the buffer section's end offset." );
     }
 
-    private void ReadBufferTypeInfo( BinaryReader reader, List<S3DGeometryBuffer> geometryBuffers )
+    private void ReadBufferFlags( BinaryReader reader, List<S3DGeometryBuffer> geometryBuffers )
     {
       foreach ( var buffer in geometryBuffers )
       {
-        buffer.BufferInfo = new S3DGeometryBufferInfo
-        {
-          Unk_01 = reader.ReadUInt16(), // TODO
-          Unk_02 = reader.ReadByte(), // TODO
-          BufferType = ( S3DGeometryBufferType ) reader.ReadByte(),
-          Unk_04 = reader.ReadByte(), // TODO
-          Unk_05 = reader.ReadByte(), // TODO
-          Unk_06 = reader.ReadByte(), // TODO
-          Unk_07 = reader.ReadByte(), // TODO
-          Unk_08 = reader.ReadByte(), // TODO
-          Unk_09 = reader.ReadByte(), // TODO
-        };
+        /* The data stored in each buffer is defined by a set of flags.
+         * This is usually 0x3B or 0x3F in length.
+         * It appears that it's always stored as a 64-bit int.
+         */
+        var flagCount = buffer.FlagSize = reader.ReadUInt16(); // TODO: We don't actually need to read based on this, do we?
+        buffer.Flags = ( S3DGeometryBufferFlags ) reader.ReadUInt64();
       }
     }
 
@@ -87,24 +82,21 @@ namespace Saber3D.Serializers
         buffer.BufferLength = reader.ReadUInt32();
     }
 
-    private void ReadBufferOffsets( BinaryReader reader, List<S3DGeometryBuffer> geometryBuffers )
+    private void ReadBufferData( BinaryReader reader, List<S3DGeometryBuffer> geometryBuffers )
     {
-      /* This section is the actual buffer data.
-       * For now, we're just seeking and grabbing the start/end offsets.
-       * We should parse this similar to M3DSpline in the future for ease of use.
-       */
-
       foreach ( var buffer in geometryBuffers )
       {
         buffer.StartOffset = reader.BaseStream.Position;
-        reader.BaseStream.Position += buffer.BufferLength;
-        buffer.EndOffset = reader.BaseStream.Position;
+        buffer.EndOffset = buffer.StartOffset + buffer.BufferLength;
+
+
+        buffer.Elements = S3DGeometryElementSerializer.Deserialize( reader, buffer );
       }
     }
 
     private enum BufferSentinel : ushort
     {
-      BufferTypeInfo = 0x0000,
+      BufferFlags = 0x0000,
       BufferElementSizes = 0x0001,
       BufferLengths = 0x0002,
       BufferData = 0x0003

@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Aspose.ThreeD;
 using Aspose.ThreeD.Entities;
+using Aspose.ThreeD.Shading;
 using Aspose.ThreeD.Utilities;
 using Saber3D.Data;
+using Saber3D.Data.Geometry;
+using Saber3D.Data.Materials;
 using Saber3D.Serializers;
 
 namespace Testbed
@@ -22,6 +24,8 @@ namespace Testbed
 
     public static Stream ConvertTpl( Stream inStream )
     {
+      MaterialCache.Clear();
+
       var reader = new BinaryReader( inStream );
       var tpl = new S3DTemplateSerializer().Deserialize( reader );
       var graph = tpl.GeometryGraph;
@@ -40,6 +44,8 @@ namespace Testbed
 
     public static Stream ConvertScn( Stream inStream )
     {
+      MaterialCache.Clear();
+
       var reader = new BinaryReader( inStream );
       var scn = new S3DSceneSerializer().Deserialize( reader );
       var graph = scn.GeometryGraph;
@@ -84,6 +90,12 @@ namespace Testbed
       var entityNode = new Node( parentObject.Name, entity );
       parentNode.AddChildNode( entityNode );
 
+      var tan0 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan1 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan2 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan3 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var tan4 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
+      var uv0 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
       var uv1 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
       var uv2 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
       var uv3 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
@@ -92,436 +104,131 @@ namespace Testbed
 
       var faceMap = new Dictionary<int, int>();
 
+      var vertBuffers = mesh.Buffers.Select( x => buffers[ ( int ) x.BufferId ] ).Where( x => x.ElementType == S3DGeometryElementType.Vertex ).ToArray();
+      if ( vertBuffers.Length > 1 )
+        throw new System.Exception();
+
       foreach ( var meshBuffer in mesh.Buffers )
       {
         var buffer = buffers[ ( int ) meshBuffer.BufferId ];
         var startOffset = buffer.StartOffset + meshBuffer.SubBufferOffset;
 
         var submeshBufferInfo = submesh.BufferInfo;
-        switch ( buffer.BufferInfo.BufferType )
+
+        switch ( buffer.ElementType )
         {
-          case S3DGeometryBufferType.Face:
+          case S3DGeometryElementType.Vertex:
           {
-            if ( submeshBufferInfo.FaceCount == 0 )
-              continue;
+            var offset = submeshBufferInfo.VertexOffset;
+            var startIndex = offset + meshBuffer.SubBufferOffset / buffer.ElementSize;
+            var endIndex = startIndex + submeshBufferInfo.VertexCount;
 
-            var subBufferOffset = submeshBufferInfo.FaceOffset * buffer.ElementSize;
-            reader.BaseStream.Position = startOffset + subBufferOffset;
+            for ( var i = startIndex; i < endIndex; i++ )
+            {
+              var element = buffer.Elements[ i ] as S3DVertex;
+              var vert = new Vector4( element.X, element.Y, element.Z );
+              var norm = new Vector4( element.Normal.X, element.Normal.Y, element.Normal.Z );
 
-            if ( buffer.ElementSize == 0xC )
-            {
-              for ( var i = 0; i < submeshBufferInfo.FaceCount; i++ )
-              {
-                var faceA = faceMap[ reader.ReadInt32() ];
-                var faceB = faceMap[ reader.ReadInt32() ];
-                var faceC = faceMap[ reader.ReadInt32() ];
-                entity.CreatePolygon( faceA, faceB, faceC );
-              }
+              entity.ControlPoints.Add( vert );
+              vertexNormals.Data.Add( norm );
+              faceMap.Add( ( int ) offset++, faceMap.Count );
             }
-            else if ( buffer.ElementSize == 0x8 )
-            {
-              for ( var i = 0; i < submeshBufferInfo.FaceCount; i++ )
-              {
-                var faceA = faceMap[ reader.ReadUInt16() ];
-                var faceB = faceMap[ reader.ReadUInt16() ];
-                var faceC = faceMap[ reader.ReadUInt16() ];
-                var faceD = faceMap[ reader.ReadUInt16() ];
-                entity.CreatePolygon( faceA, faceB, faceC, faceD );
-              }
-            }
-            else if ( buffer.ElementSize == 0x6 )
-            {
-              for ( var i = 0; i < submeshBufferInfo.FaceCount; i++ )
-              {
-                var faceA = faceMap[ reader.ReadUInt16() ];
-                var faceB = faceMap[ reader.ReadUInt16() ];
-                var faceC = faceMap[ reader.ReadUInt16() ];
-                entity.CreatePolygon( faceA, faceB, faceC );
-              }
-            }
-            else
-              throw new Exception( $"Unknown Face Size: {buffer.ElementSize:X}" );
 
           }
           break;
-          case S3DGeometryBufferType.StaticVert:
+          case S3DGeometryElementType.Face:
           {
-            var subBufferOffset = submeshBufferInfo.VertexOffset * buffer.ElementSize;
-            reader.BaseStream.Position = startOffset + subBufferOffset;
+            var startIndex = submeshBufferInfo.FaceOffset + meshBuffer.SubBufferOffset / buffer.ElementSize;
+            var endIndex = startIndex + submeshBufferInfo.FaceCount;
 
-            var idxStart = submeshBufferInfo.VertexOffset;
+            var faces = buffer.Elements.Skip( ( int ) startIndex ).Take( submeshBufferInfo.FaceCount ).Cast<S3DFace>();
+            var faceIds = faces.SelectMany( x => x );
+            var min = faceIds.Min( x => x );
+            var max = faceIds.Max( x => x );
+            if ( min != submeshBufferInfo.VertexOffset )
+              throw new System.Exception();
+            if ( buffer.ElementSize != 6 )
+              throw new System.Exception();
 
-            for ( var i = 0; i < submeshBufferInfo.VertexCount; i++ )
+            for ( var i = startIndex; i < endIndex; i++ )
             {
-              /* Make sure to check buffer.ElementSize before doing this.
-               * TPLs typically use Vector3<short>, where each short is compressed via SNorm.
-               * LG doesn't seem to use SNorm at all, probably due to the size of the model and
-               * the fact that it would lose a lot of precision by doing so.
-               */
+              var element = buffer.Elements[ i ] as S3DFace;
 
-              if ( buffer.ElementSize == 0x10 )
-              {
-                var x = reader.ReadSingle();
-                var y = reader.ReadSingle();
-                var z = reader.ReadSingle();
-                var w = reader.ReadSingle(); // Normal?
-
-                entity.ControlPoints.Add( new Vector4( x, y, z, 0 ) );
-                faceMap.Add( ( int ) ( idxStart + i ), ( int ) faceMap.Count );
-              }
-              else if ( buffer.ElementSize == 0x8 )
-              {
-                var x = SNorm( reader.ReadInt16() );
-                var y = SNorm( reader.ReadInt16() );
-                var z = SNorm( reader.ReadInt16() );
-                var w = reader.ReadInt16(); // Normal packed in W coord
-
-                entity.ControlPoints.Add( new Vector4( x, y, z, 0 ) );
-                vertexNormals.Data.Add( UnpackNormFromW( w ) );
-
-                faceMap.Add( ( int ) ( idxStart + i ), ( int ) faceMap.Count );
-              }
-              else
-                throw new Exception( $"Unknown StaticVert Size: {buffer.ElementSize:X}" );
+              entity.CreatePolygon( faceMap[ element[ 0 ] ], faceMap[ element[ 1 ] ], faceMap[ element[ 2 ] ] );
             }
           }
           break;
-          case S3DGeometryBufferType.SkinnedVert:
+          case S3DGeometryElementType.Interleaved:
           {
-            var subBufferOffset = submeshBufferInfo.VertexOffset * buffer.ElementSize;
-            reader.BaseStream.Position = startOffset + subBufferOffset;
+            var startIndex = submeshBufferInfo.VertexOffset + meshBuffer.SubBufferOffset / buffer.ElementSize;
+            var endIndex = startIndex + submeshBufferInfo.VertexCount;
 
-            var idxStart = submeshBufferInfo.VertexOffset;
-
-            for ( var i = 0; i < submeshBufferInfo.VertexCount; i++ )
+            for ( var i = startIndex; i < endIndex; i++ )
             {
-              if ( buffer.ElementSize == 0x10 )
+              var element = buffer.Elements[ i ] as S3DInterleavedData;
+
+              if ( element.Tangent0.HasValue )
               {
-                var x = SNorm( reader.ReadInt16() );
-                var y = SNorm( reader.ReadInt16() );
-                var z = SNorm( reader.ReadInt16() );
-                var w = reader.ReadInt16(); // Normal packed in W coord
-                reader.BaseStream.Position -= 8;
-                var xyzw = reader.ReadInt64();
-
-                // Weights?
-                var unk_01 = reader.ReadByte();
-                var unk_02 = reader.ReadByte();
-                var unk_03 = reader.ReadByte();
-                var unk_04 = reader.ReadByte();
-
-                // Bones?
-                var unk_05 = reader.ReadByte();
-                var unk_06 = reader.ReadByte();
-                var unk_07 = reader.ReadByte();
-                var unk_08 = reader.ReadByte();
-
-                entity.ControlPoints.Add( new Vector4( x, y, z, w ) );
-                vertexNormals.Data.Add( UnpackNormFromW( w ) );
-
-                faceMap.Add( ( int ) ( idxStart + i ), ( int ) faceMap.Count );
+                var t = element.Tangent0.Value;
+                tan0.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
               }
-              else
-                throw new Exception( $"Unknown SkinnedVert Size: {buffer.ElementSize:X}" );
+              if ( element.Tangent1.HasValue )
+              {
+                var t = element.Tangent1.Value;
+                tan1.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+              if ( element.Tangent2.HasValue )
+              {
+                var t = element.Tangent2.Value;
+                tan2.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+              if ( element.Tangent3.HasValue )
+              {
+                var t = element.Tangent3.Value;
+                tan3.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+              if ( element.Tangent4.HasValue )
+              {
+                var t = element.Tangent4.Value;
+                tan4.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
+              }
+
+              if ( element.UV0.HasValue )
+              {
+                var uv = element.UV0.Value;
+                uv0.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV1.HasValue )
+              {
+                var uv = element.UV1.Value;
+                uv1.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV2.HasValue )
+              {
+                var uv = element.UV2.Value;
+                uv2.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV3.HasValue )
+              {
+                var uv = element.UV3.Value;
+                uv3.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
+              if ( element.UV4.HasValue )
+              {
+                var uv = element.UV4.Value;
+                uv4.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
+              }
             }
+
           }
           break;
-          case S3DGeometryBufferType.UV1:
-          {
-            var subBufferOffset = submeshBufferInfo.VertexOffset * buffer.ElementSize;
-            reader.BaseStream.Position = startOffset + subBufferOffset;
-
-            for ( var i = 0; i < submeshBufferInfo.VertexCount; i++ )
-            {
-              if ( buffer.ElementSize == 0x10 )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-
-                var u = SNorm( reader.ReadInt16() );
-                var v = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u, v, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0xC )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-
-                var u = SNorm( reader.ReadInt16() );
-                var v = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u, v, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x8 )
-              {
-                var unk_01 = reader.ReadInt32();
-
-                var u = SNorm( reader.ReadInt16() );
-                var v = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u, v, 0, 0 ) );
-              }
-              else
-                throw new Exception( $"Unknown UV1 Size: {buffer.ElementSize:X}" );
-            }
-          }
-          break;
-          case S3DGeometryBufferType.UV2:
-          {
-            var subBufferOffset = submeshBufferInfo.VertexOffset * buffer.ElementSize;
-            reader.BaseStream.Position = startOffset + subBufferOffset;
-
-            for ( var i = 0; i < submeshBufferInfo.VertexCount; i++ )
-            {
-              if ( buffer.ElementSize == 0x18 )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x14 )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x10 )
-              {
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-              }
-              else
-                throw new Exception( $"Unknown UV2 Size: {buffer.ElementSize:X}" );
-            }
-          }
-          break;
-          case S3DGeometryBufferType.UV3:
-          {
-            var subBufferOffset = submeshBufferInfo.VertexOffset * buffer.ElementSize;
-            reader.BaseStream.Position = startOffset + subBufferOffset;
-
-            for ( var i = 0; i < submeshBufferInfo.VertexCount; i++ )
-            {
-              if ( buffer.ElementSize == 0x28 )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-                var unk_05 = reader.ReadInt32();
-                var unk_06 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x20 )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-                var unk_05 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x1C )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x18 )
-              {
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-              }
-              else
-                throw new Exception( $"Unknown UV3 Size: {buffer.ElementSize:X}" );
-            }
-          }
-          break;
-          case S3DGeometryBufferType.UV4:
-          {
-            var subBufferOffset = submeshBufferInfo.VertexOffset * buffer.ElementSize;
-            reader.BaseStream.Position = startOffset + subBufferOffset;
-
-            for ( var i = 0; i < submeshBufferInfo.VertexCount; i++ )
-            {
-              if ( buffer.ElementSize == 0x2C )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-                var unk_05 = reader.ReadInt32();
-                var unk_06 = reader.ReadInt32();
-                var unk_07 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u4 = SNorm( reader.ReadInt16() );
-                var v4 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-                uv4.Data.Add( new Vector4( u4, v4, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x28 )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-                var unk_05 = reader.ReadInt32();
-                var unk_06 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u4 = SNorm( reader.ReadInt16() );
-                var v4 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-                uv4.Data.Add( new Vector4( u4, v4, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x24 )
-              {
-                // TODO: THIS IS A GUESS
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-                var unk_05 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u4 = SNorm( reader.ReadInt16() );
-                var v4 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-                uv4.Data.Add( new Vector4( u4, v4, 0, 0 ) );
-              }
-              else if ( buffer.ElementSize == 0x20 )
-              {
-                var unk_01 = reader.ReadInt32();
-                var unk_02 = reader.ReadInt32();
-                var unk_03 = reader.ReadInt32();
-                var unk_04 = reader.ReadInt32();
-
-                var u1 = SNorm( reader.ReadInt16() );
-                var v1 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u2 = SNorm( reader.ReadInt16() );
-                var v2 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u3 = SNorm( reader.ReadInt16() );
-                var v3 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-                var u4 = SNorm( reader.ReadInt16() );
-                var v4 = 1 - SNorm( reader.ReadInt16() ); // V coord is flipped
-
-                uv1.Data.Add( new Vector4( u1, v1, 0, 0 ) );
-                uv2.Data.Add( new Vector4( u2, v2, 0, 0 ) );
-                uv3.Data.Add( new Vector4( u3, v3, 0, 0 ) );
-                uv4.Data.Add( new Vector4( u4, v4, 0, 0 ) );
-              }
-              else
-                throw new Exception( $"Unknown UV4 Size: {buffer.ElementSize:X}" );
-            }
-          }
-          break;
+          case S3DGeometryElementType.Unknown:
+            break;
         }
+
       }
+
+      ApplySubMeshMaterials( entityNode, submesh );
 
       /* TODO:
        * I have these commented out because they can sometimes result in a scale of 0.
@@ -539,26 +246,41 @@ namespace Testbed
       //entityNode.Transform.Scale = new Vector3( scale.X, scale.Y, scale.Z );
     }
 
-    private static float SNorm( this short value )
-      => value / ( float ) short.MaxValue;
+    // TODO: Make this non-static
+    private static Dictionary<string, PbrSpecularMaterial> MaterialCache = new Dictionary<string, PbrSpecularMaterial>();
 
-    private static Vector4 UnpackNormFromW( in short w )
+    private static void ApplySubMeshMaterials( Node entityNode, S3DGeometrySubMesh submesh )
     {
-      // This seems close, but there are a lot of issues with duplicate vertices
-      // pointing in opposite directions, causing the normals to be screwed up.
-      // It may have to do with backfacing.
+      if ( submesh.Material is null )
+        return;
 
-      float sign( short value )
-        => value > 0 ? 1 : value < 0 ? -1 : 0;
+      if ( submesh.Material.Layer0 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer0 );
+      if ( submesh.Material.Layer1 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer1 );
+      if ( submesh.Material.Layer2 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer2 );
+      if ( submesh.Material.Layer3 != null )
+        ApplySubMeshMaterial( entityNode, submesh.Material.Layer3 );
+    }
 
-      float frac( float value )
-        => value % 1;
+    private static void ApplySubMeshMaterial( Node entityNode, S3DMaterialLayer layer )
+    {
+      if ( MaterialCache.TryGetValue( layer.TextureName, out var mat ) )
+      {
+        entityNode.Materials.Add( mat );
+        return;
+      }
 
-      var x = ( -1f + 2f * frac( ( 1.0f / 181 ) * Math.Abs( w ) ) ) * ( 181.0f / 179f );
-      var z = ( -1f + 2f * frac( ( 1.0f / 181.0f / 181.0f ) * Math.Abs( w ) ) ) * ( 181.0f / 180.0f );
-      var y = sign( w ) * MathF.Sqrt( 1.0f - ( x * x ) - ( z * z ) );
+      mat = new PbrSpecularMaterial();
+      mat.Name = layer.TextureName;
 
-      return new Vector4( x, y, z, sign( w ) );
+      mat.DiffuseTexture = new Texture( layer.TextureName + ".png" );
+      mat.NormalTexture = new TextureBase( layer.TextureName + "_nm.png" );
+      mat.NormalTexture = new TextureBase( layer.TextureName + "_spec.png" );
+
+      MaterialCache.Add( mat.Name, mat );
+      entityNode.Materials.Add( mat );
     }
 
   }

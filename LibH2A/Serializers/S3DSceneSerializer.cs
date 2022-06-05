@@ -12,12 +12,17 @@ namespace Saber3D.Serializers
 
     #region Constants
 
+    private const uint SIGNATURE_1SER = 0x52455331; //1SER
+    private const uint SIGNATURE_LG = 0xFF00676C; //LG.
+
     private const uint SIGNATURE_SCN1 = 0x314E4353; //SCN1
 
     #endregion
 
     protected override void OnDeserialize( BinaryReader reader, S3DScene scene )
     {
+      ReadSerLgHeader( reader );
+
       ReadSignature( reader, SIGNATURE_SCN1 );
       ReadPropertyCount( reader, scene );
 
@@ -25,6 +30,35 @@ namespace Saber3D.Serializers
       ReadPsProperty( reader, scene );
       ReadInstMaterialInfoListProperty( reader, scene );
       ReadGeometryMngProperty( reader, scene );
+    }
+
+    private void ReadSerLgHeader( BinaryReader reader )
+    {
+      ReadSignature( reader, SIGNATURE_1SER );
+      ReadSignature( reader, SIGNATURE_LG );
+
+      _ = reader.ReadUInt64(); // Unk count
+      _ = reader.ReadUInt64(); // Unk count
+      _ = reader.ReadUInt64(); // Unk size
+
+      _ = reader.ReadInt32(); // Unk flags
+      _ = reader.ReadInt64(); // Guid Low
+      _ = reader.ReadInt64(); // Guid High
+      _ = reader.ReadInt32(); // Unk
+
+      var stringCount = reader.ReadInt32(); // Unk
+      _ = reader.ReadInt32(); // Unk
+
+      for ( var i = 0; i < stringCount; i++ )
+      {
+        _ = reader.ReadUInt16(); // Unk
+        _ = reader.ReadByte(); // Unk
+
+        _ = reader.ReadByte(); // Delimiter?
+        _ = reader.ReadInt64(); // Unk
+        _ = reader.ReadInt64(); // Unk
+        _ = reader.ReadPascalString32();
+      }
     }
 
     private void ReadPropertyCount( BinaryReader reader, S3DScene scene )

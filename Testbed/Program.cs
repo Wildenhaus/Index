@@ -1,33 +1,43 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Saber3D.Files;
 using Saber3D.Serializers;
-using Testbed;
 
-namespace Saber3D
+namespace Testbed
 {
 
   public static class Program
   {
-
     // Change this
-    const string DATA_PATH = @"G:\h2a\d\";
+    const string GAME_PATH = @"G:\Steam\steamapps\common\Halo The Master Chief Collection\";
 
     public static void Main( string[] args )
     {
-      ReadTpls();
-      ReadScns();
+      TestReadTemplateModels();
+      TestReadLevelGeometry();
 
-      //ExportLevelGeometry( @"G:\h2a\d\03a_oldmombasa\_scene_\03a_oldmombasa.lg", @"F:\test.fbx" );
+      //ExportModelGeometry( @"G:\h2a\d\shared\_database_\dervish__h.tpl", @"F:\test.fbx" );
+      //ExportLevelGeometry( @"G:\h2a\d\07a_highcharity\_scene_\07a_highcharity.lg", @"F:\test.fbx" );
     }
 
-    private static void ExportLevelGeometry( string lgPath, string outFbxPath )
+    private static void ExportModelGeometry( string tplName, string outFbxPath )
     {
-      var file = File.OpenRead( lgPath );
-      var stream = CreateSerLgStreamSegment( file );
-      stream.Position = FindDataOffset( stream, MAGIC_SCN1 );
+      var fileContext = H2AFileContext.Global;
+      fileContext.OpenDirectory( GAME_PATH );
 
-      var outstream = FbxConverter.Convert( stream );
+      var tplFile = fileContext.GetFiles( tplName )
+        .Where( x => x.Name.Contains( ".tpl" ) )
+        .FirstOrDefault();
+
+      if ( tplFile is null )
+      {
+        Console.WriteLine( "Nothing found for: {0}", tplName );
+        return;
+      }
+
+      var stream = tplFile.GetStream();
+      var outstream = FbxConverter.ConvertTpl( stream );
       using ( var outfile = File.Create( outFbxPath ) )
       {
         outstream.CopyTo( outfile );
@@ -35,54 +45,79 @@ namespace Saber3D
       }
     }
 
-    private static void ReadScns()
+    private static void ExportLevelGeometry( string lgName, string outFbxPath )
     {
-      var files = Directory.GetFiles( DATA_PATH, "*.lg", SearchOption.AllDirectories );
+      var fileContext = H2AFileContext.Global;
+      fileContext.OpenDirectory( GAME_PATH );
+
+      var tplFile = fileContext.GetFiles( lgName )
+        .Where( x => x.Name.Contains( ".lg" ) )
+        .FirstOrDefault();
+
+      if ( tplFile is null )
+      {
+        Console.WriteLine( "Nothing found for: {0}", lgName );
+        return;
+      }
+
+      var stream = tplFile.GetStream();
+      var outstream = FbxConverter.ConvertTpl( stream );
+      using ( var outfile = File.Create( outFbxPath ) )
+      {
+        outstream.CopyTo( outfile );
+        outfile.Flush();
+      }
+    }
+
+    private static void TestReadLevelGeometry()
+    {
+      var fileContext = H2AFileContext.Global;
+      fileContext.OpenDirectory( GAME_PATH );
 
       var count = 0;
       var success = 0;
-      foreach ( var filePath in files )
+
+      foreach ( var file in fileContext.GetFiles( ".lg" ) )
       {
         try
         {
           count++;
-          Console.WriteLine( filePath );
-          var file = File.OpenRead( filePath );
-          var stream = CreateSerLgStreamSegment( file );
-          stream.Position = FindDataOffset( stream, MAGIC_SCN1 );
+          Console.WriteLine( file.Name );
 
+          var stream = file.GetStream();
           var reader = new BinaryReader( stream );
-          new S3DSceneSerializer().Deserialize( reader );
+          var scn = new S3DSceneSerializer().Deserialize( reader );
 
           success++;
           Console.Title = $"{success}/{count}";
         }
         catch ( Exception ex )
         {
-          Console.WriteLine( "Failed to read {0}", filePath );
-          Console.WriteLine( ex.Message );
+          Console.WriteLine( "  Failed to read {0}", file.Name );
+          Console.WriteLine( "    {0}", ex.Message );
         }
       }
-      Console.WriteLine( $"{success}/{count}" );
 
+      Console.WriteLine( $"{success}/{count}" );
     }
 
-    private static void ReadTpls()
+    private static void TestReadTemplateModels()
     {
-      var files = Directory.GetFiles( DATA_PATH, "*.tpl", SearchOption.AllDirectories );
+      var fileContext = H2AFileContext.Global;
+      fileContext.OpenDirectory( GAME_PATH );
 
       var count = 0;
       var success = 0;
-      foreach ( var filePath in files )
+
+      foreach ( var file in fileContext.GetFiles( ".tpl" ) )
       {
         try
         {
-          count++;
-          Console.WriteLine( filePath );
-          var file = File.OpenRead( filePath );
-          var stream = CreateSerTplStreamSegment( file );
-          stream.Position = FindDataOffset( stream, MAGIC_TPL1 );
 
+          count++;
+          Console.WriteLine( file.Name );
+
+          var stream = file.GetStream();
           var reader = new BinaryReader( stream );
           new S3DTemplateSerializer().Deserialize( reader );
 
@@ -91,82 +126,171 @@ namespace Saber3D
         }
         catch ( Exception ex )
         {
-          Console.WriteLine( "Failed to read {0}", filePath );
-          Console.WriteLine( ex.Message );
+          Console.WriteLine( "  Failed to read {0}", file.Name );
+          Console.WriteLine( "    {0}", ex.Message );
         }
       }
+
       Console.WriteLine( $"{success}/{count}" );
     }
 
-    private static readonly byte[] MAGIC_1SERtpl = new byte[]
-        {
-      0x31, 0x53, 0x45, 0x52, 0x74, 0x70, 0x6C, 0x00
-        };
-
-    private static readonly byte[] MAGIC_1SERlg = new byte[]
-        {
-      0x31, 0x53, 0x45, 0x52, 0x6C, 0x67
-        };
-
-    private static readonly byte[] MAGIC_TPL1 = new byte[]
-    {
-      0x54, 0x50, 0x4C, 0x31
-    };
-
-    private static readonly byte[] MAGIC_SCN1 = new byte[]
-    {
-      0x53, 0x43, 0x4E, 0x31
-    };
-
-    private static readonly byte[] MAGIC_OGM1 = new byte[]
-    {
-      0x4F, 0x47, 0x4D, 0x31
-    };
-
-    private static long FindDataOffset( Stream stream, byte[] data )
-    {
-      stream.Position = 0;
-      long found = -1;
-      int curr;
-      while ( ( curr = stream.ReadByte() ) > -1 )
-      {
-        if ( curr == data[ 0 ] )
-        {
-          stream.Position--;
-          byte[] buffer = new byte[ data.Length ];
-          stream.Read( buffer, 0, data.Length );
-          if ( buffer.SequenceEqual( data ) )
-          {
-            found = stream.Position - data.Length;
-            break;
-          }
-          else
-            stream.Position -= data.Length - 1;
-        }
-      }
-
-      return found;
-    }
-
-    private static Stream CreateSerTplStreamSegment( Stream stream )
-    {
-      var memoryStream = new MemoryStream();
-      stream.Position = FindDataOffset( stream, MAGIC_1SERtpl );
-      stream.CopyTo( memoryStream );
-
-      memoryStream.Position = 0;
-      return memoryStream;
-    }
-
-    private static Stream CreateSerLgStreamSegment( Stream stream )
-    {
-      var memoryStream = new MemoryStream();
-      stream.Position = FindDataOffset( stream, MAGIC_1SERlg );
-      stream.CopyTo( memoryStream );
-
-      memoryStream.Position = 0;
-      return memoryStream;
-    }
-
   }
+
+  //static class FlagAnalyzer
+  //{
+
+  //  static Dictionary<S3DGeometryBufferFlags, FlagInfo> Info
+  //    = CreateInfoDict();
+
+  //  public static void Analyze()
+  //  {
+  //    var analyzed = 0;
+  //    foreach ( var file in GetFiles() )
+  //    {
+  //      AnalyzeFile( file );
+  //      Console.Title = $"{++analyzed} | {file}";
+  //    }
+
+  //    PrintResults();
+  //  }
+
+  //  static void AnalyzeFile( string filePath )
+  //  {
+  //    var graph = GetGeometryGraph( filePath );
+  //    if ( graph is null )
+  //      return;
+
+  //    foreach ( var buffer in graph.Buffers )
+  //    {
+  //      var bufferFlags = buffer.Flags;
+  //      foreach ( var flag in EnumerateFlags( bufferFlags ) )
+  //      {
+  //        var flagInfo = Info[ flag ];
+
+  //        flagInfo.Occurences++;
+  //        flagInfo.Sizes.Add( buffer.ElementSize );
+  //        flagInfo.UsedIn.Add( bufferFlags );
+  //        flagInfo.Files.Add( Path.GetFileName( filePath ) );
+  //      }
+  //    }
+  //  }
+
+  //  static void PrintResults()
+  //  {
+  //    foreach ( var flag in Enum.GetValues<S3DGeometryBufferFlags>() )
+  //    {
+  //      var flagInfo = Info[ flag ];
+  //      Console.WriteLine( flag );
+  //      Console.WriteLine( "  - Occurences: {0}", flagInfo.Occurences );
+  //      Console.WriteLine( "  - Exclusivity: {0}", flagInfo.Exclusivity );
+  //      Console.WriteLine( "  - Sizes: " );
+  //      foreach ( var size in flagInfo.Sizes.OrderBy( x => x ) )
+  //        Console.WriteLine( "    - 0x{0:X}", size );
+  //      Console.WriteLine( "  - Instances: " );
+  //      foreach ( var instance in flagInfo.UsedIn.OrderBy( x => x ) )
+  //        Console.WriteLine( "    - {0}", instance );
+  //      Console.WriteLine( "  - Files: " );
+  //      foreach ( var file in flagInfo.Files.Take( 10 ) )
+  //        Console.WriteLine( "    - {0}", file );
+
+  //      Console.WriteLine();
+  //      Console.WriteLine( new String( '-', 40 ) );
+  //      Console.WriteLine();
+  //    }
+  //  }
+
+  //  static S3DGeometryGraph GetGeometryGraph( string filePath )
+  //  {
+  //    try
+  //    {
+  //      if ( Path.GetExtension( filePath ) == ".tpl" )
+  //      {
+  //        var file = File.OpenRead( filePath );
+  //        var stream = Program.CreateSerTplStreamSegment( file );
+  //        stream.Position = Program.FindDataOffset( stream, Program.MAGIC_TPL1 );
+
+  //        //FbxConverter.ConvertTpl( stream );
+  //        var reader = new BinaryReader( stream );
+  //        var tpl = new S3DTemplateSerializer().Deserialize( reader );
+  //        return tpl.GeometryGraph;
+  //      }
+  //      else
+  //      {
+  //        var file = File.OpenRead( filePath );
+  //        var stream = Program.CreateSerLgStreamSegment( file );
+  //        stream.Position = Program.FindDataOffset( stream, Program.MAGIC_SCN1 );
+
+  //        //FbxConverter.ConvertTpl( stream );
+  //        var reader = new BinaryReader( stream );
+  //        var scn = new S3DSceneSerializer().Deserialize( reader );
+  //        return scn.GeometryGraph;
+  //      }
+  //    }
+  //    catch ( Exception ex )
+  //    {
+  //      Console.WriteLine( ex.Message );
+  //      return null;
+  //    }
+
+  //  }
+
+  //  static IEnumerable<string> GetFiles()
+  //  {
+  //    const string DATA_PATH = @"G:\h2a\d\";
+  //    foreach ( var f in Directory.GetFiles( DATA_PATH, "*.tpl", SearchOption.AllDirectories ) )
+  //      yield return f;
+
+  //    foreach ( var f in Directory.GetFiles( DATA_PATH, "*.lg", SearchOption.AllDirectories ) )
+  //      yield return f;
+  //  }
+
+  //  static Dictionary<S3DGeometryBufferFlags, FlagInfo> CreateInfoDict()
+  //  {
+  //    var dict = new Dictionary<S3DGeometryBufferFlags, FlagInfo>();
+  //    foreach ( var flag in Enum.GetValues<S3DGeometryBufferFlags>() )
+  //      dict[ flag ] = new FlagInfo( flag );
+  //    return dict;
+  //  }
+
+  //  static IEnumerable<S3DGeometryBufferFlags> EnumerateFlags( S3DGeometryBufferFlags flags )
+  //  {
+  //    foreach ( var flag in Enum.GetValues<S3DGeometryBufferFlags>() )
+  //      if ( flags.HasFlag( flag ) )
+  //        yield return flag;
+  //  }
+
+  //}
+
+  //class FlagInfo
+  //{
+  //  public S3DGeometryBufferFlags Flag;
+  //  public int Occurences;
+  //  public HashSet<S3DGeometryBufferFlags> UsedIn = new HashSet<S3DGeometryBufferFlags>();
+  //  public HashSet<ushort> Sizes = new HashSet<ushort>();
+  //  public HashSet<string> Files = new HashSet<string>();
+
+  //  public string Exclusivity
+  //  {
+  //    get
+  //    {
+  //      if ( Files.Count == 0 )
+  //        return "Unused";
+
+  //      if ( Files.All( x => x.Contains( ".lg", StringComparison.InvariantCultureIgnoreCase ) ) )
+  //        return "Level Geometry";
+  //      if ( Files.All( x => x.Contains( "grass", StringComparison.InvariantCultureIgnoreCase ) ) )
+  //        return "Grass";
+  //      if ( Files.All( x => x.Contains( ".tpl", StringComparison.InvariantCultureIgnoreCase ) ) )
+  //        return "TPL";
+
+  //      return "None";
+  //    }
+  //  }
+
+  //  public FlagInfo( S3DGeometryBufferFlags flag )
+  //  {
+  //    Flag = flag;
+  //  }
+  //}
+
 }

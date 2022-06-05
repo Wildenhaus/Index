@@ -31,8 +31,8 @@ namespace Saber3D.Serializers
 
         switch ( sentinel )
         {
-          case MeshSentinel.MeshInfo:
-            ReadMeshInfo( reader, meshes );
+          case MeshSentinel.MeshFlags:
+            ReadMeshFlags( reader, meshes );
             break;
           case MeshSentinel.BufferInfo:
             ReadBufferInfo( reader, meshes );
@@ -50,12 +50,12 @@ namespace Saber3D.Serializers
           "Reader position does not match the mesh section's end offset." );
     }
 
-    private void ReadMeshInfo( BinaryReader reader, List<S3DGeometryMesh> meshes )
+    private void ReadMeshFlags( BinaryReader reader, List<S3DGeometryMesh> meshes )
     {
       foreach ( var mesh in meshes )
       {
-        mesh.Unk_01 = reader.ReadUInt16(); // TODO
-        mesh.Flags = ( S3DMeshFlags ) reader.ReadUInt64(); // TODO: This is a guess.
+        mesh.FlagCount = reader.ReadUInt16();
+        mesh.Flags = ( S3DGeometryMeshFlags ) reader.ReadUInt64();
       }
     }
 
@@ -81,7 +81,7 @@ namespace Saber3D.Serializers
 
     private enum MeshSentinel : ushort
     {
-      MeshInfo = 0x0000,
+      MeshFlags = 0x0000,
       // TODO: 0x0001 doesn't seem to be used anywhere. Verify.
       BufferInfo = 0x0002
     }
