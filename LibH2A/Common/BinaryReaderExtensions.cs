@@ -208,6 +208,33 @@ namespace Saber3D.Common
       return builder.ToString();
     }
 
+    /// <summary>
+    ///   Reads a 128-bit <see cref="Guid" />.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <returns>
+    ///   The <see cref="Guid" />.
+    /// </returns>
+    [DebuggerHidden]
+    public static Guid ReadGuid( this BinaryReader reader )
+    {
+      return new Guid(
+        a: reader.ReadUInt32(),
+        b: reader.ReadUInt16(),
+        c: reader.ReadUInt16(),
+        d: reader.ReadByte(),
+        e: reader.ReadByte(),
+        f: reader.ReadByte(),
+        g: reader.ReadByte(),
+        h: reader.ReadByte(),
+        i: reader.ReadByte(),
+        j: reader.ReadByte(),
+        k: reader.ReadByte()
+        );
+    }
+
   }
 
 }

@@ -58,8 +58,7 @@ namespace Saber3D.Serializers
       _ = reader.ReadUInt64(); // Unk size
 
       _ = reader.ReadInt32(); // Unk flags
-      _ = reader.ReadInt64(); // Guid Low
-      _ = reader.ReadInt64(); // Guid High
+      var guid = reader.ReadGuid();
       _ = reader.ReadInt32(); // Unk
 
       var stringCount = reader.ReadInt32(); // Unk
