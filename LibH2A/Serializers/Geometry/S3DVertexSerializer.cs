@@ -84,7 +84,6 @@ namespace Saber3D.Serializers.Geometry
       ReadVertexPosition( reader, vertex );
       ReadVertexNormal( reader, vertex );
       ApplyVertexTransforms( reader, vertex );
-      ApplyNormalTransforms( reader, vertex );
 
       return vertex;
     }
