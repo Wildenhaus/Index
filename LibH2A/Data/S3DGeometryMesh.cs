@@ -32,7 +32,7 @@ namespace Saber3D.Data
     Unk_07 = 1ul << 0x06,
     Unk_08 = 1ul << 0x07,
     Unk_09 = 1ul << 0x08,
-    Unk_0A = 1ul << 0x09,
+    HasBoneIds = 1ul << 0x09,
     Unk_0B = 1ul << 0x0A,
     Unk_0C = 1ul << 0x0B,
     Unk_0D = 1ul << 0x0C,

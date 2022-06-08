@@ -45,10 +45,10 @@ namespace Saber3D.Serializers
             ReadUnk02( reader, submeshes );
             break;
           case SubMeshSentinel.BoneMap:
-            ReadBoneMap( reader, submeshes, endOffset );
+            ReadBoneIds( reader, submeshes, endOffset );
             break;
-          case SubMeshSentinel.SubMeshInfo:
-            ReadSubMeshInfo( reader, submeshes, endOffset );
+          case SubMeshSentinel.Unk_04:
+            ReadUnk04( reader, submeshes, endOffset );
             break;
           case SubMeshSentinel.TransformInfo:
             ReadTransformInfo( reader, submeshes );
@@ -212,20 +212,22 @@ namespace Saber3D.Serializers
 
     }
 
-    private void ReadBoneMap( BinaryReader reader, List<S3DGeometrySubMesh> submeshes, long endOffset )
+    private void ReadBoneIds( BinaryReader reader, List<S3DGeometrySubMesh> submeshes, long endOffset )
     {
-      // TODO: Figure out if this is actually a bone map.
-      // TODO: How does this factor in to each submesh?
-
-      while ( reader.BaseStream.Position < endOffset )
+      foreach ( var submesh in submeshes )
       {
+        var mesh = GeometryGraph.Meshes[ ( int ) submesh.MeshId ];
+        if ( !mesh.Flags.HasFlag( S3DGeometryMeshFlags.HasBoneIds ) )
+          continue;
+
         var count = reader.ReadByte();
+        var boneIds = submesh.BoneIds = new ushort[ count ];
         for ( var i = 0; i < count; i++ )
-          reader.ReadUInt16();
+          boneIds[ i ] = reader.ReadUInt16();
       }
     }
 
-    private void ReadSubMeshInfo( BinaryReader reader, List<S3DGeometrySubMesh> submeshes, long endOffset )
+    private void ReadUnk04( BinaryReader reader, List<S3DGeometrySubMesh> submeshes, long endOffset )
     {
       // TODO: Figure out what this data is.
       // In the disassembly, it appears to be iterating over each submesh,
@@ -333,7 +335,7 @@ namespace Saber3D.Serializers
       MeshIds = 0x0001,
       Unk_02 = 0x0002,
       BoneMap = 0x0003,
-      SubMeshInfo = 0x0004,
+      Unk_04 = 0x0004,
       TransformInfo = 0x0005,
       Materials_String = 0x0006,
       Materials_Static = 0x0007,

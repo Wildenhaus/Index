@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Saber3D.Data;
 using static Saber3D.Assertions;
@@ -54,7 +55,10 @@ namespace Saber3D.Serializers
     {
       foreach ( var mesh in meshes )
       {
-        mesh.FlagCount = reader.ReadUInt16();
+        var flagCount = reader.ReadUInt16();
+        var flagDataLength = Math.Ceiling( flagCount / 8f );
+        Assert( flagDataLength == sizeof( ulong ), "GeometryMesh flag data is not 8 bytes." );
+
         mesh.Flags = ( S3DGeometryMeshFlags ) reader.ReadUInt64();
       }
     }
