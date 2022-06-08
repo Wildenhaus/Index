@@ -53,7 +53,7 @@ namespace Saber3D.Data
     Unk_1C = 1ul << 0x1B,
     Unk_1D = 1ul << 0x1C,
     Unk_1E = 1ul << 0x1D,
-    Unk_1F = 1ul << 0x1E,
+    Unk_1F_HasSubmeshSection04 = 1ul << 0x1E,
     Unk_20 = 1ul << 0x1F,
     Unk_21 = 1ul << 0x20,
     Unk_22 = 1ul << 0x21,

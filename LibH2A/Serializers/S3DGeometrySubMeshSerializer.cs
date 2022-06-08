@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using Saber3D.Common;
@@ -212,7 +213,7 @@ namespace Saber3D.Serializers
 
     }
 
-    private void ReadBoneIds( BinaryReader reader, List<S3DGeometrySubMesh> submeshes, long endOffset )
+    private void ReadBoneIds( BinaryReader reader, List<S3DGeometrySubMesh> submeshes )
     {
       foreach ( var submesh in submeshes )
       {
@@ -227,21 +228,23 @@ namespace Saber3D.Serializers
       }
     }
 
-    private void ReadUnk04( BinaryReader reader, List<S3DGeometrySubMesh> submeshes, long endOffset )
+    private void ReadUnk04( BinaryReader reader, List<S3DGeometrySubMesh> submeshes )
     {
       // TODO: Figure out what this data is.
-      // In the disassembly, it appears to be iterating over each submesh,
-      // checking for flags by AND'ing them by 0xFC000000000, and if one of those 
-      // 6 flags is set, it reads the data. However, doing this doesn't seem to work correctly.
-      // They may have updated it or the flags in a newer version (I am reversing the release version).
 
-      while ( reader.BaseStream.Position < endOffset )
+      foreach ( var submesh in submeshes )
       {
+        var mesh = GeometryGraph.Meshes[ ( int ) submesh.MeshId ];
+        if ( !mesh.Flags.HasFlag( S3DGeometryMeshFlags.Unk_1F_HasSubmeshSection04 ) )
+          continue;
+
         var count = reader.ReadByte();
+        var data = new Tuple<byte, short>[ count ];
         for ( var i = 0; i < count; i++ )
         {
-          var unk_01 = reader.ReadByte(); // TODO
-          var unk_02 = reader.ReadUInt16(); // TODO
+          var unk_01 = reader.ReadByte();
+          var unk_02 = reader.ReadInt16();
+          data[ i ] = Tuple.Create( unk_01, unk_02 );
         }
       }
     }
