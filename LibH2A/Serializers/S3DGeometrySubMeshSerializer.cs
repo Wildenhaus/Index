@@ -46,10 +46,10 @@ namespace Saber3D.Serializers
             ReadUnk02( reader, submeshes );
             break;
           case SubMeshSentinel.BoneMap:
-            ReadBoneIds( reader, submeshes, endOffset );
+            ReadBoneIds( reader, submeshes );
             break;
           case SubMeshSentinel.Unk_04:
-            ReadUnk04( reader, submeshes, endOffset );
+            ReadUnk04( reader, submeshes );
             break;
           case SubMeshSentinel.TransformInfo:
             ReadTransformInfo( reader, submeshes );
