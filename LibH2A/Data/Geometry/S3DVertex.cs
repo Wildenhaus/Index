@@ -25,7 +25,7 @@ namespace Saber3D.Data.Geometry
       get => Position.Z;
     }
 
-    public Vector4 Normal { get; set; }
+    public Vector4? Normal { get; set; }
 
     public override S3DGeometryElementType ElementType
     {

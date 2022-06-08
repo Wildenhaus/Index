@@ -36,7 +36,7 @@ namespace Testbed
         AddMesh( scene, graph, mesh, reader );
 
       var outStream = new MemoryStream();
-      scene.Save( outStream, FileFormat.FBX7700Binary );
+      scene.Save( outStream, FileFormat.Collada );
 
       outStream.Position = 0;
       return outStream;
@@ -64,7 +64,7 @@ namespace Testbed
       }
 
       var outStream = new MemoryStream();
-      scene.Save( outStream, FileFormat.FBX7700Binary );
+      scene.Save( outStream, FileFormat.Collada );
 
       outStream.Position = 0;
       return outStream;
@@ -90,17 +90,17 @@ namespace Testbed
       var entityNode = new Node( parentObject.Name, entity );
       parentNode.AddChildNode( entityNode );
 
-      var tan0 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
-      var tan1 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
-      var tan2 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
-      var tan3 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
-      var tan4 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
-      var uv0 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
-      var uv1 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
-      var uv2 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
-      var uv3 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
-      var uv4 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
-      var vertexNormals = entity.CreateElement( VertexElementType.Normal, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementNormal;
+      VertexElementTangent tan0 = null;
+      VertexElementTangent tan1 = null;
+      VertexElementTangent tan2 = null;
+      VertexElementTangent tan3 = null;
+      VertexElementTangent tan4 = null;
+      VertexElementUV uv0 = null;
+      VertexElementUV uv1 = null;
+      VertexElementUV uv2 = null;
+      VertexElementUV uv3 = null;
+      VertexElementUV uv4 = null;
+      VertexElementNormal vertexNormals = null;
 
       var faceMap = new Dictionary<int, int>();
 
@@ -127,10 +127,16 @@ namespace Testbed
             {
               var element = buffer.Elements[ i ] as S3DVertex;
               var vert = new Vector4( element.X, element.Y, element.Z );
-              var norm = new Vector4( element.Normal.X, element.Normal.Y, element.Normal.Z );
-
               entity.ControlPoints.Add( vert );
-              vertexNormals.Data.Add( norm );
+
+              if ( element.Normal.HasValue )
+              {
+                if ( vertexNormals is null )
+                  vertexNormals = entity.CreateElement( VertexElementType.Normal, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementNormal;
+
+                var norm = new Vector4( element.Normal.Value.X, element.Normal.Value.Y, element.Normal.Value.Z );
+                vertexNormals.Data.Add( norm );
+              }
               faceMap.Add( ( int ) offset++, faceMap.Count );
             }
 
@@ -169,52 +175,72 @@ namespace Testbed
 
               if ( element.Tangent0.HasValue )
               {
+                if ( tan0 is null )
+                  tan0 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
                 var t = element.Tangent0.Value;
                 tan0.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
               }
               if ( element.Tangent1.HasValue )
               {
+                if ( tan1 is null )
+                  tan1 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
                 var t = element.Tangent1.Value;
                 tan1.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
               }
               if ( element.Tangent2.HasValue )
               {
+                if ( tan2 is null )
+                  tan2 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
                 var t = element.Tangent2.Value;
                 tan2.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
               }
               if ( element.Tangent3.HasValue )
               {
+                if ( tan3 is null )
+                  tan3 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
                 var t = element.Tangent3.Value;
                 tan3.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
               }
               if ( element.Tangent4.HasValue )
               {
+                if ( tan4 is null )
+                  tan4 = entity.CreateElement( VertexElementType.Tangent, MappingMode.ControlPoint, ReferenceMode.Direct ) as VertexElementTangent;
                 var t = element.Tangent4.Value;
                 tan4.Data.Add( new Vector4( t.X, t.Y, t.Z, t.W ) );
               }
 
               if ( element.UV0.HasValue )
               {
+                if ( uv0 is null )
+                  uv0 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
                 var uv = element.UV0.Value;
                 uv0.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
               }
               if ( element.UV1.HasValue )
               {
+                if ( uv1 is null )
+                  uv1 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
                 var uv = element.UV1.Value;
                 uv1.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
               }
               if ( element.UV2.HasValue )
               {
+                if ( uv2 is null )
+                  uv2 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
                 var uv = element.UV2.Value;
                 uv2.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
               }
               if ( element.UV3.HasValue )
               {
+                if ( uv3 is null )
+                  uv3 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
                 var uv = element.UV3.Value;
                 uv3.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
               }
               if ( element.UV4.HasValue )
               {
+                if ( uv4 is null )
+                  uv4 = entity.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
                 var uv = element.UV4.Value;
                 uv4.Data.Add( new Vector4( uv.X, uv.Y, uv.Z, uv.W ) );
               }
@@ -277,7 +303,7 @@ namespace Testbed
 
       mat.DiffuseTexture = new Texture( layer.TextureName + ".png" );
       mat.NormalTexture = new TextureBase( layer.TextureName + "_nm.png" );
-      mat.NormalTexture = new TextureBase( layer.TextureName + "_spec.png" );
+      mat.SpecularGlossinessTexture = new TextureBase( layer.TextureName + "_spec.png" );
 
       MaterialCache.Add( mat.Name, mat );
       entityNode.Materials.Add( mat );

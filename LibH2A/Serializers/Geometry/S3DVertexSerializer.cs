@@ -73,7 +73,6 @@ namespace Saber3D.Serializers.Geometry
       ReadVertexNormal( reader, vertex );
       ReadVertexSkinningData( reader, vertex );
       ApplyVertexTransforms( reader, vertex );
-      ApplyNormalTransforms( reader, vertex );
 
       return vertex;
     }
@@ -101,7 +100,7 @@ namespace Saber3D.Serializers.Geometry
           x: reader.ReadInt16().SNormToFloat(),
           y: reader.ReadInt16().SNormToFloat(),
           z: reader.ReadInt16().SNormToFloat(),
-          w: 0
+          w: 1
           );
       }
       else
@@ -184,18 +183,6 @@ namespace Saber3D.Serializers.Geometry
       }
     }
 
-    private void ApplyNormalTransforms( BinaryReader reader, S3DVertex vertex )
-    {
-      if ( Flags.HasFlag( S3DGeometryBufferFlags._NORM ) || Flags.HasFlag( S3DGeometryBufferFlags._NORM_IN_VERT4 ) )
-      {
-        if ( Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_NORM ) )
-        {
-          var negativeIdentity = new Vector4( -1.0f );
-          vertex.Normal = vertex.Normal * 2.0f + negativeIdentity;
-        }
-      }
-    }
-
     private Vector4 DecompressNormalFromInt16( short w )
     {
       /* In common_input.vsh, if the vertex IS compressed, they're unpacking the normal like so:
@@ -214,7 +201,14 @@ namespace Saber3D.Serializers.Geometry
       var y = ( float ) yTmp;
       var z = ( float ) xz.Y;
 
-      return new Vector4( x, y, z, 1 ); // TODO: Should this W be 1?
+      Assert( x < 1.1f && x > -1.1f );
+      Assert( y < 1.1f && y > -1.1f );
+      Assert( z < 1.1f && z > -1.1f );
+      Assert( !float.IsNaN( x ) );
+      Assert( !float.IsNaN( y ) );
+      Assert( !float.IsNaN( z ) );
+
+      return new Vector4( x, y, z, S3DMath.Sign( w ) ); // TODO: Should this W be 1?
     }
 
     private Vector4 DecompressNormalFromFloat( float w )

@@ -17,8 +17,8 @@ namespace Testbed
       TestReadTemplateModels();
       TestReadLevelGeometry();
 
-      //ExportModelGeometry( @"G:\h2a\d\shared\_database_\dervish__h.tpl", @"F:\test.fbx" );
-      //ExportLevelGeometry( @"G:\h2a\d\07a_highcharity\_scene_\07a_highcharity.lg", @"F:\test.fbx" );
+      //ExportModelGeometry( @"dervish__h.tpl", @"F:\dervish.fbx" );
+      //ExportLevelGeometry( @"newmombasa.lg", @"F:\test.fbx" );
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
@@ -27,7 +27,7 @@ namespace Testbed
       fileContext.OpenDirectory( GAME_PATH );
 
       var tplFile = fileContext.GetFiles( tplName )
-        .Where( x => x.Name.Contains( ".tpl" ) )
+        .Where( x => x.Name.Contains( tplName ) )
         .FirstOrDefault();
 
       if ( tplFile is null )
@@ -37,7 +37,7 @@ namespace Testbed
       }
 
       var stream = tplFile.GetStream();
-      var outstream = FbxConverter.ConvertTpl( stream );
+      var outstream = ModelConverter.ConvertTpl( stream );
       using ( var outfile = File.Create( outFbxPath ) )
       {
         outstream.CopyTo( outfile );
@@ -48,10 +48,12 @@ namespace Testbed
     private static void ExportLevelGeometry( string lgName, string outFbxPath )
     {
       var fileContext = H2AFileContext.Global;
-      fileContext.OpenDirectory( GAME_PATH );
+      var file = Directory.GetFiles( GAME_PATH, "*.pck", SearchOption.AllDirectories )
+        .FirstOrDefault( x => x.Contains( Path.GetFileNameWithoutExtension( lgName ) ) );
+      fileContext.OpenFile( file );
 
       var tplFile = fileContext.GetFiles( lgName )
-        .Where( x => x.Name.Contains( ".lg" ) )
+        .Where( x => x.Name.Contains( lgName ) )
         .FirstOrDefault();
 
       if ( tplFile is null )
@@ -61,7 +63,7 @@ namespace Testbed
       }
 
       var stream = tplFile.GetStream();
-      var outstream = FbxConverter.ConvertTpl( stream );
+      var outstream = ModelConverter.ConvertScn( stream );
       using ( var outfile = File.Create( outFbxPath ) )
       {
         outstream.CopyTo( outfile );
