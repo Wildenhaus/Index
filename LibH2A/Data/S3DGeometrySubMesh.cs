@@ -10,8 +10,8 @@ namespace Saber3D.Data
     public S3DSubMeshBufferInfo BufferInfo { get; set; }
     public uint MeshId { get; set; } // TODO: This is a guess
 
-    public Vector3 Position { get; set; }
-    public Vector3 Scale { get; set; }
+    public Vector3? Position { get; set; }
+    public Vector3? Scale { get; set; }
 
     public ushort NodeId { get; set; }
     public S3DMaterial Material { get; set; }

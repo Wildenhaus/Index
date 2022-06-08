@@ -111,10 +111,14 @@ namespace Testbed
       {
         var meshData = graph.Meshes.First( x => x.Id == submeshData.MeshId );
         var meshBuffers = meshData.Buffers;
-        var scale = new[] { submeshData.Scale.X, submeshData.Scale.Y, submeshData.Scale.Z };
-        if ( scale[ 0 ] == 0 ) scale[ 0 ] = 1;
-        if ( scale[ 1 ] == 0 ) scale[ 1 ] = 1;
-        if ( scale[ 2 ] == 0 ) scale[ 2 ] = 1;
+
+        var scale = new float[] { 1f, 1f, 1f };
+        if ( submeshData.Scale.HasValue )
+        {
+          scale[ 0 ] = submeshData.Scale.Value.X;
+          scale[ 1 ] = submeshData.Scale.Value.Y;
+          scale[ 2 ] = submeshData.Scale.Value.Z;
+        }
 
         foreach ( var meshBuffer in meshBuffers )
         {
