@@ -228,6 +228,10 @@ namespace Saber3D.Serializers
     private void ReadSubMeshInfo( BinaryReader reader, List<S3DGeometrySubMesh> submeshes, long endOffset )
     {
       // TODO: Figure out what this data is.
+      // In the disassembly, it appears to be iterating over each submesh,
+      // checking for flags by AND'ing them by 0xFC000000000, and if one of those 
+      // 6 flags is set, it reads the data. However, doing this doesn't seem to work correctly.
+      // They may have updated it or the flags in a newer version (I am reversing the release version).
 
       while ( reader.BaseStream.Position < endOffset )
       {
@@ -243,8 +247,7 @@ namespace Saber3D.Serializers
     private void ReadTransformInfo( BinaryReader reader, List<S3DGeometrySubMesh> submeshes )
     {
       // TODO:
-      /* This is probably transform data, but sometimes it behaves inconsistently when
-       * applied to a mesh vs level geometry.
+      /* This is probably transform data, but sometimes it behaves inconsistently.
        */
 
       foreach ( var submesh in submeshes )
@@ -259,6 +262,7 @@ namespace Saber3D.Serializers
           z: reader.ReadInt16().SNormToFloat()
         );
 
+        // TODO: Are int16s correct?
         submesh.Scale = new Vector3(
           x: reader.ReadInt16(),
           y: reader.ReadInt16(),
@@ -266,6 +270,24 @@ namespace Saber3D.Serializers
         );
       }
     }
+
+    /* The next three properties are all for materials. The material data itself is always structured
+     * the same (see the material serializers). However, for whatever reason, the data can be represented
+     * in three different ways:
+     * 
+     *  - Materials (String):  All of the data is stored in a pascal string. It seems to be formatted similarly
+     *                         to their scripting language, which is somewhat similar to JSON.
+     *                        
+     *  - Materials (Static):  Each property starts with a name (null-terminated string), followed by an unknown
+     *                         32-bit int, followed by the data type (see the enum in the serializer), followed
+     *                         by the property's value.
+     *                        
+     *  - Materials (Dynamic): The most commonly used form.
+     *                         Each property starts with a name (pascal string) followed by the data type
+     *                         (see the enum in the serializer), followed by the property's value.
+     *                         
+     *  They just couldn't make it simple, could they?
+     */
 
     private void ReadMaterialsString( BinaryReader reader, List<S3DGeometrySubMesh> submeshes )
     {

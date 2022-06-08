@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Saber3D.Data;
-using Saber3D.Serializers.Geometry;
 using static Saber3D.Assertions;
 
 namespace Saber3D.Serializers
@@ -65,32 +65,49 @@ namespace Saber3D.Serializers
          * This is usually 0x3B or 0x3F in length.
          * It appears that it's always stored as a 64-bit int.
          */
-        var flagCount = buffer.FlagSize = reader.ReadUInt16(); // TODO: We don't actually need to read based on this, do we?
+
+        var flagCount = buffer.FlagSize = reader.ReadUInt16();
+        var flagDataLength = Math.Ceiling( flagCount / 8f );
+        Assert( flagDataLength == sizeof( ulong ), "GeometryBuffer flag data is not 8 bytes." );
+
         buffer.Flags = ( S3DGeometryBufferFlags ) reader.ReadUInt64();
       }
     }
 
     private void ReadBufferElementSizes( BinaryReader reader, List<S3DGeometryBuffer> geometryBuffers )
     {
+      /* The size of each element in the buffer (stride length).
+       * We can use this to calculate offsets and catch cases where we under/overread each element.
+       */
+
       foreach ( var buffer in geometryBuffers )
         buffer.ElementSize = reader.ReadUInt16();
     }
 
     private void ReadBufferLengths( BinaryReader reader, List<S3DGeometryBuffer> geometryBuffers )
     {
+      /* The total length (in bytes) of the buffer.
+       */
+
       foreach ( var buffer in geometryBuffers )
         buffer.BufferLength = reader.ReadUInt32();
     }
 
     private void ReadBufferData( BinaryReader reader, List<S3DGeometryBuffer> geometryBuffers )
     {
+      /* This is the actual buffer data. We're using the previously obtained length
+       * to determine the start and end offsets.
+       * 
+       * We can also optionally deserialize the buffer elements here.
+       */
+
       foreach ( var buffer in geometryBuffers )
       {
         buffer.StartOffset = reader.BaseStream.Position;
         buffer.EndOffset = buffer.StartOffset + buffer.BufferLength;
 
-
-        buffer.Elements = S3DGeometryElementSerializer.Deserialize( reader, buffer );
+        reader.BaseStream.Position = buffer.EndOffset;
+        //buffer.Elements = S3DGeometryElementSerializer.Deserialize( reader, buffer );
       }
     }
 

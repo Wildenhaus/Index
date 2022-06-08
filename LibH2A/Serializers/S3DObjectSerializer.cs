@@ -212,7 +212,8 @@ namespace Saber3D.Serializers
     private void ReadObbProperty( BinaryReader reader, List<S3DObject> objects )
     {
       // TODO: Move this into M3DOBB serializer/data class
-      // TODO: This seems to be all zeroes
+      // This seems to be all zeroes.
+      // Maybe this is the skip[dsString] property?
 
       // Read Sentinel
       if ( reader.ReadByte() == 0 )
