@@ -147,15 +147,20 @@ namespace Saber3D.Serializers.Geometry
     {
       // TODO: Idk if these data types are right, and/or what to do with them.
       if ( Flags.HasFlag( S3DGeometryBufferFlags._WEIGHT1 ) )
-        vertex.Weight1 = reader.ReadByte();
+        vertex.Weight1 = reader.ReadByte().UNormToFloat();
       if ( Flags.HasFlag( S3DGeometryBufferFlags._WEIGHT2 ) )
-        vertex.Weight2 = reader.ReadByte();
+        vertex.Weight2 = reader.ReadByte().UNormToFloat();
       if ( Flags.HasFlag( S3DGeometryBufferFlags._WEIGHT3 ) )
-        vertex.Weight3 = reader.ReadByte();
+        vertex.Weight3 = reader.ReadByte().UNormToFloat();
       if ( Flags.HasFlag( S3DGeometryBufferFlags._WEIGHT4 ) )
-        vertex.Weight4 = reader.ReadByte();
+        vertex.Weight4 = reader.ReadByte().UNormToFloat();
       if ( Flags.HasFlag( S3DGeometryBufferFlags._INDEX ) )
-        vertex.Index = reader.ReadUInt32();
+      {
+        vertex.Index1 = reader.ReadByte();
+        vertex.Index2 = reader.ReadByte();
+        vertex.Index3 = reader.ReadByte();
+        vertex.Index4 = reader.ReadByte();
+      }
     }
 
     private void ApplyVertexTransforms( BinaryReader reader, S3DVertex vertex )
