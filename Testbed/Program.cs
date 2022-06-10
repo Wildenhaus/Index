@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Aspose.ThreeD;
 using Saber3D.Files;
 using Saber3D.Serializers;
 
@@ -14,11 +15,28 @@ namespace Testbed
 
     public static void Main( string[] args )
     {
-      TestReadTemplateModels();
-      TestReadLevelGeometry();
+      //TestReadTemplateModels();
+      //TestReadLevelGeometry();
+
+      ExportArmatureTest( @"G:\h2a\re files\masterchief__h.tpl", @"F:\test.fbx" );
 
       //ExportModelGeometry( @"dervish__h.tpl", @"F:\dervish.fbx" );
       //ExportLevelGeometry( @"newmombasa.lg", @"F:\test.fbx" );
+    }
+
+    private static void ExportArmatureTest( string tplPath, string outFbxPath )
+    {
+      TrialException.SuppressTrialException = true;
+
+      var tplStr = File.OpenRead( tplPath );
+      var reader = new BinaryReader( tplStr );
+      var tpl = new S3DTemplateSerializer().Deserialize( reader );
+      var arm = new ArmatureExportTest( tpl.GeometryGraph );
+      using ( var fs = File.Create( outFbxPath ) )
+      {
+        arm.Save( fs );
+        fs.Flush();
+      }
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
