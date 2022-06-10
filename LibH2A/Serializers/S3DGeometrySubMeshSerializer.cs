@@ -262,9 +262,9 @@ namespace Saber3D.Serializers
           continue;
 
         submesh.Position = new Vector3(
-          x: reader.ReadInt16().SNormToFloat(),
-          y: reader.ReadInt16().SNormToFloat(),
-          z: reader.ReadInt16().SNormToFloat()
+          x: reader.ReadInt16(),
+          y: reader.ReadInt16(),
+          z: reader.ReadInt16()
         );
 
         // TODO: Are int16s correct?
