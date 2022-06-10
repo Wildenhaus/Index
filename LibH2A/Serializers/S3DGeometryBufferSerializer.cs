@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Saber3D.Data;
+using Saber3D.Serializers.Geometry;
 using static Saber3D.Assertions;
 
 namespace Saber3D.Serializers
@@ -106,8 +107,8 @@ namespace Saber3D.Serializers
         buffer.StartOffset = reader.BaseStream.Position;
         buffer.EndOffset = buffer.StartOffset + buffer.BufferLength;
 
-        reader.BaseStream.Position = buffer.EndOffset;
-        //buffer.Elements = S3DGeometryElementSerializer.Deserialize( reader, buffer );
+        //reader.BaseStream.Position = buffer.EndOffset;
+        buffer.Elements = S3DGeometryElementSerializer.Deserialize( reader, buffer );
       }
     }
 
