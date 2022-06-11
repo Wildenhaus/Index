@@ -64,12 +64,8 @@ namespace Testbed
 
     private void AddMesh( S3DObject obj, Node node )
     {
-      //if ( obj.Name != "._arms_base.g" )
-      //return;
-
       var mesh = MeshBuilder.Create( _armature, obj, _graph );
       node.AddEntity( mesh );
-      //node.Transform.TransformMatrix = obj.MatrixModel.ToMatrix4();
     }
 
   }
@@ -193,21 +189,8 @@ namespace Testbed
       var submeshes = _graph.SubMeshes.Where( x => x.NodeId == _obj.Id )
         .OrderBy( x => x.BufferInfo.VertexOffset );
 
-      var deformer = _deformer = new SkinDeformer( "deformer." + _obj.Name );
-      _mesh.Deformers.Add( deformer );
-      foreach ( var bone in _armature.Bones.OrderBy( x => x.Key ) )
-        deformer.Bones.Add( bone.Value );
-
       foreach ( var submesh in submeshes )
-      {
-        //if ( submesh.BoneIds is not null )
-        //{
-        //  foreach ( var boneId in submesh.BoneIds )
-        //    deformer.Bones.Add( _armature.Bones[ _armature.BoneLookup[ boneId ] ] );
-        //}
-
         AddSubMesh( submesh );
-      }
 
 
       return _mesh;
@@ -287,6 +270,7 @@ namespace Testbed
       var endIndex = startIndex + submesh.BufferInfo.VertexCount;
 
       var obj = _graph.Objects[ submesh.NodeId ];
+      SkinDeformer deformer = null;
 
       var scale = new float[] { 1, 1, 1 };
       if ( submesh.Scale.HasValue )
@@ -328,18 +312,46 @@ namespace Testbed
 
         if ( vertex is S3DVertexSkinned skinnedVertex )
         {
+          if ( deformer is null )
+          {
+            deformer = new SkinDeformer();
+            _mesh.Deformers.Add( deformer );
+
+            /* This library doesn't like it when we reuse Bone objects.
+             * We need to create a new one for each deformer, or else it
+             * messes up the weights.
+             * 
+             * It's just a case of bad semantics. I can't believe Aspose charges
+             * $4,000 for a product with no documentation and bad naming schemes like this.
+             */
+            foreach ( var boneId in submesh.BoneIds )
+            {
+              var referenceBone = _armature.Bones[ boneId ];
+              var newBone = new Bone( referenceBone.Name )
+              {
+                BoneTransform = referenceBone.BoneTransform,
+                Node = referenceBone.Node
+              };
+
+              deformer.Bones.Add( newBone );
+            }
+          }
+
           var boneIds = submesh.BoneIds;
           var vertIndex = _mesh.ControlPoints.Count - 1;
           var set = new HashSet<int>();
 
-          if ( skinnedVertex.Weight1.HasValue && set.Add( skinnedVertex.Index1 ) )
-            _deformer.Bones[ boneIds[ skinnedVertex.Index1 ] ].SetWeight( vertIndex, skinnedVertex.Weight1.Value );
-          if ( skinnedVertex.Weight2.HasValue && set.Add( skinnedVertex.Index2 ) )
-            _deformer.Bones[ boneIds[ skinnedVertex.Index2 ] ].SetWeight( vertIndex, skinnedVertex.Weight2.Value );
-          if ( skinnedVertex.Weight3.HasValue && set.Add( skinnedVertex.Index3 ) )
-            _deformer.Bones[ boneIds[ skinnedVertex.Index3 ] ].SetWeight( vertIndex, skinnedVertex.Weight3.Value );
-          if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index4 ) )
-            _deformer.Bones[ boneIds[ skinnedVertex.Index4 ] ].SetWeight( vertIndex, skinnedVertex.Weight4.Value );
+          if ( skinnedVertex.Weight1.HasValue && set.Add( skinnedVertex.Index1 ) && skinnedVertex.Weight1.Value > 0 )
+            deformer.Bones[ skinnedVertex.Index1 ].SetWeight( vertIndex, skinnedVertex.Weight1.Value );
+
+          if ( skinnedVertex.Weight2.HasValue && set.Add( skinnedVertex.Index2 ) && skinnedVertex.Weight2.Value > 0 )
+            deformer.Bones[ skinnedVertex.Index2 ].SetWeight( vertIndex, skinnedVertex.Weight2.Value );
+
+          if ( skinnedVertex.Weight3.HasValue && set.Add( skinnedVertex.Index3 ) && skinnedVertex.Weight3.Value > 0 )
+            deformer.Bones[ skinnedVertex.Index3 ].SetWeight( vertIndex, skinnedVertex.Weight3.Value );
+
+          if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index4 ) && skinnedVertex.Weight4.Value > 0 )
+            deformer.Bones[ skinnedVertex.Index4 ].SetWeight( vertIndex, skinnedVertex.Weight4.Value );
         }
       }
     }
