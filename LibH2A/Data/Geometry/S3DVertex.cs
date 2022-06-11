@@ -46,10 +46,10 @@ namespace Saber3D.Data.Geometry
     #region Properties
 
     // Are these types correct?
-    public float Weight1 { get; set; }
-    public float Weight2 { get; set; }
-    public float Weight3 { get; set; }
-    public float Weight4 { get; set; }
+    public float? Weight1 { get; set; }
+    public float? Weight2 { get; set; }
+    public float? Weight3 { get; set; }
+    public float? Weight4 { get; set; }
 
     public byte Index1 { get; set; }
     public byte Index2 { get; set; }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Aspose.ThreeD;
+using Aspose.ThreeD.Deformers;
 using Aspose.ThreeD.Entities;
 using Aspose.ThreeD.Utilities;
 using Saber3D.Data;
@@ -17,7 +18,7 @@ namespace Testbed
     private S3DGeometryGraph _graph;
 
     private Scene _scene;
-    private Node _armatureNode;
+    private Armature _armature;
 
     public ArmatureExportTest( S3DGeometryGraph graph )
     {
@@ -29,13 +30,16 @@ namespace Testbed
 
     public void Save( Stream stream )
     {
-      _scene.Save( stream, FileFormat.FBX7700Binary );
+      _scene.Save( stream, FileFormat.FBX7200Binary );
     }
 
     private void Init()
     {
-      var rootObj = _graph.Objects[ _graph.RootNodeIndex ];
+      _armature = Armature.Create( _graph );
+      _scene.RootNode.AddChildNode( _armature.ArmatureNode );
+      _scene.Poses.Add( _armature.BindPose );
 
+      var rootObj = _graph.Objects[ _graph.RootNodeIndex ];
       foreach ( var child in rootObj.EnumerateChildren( _graph ) )
         AddObject( child );
     }
@@ -45,52 +49,105 @@ namespace Testbed
       if ( parentNode is null )
         parentNode = _scene.RootNode;
 
-      var objNode = parentNode.CreateChildNode( obj.Name );
 
-      if ( obj.GeomData is null )
-        AddBone( obj, objNode );
-      else
+      if ( obj.GeomData is not null )
+      {
+        var objNode = parentNode.CreateChildNode( obj.Name );
         AddMesh( obj, objNode );
-
-      foreach ( var childObj in obj.EnumerateChildren( _graph ) )
-        AddObject( childObj, objNode );
-    }
-
-    private void AddBone( S3DObject obj, Node node )
-    {
-      if ( _graph.SubMeshes.Any( x => x.NodeId == obj.Id ) )
-        return;
-
-      var bone = new Skeleton( obj.Name ) { Type = SkeletonType.Bone };
-      node.AddEntity( bone );
-
-      /* Objects have two matrices: MatrixLT and MatrixModel.
-       * MatrixLT: Local transform?
-       * MatrixModel: Global transform?
-       * 
-       * Setting the bone's transform matrix to MatrixModel seems /somewhat/ correct
-       * from the waist up. There are lots issues with it though.
-       */
-      var matr = obj.MatrixLT;
-      var matr2 = obj.MatrixModel;
-
-      /* Vectors/Matrices are different types between System.Numerics and the Aspose3D library.
-       * I'm keeping everything as System.Numerics until it's applied to the model, as System.Numerics
-       * lets you do math on it.
-       * 
-       * Aspose: Matrix4
-       * System.Numerics: Matrix4x4
-       * 
-       * I've added extension methods so we can easily convert between the two.
-       */
-      node.Transform.TransformMatrix = matr2.ToMatrix4();
+      }
+      else
+      {
+        foreach ( var childObj in obj.EnumerateChildren( _graph ) )
+          AddObject( childObj, parentNode );
+      }
     }
 
     private void AddMesh( S3DObject obj, Node node )
     {
-      var mesh = MeshBuilder.Create( obj, _graph );
+      //if ( obj.Name != "._arms_base.g" )
+      //return;
+
+      var mesh = MeshBuilder.Create( _armature, obj, _graph );
       node.AddEntity( mesh );
-      node.Transform.TransformMatrix = obj.MatrixModel.ToMatrix4();
+      //node.Transform.TransformMatrix = obj.MatrixModel.ToMatrix4();
+    }
+
+  }
+
+  internal class Armature
+  {
+
+    private S3DGeometryGraph _graph;
+
+    private Node _armatureNode;
+    private Dictionary<int, Bone> _bones;
+    private Pose _bindPose;
+
+    public Node ArmatureNode
+    {
+      get => _armatureNode;
+    }
+
+    public IReadOnlyDictionary<int, Bone> Bones
+    {
+      get => _bones;
+    }
+
+    public Pose BindPose => _bindPose;
+
+    private Armature( S3DGeometryGraph graph )
+    {
+      _graph = graph;
+      _bones = new Dictionary<int, Bone>();
+    }
+
+    public static Armature Create( S3DGeometryGraph graph )
+    {
+      var armature = new Armature( graph );
+      armature.Init();
+
+      return armature;
+    }
+
+    private void Init()
+    {
+      var armatureSkeleton = new Skeleton( "Armature" ) { Type = SkeletonType.Skeleton };
+
+      _armatureNode = new Node( "Armature" );
+      _armatureNode.AddEntity( armatureSkeleton );
+
+      _bindPose = new Pose( "Default" ) { PoseType = PoseType.BindPose };
+
+      var rootObj = _graph.Objects[ _graph.RootNodeIndex ];
+      foreach ( var childObj in rootObj.EnumerateChildren( _graph ) )
+        AddBone( childObj, _armatureNode );
+    }
+
+    private void AddBone( S3DObject obj, Node parentNode )
+    {
+      if ( obj.GeomData is not null )
+        return;
+
+      // Create bone
+      var skelBone = new Skeleton( obj.Name ) { Type = SkeletonType.Bone };
+      var boneNode = parentNode.CreateChildNode( obj.Name, skelBone );
+
+      // Add bone to deformer
+      var deformerBone = new Bone( obj.Name );
+      deformerBone.Node = boneNode;
+      deformerBone.BoneTransform = obj.MatrixLT.ToMatrix4();
+      _bones.Add( obj.Id, deformerBone );
+
+      // Add bone to pose
+      var bonePose = new BonePose
+      {
+        Matrix = obj.MatrixLT.ToMatrix4(),
+        Node = boneNode,
+      };
+      _bindPose.BonePoses.Add( bonePose );
+
+      foreach ( var childObj in obj.EnumerateChildren( _graph ) )
+        AddBone( childObj, boneNode );
     }
 
   }
@@ -98,10 +155,13 @@ namespace Testbed
   internal class MeshBuilder
   {
 
+    private Armature _armature;
+
     private S3DObject _obj;
     private S3DGeometryGraph _graph;
 
     private Mesh _mesh;
+    private SkinDeformer _deformer;
 
     private Dictionary<int, int> _faceMap;
 
@@ -109,8 +169,9 @@ namespace Testbed
     private VertexElementTangent[] _tangents;
     private VertexElementUV[] _uvs;
 
-    private MeshBuilder( S3DObject obj, S3DGeometryGraph graph )
+    private MeshBuilder( Armature armature, S3DObject obj, S3DGeometryGraph graph )
     {
+      _armature = armature;
       _obj = obj;
       _graph = graph;
 
@@ -121,9 +182,9 @@ namespace Testbed
       _uvs = new VertexElementUV[ 5 ];
     }
 
-    public static Mesh Create( S3DObject obj, S3DGeometryGraph graph )
+    public static Mesh Create( Armature armature, S3DObject obj, S3DGeometryGraph graph )
     {
-      var builder = new MeshBuilder( obj, graph );
+      var builder = new MeshBuilder( armature, obj, graph );
       return builder.Build();
     }
 
@@ -132,8 +193,22 @@ namespace Testbed
       var submeshes = _graph.SubMeshes.Where( x => x.NodeId == _obj.Id )
         .OrderBy( x => x.BufferInfo.VertexOffset );
 
+      var deformer = _deformer = new SkinDeformer( "deformer." + _obj.Name );
+      _mesh.Deformers.Add( deformer );
+      foreach ( var bone in _armature.Bones.OrderBy( x => x.Key ) )
+        deformer.Bones.Add( bone.Value );
+
       foreach ( var submesh in submeshes )
+      {
+        //if ( submesh.BoneIds is not null )
+        //{
+        //  foreach ( var boneId in submesh.BoneIds )
+        //    deformer.Bones.Add( _armature.Bones[ _armature.BoneLookup[ boneId ] ] );
+        //}
+
         AddSubMesh( submesh );
+      }
+
 
       return _mesh;
     }
@@ -155,6 +230,8 @@ namespace Testbed
             break;
           case S3DGeometryElementType.Interleaved:
             AddInterleavedData( buffer, meshBuffer, submesh );
+            break;
+          default:
             break;
         }
 
@@ -209,6 +286,8 @@ namespace Testbed
       var startIndex = offset + ( meshBuffer.SubBufferOffset / buffer.ElementSize );
       var endIndex = startIndex + submesh.BufferInfo.VertexCount;
 
+      var obj = _graph.Objects[ submesh.NodeId ];
+
       var scale = new float[] { 1, 1, 1 };
       if ( submesh.Scale.HasValue )
       {
@@ -245,6 +324,22 @@ namespace Testbed
           var normal = vertex.Normal.Value;
           var normalVec = new Aspose.ThreeD.Utilities.Vector4( normal.X, normal.Y, normal.Z );
           _normals.Data.Add( normalVec );
+        }
+
+        if ( vertex is S3DVertexSkinned skinnedVertex )
+        {
+          var boneIds = submesh.BoneIds;
+          var vertIndex = _mesh.ControlPoints.Count - 1;
+          var set = new HashSet<int>();
+
+          if ( skinnedVertex.Weight1.HasValue && set.Add( skinnedVertex.Index1 ) )
+            _deformer.Bones[ boneIds[ skinnedVertex.Index1 ] ].SetWeight( vertIndex, skinnedVertex.Weight1.Value );
+          if ( skinnedVertex.Weight2.HasValue && set.Add( skinnedVertex.Index2 ) )
+            _deformer.Bones[ boneIds[ skinnedVertex.Index2 ] ].SetWeight( vertIndex, skinnedVertex.Weight2.Value );
+          if ( skinnedVertex.Weight3.HasValue && set.Add( skinnedVertex.Index3 ) )
+            _deformer.Bones[ boneIds[ skinnedVertex.Index3 ] ].SetWeight( vertIndex, skinnedVertex.Weight3.Value );
+          if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index4 ) )
+            _deformer.Bones[ boneIds[ skinnedVertex.Index4 ] ].SetWeight( vertIndex, skinnedVertex.Weight4.Value );
         }
       }
     }
