@@ -233,10 +233,4 @@
     </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>xcopy /F /R /Y /I "$(ProjectDir)\bin\Debug\*" "$(SolutionDir)\..\Reclaimer\Reclaimer\bin\Debug\net48\Plugins\Reclaimer.Saber3D\*"</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>xcopy /F /R /Y /I "$(SolutionDir)\LibH2A\bin\Debug\netstandard2.0\*" "$(ProjectDir)\bin\Debug\*"</PreBuildEvent>
-  </PropertyGroup>
 </Project>
