@@ -129,12 +129,12 @@ namespace Saber3D.Files
 
     private static string SanitizeName( string path )
     {
-      path = path
-        .Replace( "<", "" )
-        .Replace( ">", "" )
-        .Replace( ":", "" );
+      if ( path.Contains( ":" ) )
+        path = path.Substring( path.IndexOf( ':' ) + 1 );
+      if ( path.Contains( ">" ) )
+        path = path.Substring( path.IndexOf( '>' ) + 1 );
 
-      return System.IO.Path.GetFileName( path );
+      return Path.GetFileName( path );
     }
 
     #endregion
