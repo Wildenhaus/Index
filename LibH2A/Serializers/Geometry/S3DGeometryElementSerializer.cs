@@ -34,7 +34,7 @@ namespace Saber3D.Serializers.Geometry
 
     public static S3DGeometryElement[] Deserialize( BinaryReader reader, S3DGeometryBuffer buffer )
     {
-      switch ( ResolveElementType( buffer ) )
+      switch ( buffer.ElementType )
       {
         case S3DGeometryElementType.Face:
         {
@@ -68,30 +68,6 @@ namespace Saber3D.Serializers.Geometry
     {
       if ( reader.BaseStream.Position != buffer.StartOffset )
         reader.BaseStream.Position = buffer.StartOffset;
-    }
-
-    private static S3DGeometryElementType ResolveElementType( S3DGeometryBuffer buffer )
-    {
-      var flags = buffer.Flags;
-
-      if ( flags.HasFlag( S3DGeometryBufferFlags._VERT ) )
-        return S3DGeometryElementType.Vertex;
-
-      if ( flags.HasFlag( S3DGeometryBufferFlags._TANG0 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TANG1 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TANG2 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TANG3 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TEX0 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TEX1 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TEX2 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TEX3 )
-        || flags.HasFlag( S3DGeometryBufferFlags._TEX4 )
-        )
-        return S3DGeometryElementType.Interleaved;
-
-      if ( flags == S3DGeometryBufferFlags._FACE ) // TODO: Is there a better way to detect this?
-        return S3DGeometryElementType.Face;
-      else return S3DGeometryElementType.Unknown;
     }
 
     private static S3DGeometryElement[] DeserializeElements( BinaryReader reader, S3DGeometryBuffer buffer,

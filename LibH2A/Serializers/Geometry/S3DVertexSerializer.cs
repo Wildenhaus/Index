@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using Saber3D.Common;
@@ -43,6 +44,17 @@ namespace Saber3D.Serializers.Geometry
         return DeserializeSkinnedVertex( reader );
       else
         return DeserializeStaticVertex( reader );
+    }
+
+    public IEnumerable<S3DVertex> DeserializeRange( BinaryReader reader, int startIndex, int endIndex )
+    {
+      var startOffset = Buffer.StartOffset + ( startIndex * Buffer.ElementSize );
+      var length = endIndex - startIndex;
+
+      reader.BaseStream.Position = startOffset;
+
+      for ( var i = 0; i < length; i++ )
+        yield return Deserialize( reader );
     }
 
     #endregion

@@ -13,12 +13,6 @@ namespace Saber3D.Data
     public ushort ElementSize { get; set; }
     public uint BufferLength { get; set; }
 
-    // TODO: Debug, remove this
-    public byte BufferType
-    {
-      get => ( byte ) ( ( ( ( ulong ) Flags ) >> 8 ) & 0xFF );
-    }
-
     public long StartOffset { get; set; }
     public long EndOffset { get; set; }
 
@@ -26,14 +20,26 @@ namespace Saber3D.Data
     {
       get
       {
-        if ( Elements is null || Elements.Length == 0 )
-          return S3DGeometryElementType.Unknown;
+        if ( Flags.HasFlag( S3DGeometryBufferFlags._VERT ) )
+          return S3DGeometryElementType.Vertex;
 
-        return Elements[ 0 ].ElementType;
+        if ( Flags.HasFlag( S3DGeometryBufferFlags._TANG0 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TANG1 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TANG2 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TANG3 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TEX0 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TEX1 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TEX2 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TEX3 )
+          || Flags.HasFlag( S3DGeometryBufferFlags._TEX4 )
+          )
+          return S3DGeometryElementType.Interleaved;
+
+        if ( Flags == S3DGeometryBufferFlags._FACE ) // TODO: Is there a better way to detect this?
+          return S3DGeometryElementType.Face;
+        else return S3DGeometryElementType.Unknown;
       }
     }
-
-    public S3DGeometryElement[] Elements { get; set; }
 
     public int Count
     {

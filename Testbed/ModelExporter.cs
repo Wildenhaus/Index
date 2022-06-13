@@ -9,21 +9,25 @@ using Aspose.ThreeD.Shading;
 using Aspose.ThreeD.Utilities;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
+using Saber3D.Serializers.Geometry;
 
 namespace Testbed
 {
 
-  public class ArmatureExportTest
+  public class ModelExporter
   {
 
     private S3DGeometryGraph _graph;
 
     private Scene _scene;
     private Armature _armature;
+    private BinaryReader _reader;
 
-    public ArmatureExportTest( S3DGeometryGraph graph )
+    public ModelExporter( S3DGeometryGraph graph, BinaryReader reader )
     {
       _graph = graph;
+      _reader = reader;
+
       _scene = new Scene();
 
       Init();
@@ -65,7 +69,7 @@ namespace Testbed
 
     private void AddMesh( S3DObject obj, Node node )
     {
-      MeshBuilder.Create( node, _armature, obj, _graph );
+      MeshBuilder.Create( _reader, node, _armature, obj, _graph );
     }
 
   }
@@ -150,7 +154,10 @@ namespace Testbed
 
   internal class MeshBuilder
   {
+
     private static Dictionary<string, Material> _materialCache = new Dictionary<string, Material>();
+
+    private BinaryReader _reader;
 
     private Armature _armature;
 
@@ -170,8 +177,10 @@ namespace Testbed
 
     private Dictionary<string, int> _materialLookup;
 
-    private MeshBuilder( Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
+    private MeshBuilder( BinaryReader reader, Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
     {
+      _reader = reader;
+
       _node = node;
       _armature = armature;
       _obj = obj;
@@ -188,9 +197,9 @@ namespace Testbed
       _materialLookup = new Dictionary<string, int>();
     }
 
-    public static Mesh Create( Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
+    public static Mesh Create( BinaryReader reader, Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
     {
-      var builder = new MeshBuilder( node, armature, obj, graph );
+      var builder = new MeshBuilder( reader, node, armature, obj, graph );
       return builder.Build();
     }
 
@@ -265,10 +274,9 @@ namespace Testbed
 
       var uvScaleLookup = submesh.UvScaling;
 
-      for ( var i = startIndex; i < endIndex; i++ )
+      var serializer = new S3DInterleavedDataSerializer( buffer );
+      foreach ( var data in serializer.DeserializeRange( _reader, ( int ) startIndex, ( int ) endIndex ) )
       {
-        var data = buffer.Elements[ i ] as S3DInterleavedData;
-
         if ( data.UV0.HasValue ) AddVertexUV( 0, data.UV0.Value, uvScaleLookup );
         if ( data.UV1.HasValue ) AddVertexUV( 1, data.UV1.Value, uvScaleLookup );
         if ( data.UV2.HasValue ) AddVertexUV( 2, data.UV2.Value, uvScaleLookup );
@@ -289,10 +297,9 @@ namespace Testbed
       var startIndex = offset + ( meshBuffer.SubBufferOffset / buffer.ElementSize );
       var endIndex = startIndex + submesh.BufferInfo.FaceCount;
 
-      for ( var i = startIndex; i < endIndex; i++ )
+      var serializer = new S3DFaceSerializer( buffer );
+      foreach ( var face in serializer.DeserializeRange( _reader, ( int ) startIndex, ( int ) endIndex ) )
       {
-        var face = buffer.Elements[ i ] as S3DFace;
-
         var vertA = _faceMap[ face[ 0 ] ];
         var vertB = _faceMap[ face[ 1 ] ];
         var vertC = _faceMap[ face[ 2 ] ];
@@ -340,9 +347,9 @@ namespace Testbed
         pos[ 2 ] = submesh.Position.Value.Z;
       }
 
-      for ( var i = startIndex; i < endIndex; i++ )
+      var serializer = new S3DVertexSerializer( buffer );
+      foreach ( var vertex in serializer.DeserializeRange( _reader, ( int ) startIndex, ( int ) endIndex ) )
       {
-        var vertex = buffer.Elements[ i ] as S3DVertex;
         var vertexPos = new Aspose.ThreeD.Utilities.Vector4(
           vertex.X * scale[ 0 ] + pos[ 0 ],
           vertex.Y * scale[ 1 ] + pos[ 1 ],

@@ -25,28 +25,13 @@ namespace Testbed
       TestReadLevelGeometry();
       TestReadTextures();
 
-      ExportArmatureTest( @"G:\h2a\re files\masterchief__h.tpl", @"F:\test.fbx" );
-    }
-
-    private static void ExportArmatureTest( string tplPath, string outFbxPath )
-    {
-      TrialException.SuppressTrialException = true;
-
-      var tplStr = File.OpenRead( tplPath );
-      var reader = new BinaryReader( tplStr );
-      var tpl = new S3DTemplateSerializer().Deserialize( reader );
-      var arm = new ArmatureExportTest( tpl.GeometryGraph );
-      using ( var fs = File.Create( outFbxPath ) )
-      {
-        arm.Save( fs );
-        fs.Flush();
-      }
+      ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
+      ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
     {
       var fileContext = H2AFileContext.Global;
-      fileContext.OpenDirectory( GAME_PATH );
 
       var tplFile = fileContext.GetFiles( tplName )
         .Where( x => x.Name.Contains( tplName ) )
@@ -59,10 +44,13 @@ namespace Testbed
       }
 
       var stream = tplFile.GetStream();
-      var outstream = ModelConverter.ConvertTpl( stream );
+      var reader = new BinaryReader( stream );
+      var tpl = new S3DTemplateSerializer().Deserialize( reader );
+      var model = new ModelExporter( tpl.GeometryGraph, reader );
+
       using ( var outfile = File.Create( outFbxPath ) )
       {
-        outstream.CopyTo( outfile );
+        model.Save( outfile );
         outfile.Flush();
       }
     }
@@ -70,25 +58,25 @@ namespace Testbed
     private static void ExportLevelGeometry( string lgName, string outFbxPath )
     {
       var fileContext = H2AFileContext.Global;
-      var file = Directory.GetFiles( GAME_PATH, "*.pck", SearchOption.AllDirectories )
-        .FirstOrDefault( x => x.Contains( Path.GetFileNameWithoutExtension( lgName ) ) );
-      fileContext.OpenFile( file );
 
-      var tplFile = fileContext.GetFiles( lgName )
+      var lgFile = fileContext.GetFiles( lgName )
         .Where( x => x.Name.Contains( lgName ) )
         .FirstOrDefault();
 
-      if ( tplFile is null )
+      if ( lgFile is null )
       {
         Console.WriteLine( "Nothing found for: {0}", lgName );
         return;
       }
 
-      var stream = tplFile.GetStream();
-      var outstream = ModelConverter.ConvertScn( stream );
+      var stream = lgFile.GetStream();
+      var reader = new BinaryReader( stream );
+      var lg = new S3DSceneSerializer().Deserialize( reader );
+      var model = new ModelExporter( lg.GeometryGraph, reader );
+
       using ( var outfile = File.Create( outFbxPath ) )
       {
-        outstream.CopyTo( outfile );
+        model.Save( outfile );
         outfile.Flush();
       }
     }

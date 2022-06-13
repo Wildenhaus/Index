@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
 using Saber3D.Common;
 using Saber3D.Data;
@@ -55,6 +56,17 @@ namespace Saber3D.Serializers.Geometry
       var readSize = reader.BaseStream.Position - startPos;
       Assert( Buffer.ElementSize == readSize );
       return data;
+    }
+
+    public IEnumerable<S3DInterleavedData> DeserializeRange( BinaryReader reader, int startIndex, int endIndex )
+    {
+      var startOffset = Buffer.StartOffset + ( startIndex * Buffer.ElementSize );
+      var length = endIndex - startIndex;
+
+      reader.BaseStream.Position = startOffset;
+
+      for ( var i = 0; i < length; i++ )
+        yield return Deserialize( reader );
     }
 
     #endregion
