@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Numerics;
 using Saber3D.Common;
 using Saber3D.Data;
@@ -39,15 +38,7 @@ namespace Saber3D.Serializers.Geometry
       var startPos = reader.BaseStream.Position;
       var endPos = reader.BaseStream.Position + Buffer.ElementSize;
 
-      var dataArr = new byte[ Buffer.ElementSize ];
-      reader.Read( dataArr, 0, Buffer.ElementSize );
-      reader.BaseStream.Position -= Buffer.ElementSize;
-      var dataStr = string.Join( " ", dataArr.Select( x => x.ToString( "X2" ) ) );
-
       var data = new S3DInterleavedData();
-
-      //if ( Buffer.ElementSize == 0xc )
-      //  System.Diagnostics.Debugger.Break();
 
       ReadTangents( reader, data );
 
@@ -101,29 +92,16 @@ namespace Saber3D.Serializers.Geometry
 
     private void ReadUVs( BinaryReader reader, S3DInterleavedData data )
     {
-      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX0 ) /*|| Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_0 )*/ )
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX0 ) )
         data.UV0 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_0 ) );
-      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX1 ) /*|| Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_1 )*/ )
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX1 ) )
         data.UV1 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_1 ) );
-      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX2 ) /*|| Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_2 )*/ )
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX2 ) )
         data.UV2 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_2 ) );
-      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX3 ) /*|| Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_3 )*/ )
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX3 ) )
         data.UV3 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_3 ) );
-      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX4 ) /*|| Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_4 )*/ )
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX4 ) )
         data.UV4 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_4 ) );
-
-      //if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX0 ) || Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_0 ) )
-      //  data.UV0 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_0 ), Flags.HasFlag( S3DGeometryBufferFlags._TEX0_4D ) );
-      //if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX1 ) || Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_1 ) )
-      //  data.UV1 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_1 ), Flags.HasFlag( S3DGeometryBufferFlags._TEX1_4D ) );
-      //if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX2 ) || Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_2 ) )
-      //  data.UV2 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_2 ), Flags.HasFlag( S3DGeometryBufferFlags._TEX2_4D ) );
-      //if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX3 ) || Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_3 ) )
-      //  data.UV3 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_3 ), Flags.HasFlag( S3DGeometryBufferFlags._TEX3_4D ) );
-      //if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX4 ) || Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_4 ) )
-      //  data.UV4 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_4 ), Flags.HasFlag( S3DGeometryBufferFlags._TEX4_4D ) );
-      //if ( Flags.HasFlag( S3DGeometryBufferFlags._TEX5 ) || Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_5 ) )
-      //  data.UV5 = ReadUV( reader, Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_TEX_5 ), Flags.HasFlag( S3DGeometryBufferFlags._TEX5_4D ) );
     }
 
     private Vector4 ReadUV( BinaryReader reader, bool isCompressed )

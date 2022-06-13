@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using static Saber3D.Assertions;
 
 namespace Saber3D.Common
 {
@@ -28,7 +29,15 @@ namespace Saber3D.Common
     public override long Position
     {
       get => _position;
-      set => Seek( value, SeekOrigin.Begin );
+      set
+      {
+        var newPosition = value;
+        Assert( newPosition >= 0, "Position cannot be negative." );
+        Assert( newPosition < _length, "Position is out of bounds." );
+
+        _position = newPosition;
+        _baseStream.Position = _startOffset + newPosition;
+      }
     }
 
     #endregion
