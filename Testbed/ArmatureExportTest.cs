@@ -166,7 +166,9 @@ namespace Testbed
     private VertexElementNormal _normals;
     private VertexElementTangent[] _tangents;
     private VertexElementUV[] _uvs;
-    private Dictionary<string, VertexElementMaterial> _materials;
+    private VertexElementMaterial _materials;
+
+    private Dictionary<string, int> _materialLookup;
 
     private MeshBuilder( Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
     {
@@ -182,7 +184,8 @@ namespace Testbed
 
       _tangents = new VertexElementTangent[ 5 ];
       _uvs = new VertexElementUV[ 5 ];
-      _materials = new Dictionary<string, VertexElementMaterial>();
+
+      _materialLookup = new Dictionary<string, int>();
     }
 
     public static Mesh Create( Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
@@ -196,7 +199,7 @@ namespace Testbed
       var submeshes = _graph.SubMeshes.Where( x => x.NodeId == _obj.Id )
         .OrderBy( x => x.BufferInfo.VertexOffset );
 
-      foreach ( var submesh in submeshes/*.Skip( 1 )*/ )
+      foreach ( var submesh in submeshes )
         AddSubMesh( submesh );
 
 
@@ -295,6 +298,20 @@ namespace Testbed
         var vertC = _faceMap[ face[ 2 ] ];
 
         _mesh.CreatePolygon( vertA, vertB, vertC );
+
+        if ( submesh.Material is not null )
+        {
+          if ( !_materialLookup.TryGetValue( submesh.Material.ShadingMaterialTexture, out var matIdx ) )
+          {
+            if ( _materials is null )
+              _materials = _mesh.CreateElement( VertexElementType.Material, MappingMode.Polygon, ReferenceMode.Index ) as VertexElementMaterial;
+
+            matIdx = _materialLookup.Count;
+            _materialLookup.Add( submesh.Material.ShadingMaterialTexture, matIdx );
+          }
+
+          _materials.Indices.Add( matIdx );
+        }
       }
     }
 
@@ -387,17 +404,6 @@ namespace Testbed
 
           if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index4 ) && skinnedVertex.Weight4.Value > 0 )
             deformer.Bones[ skinnedVertex.Index4 ].SetWeight( vertIndex, skinnedVertex.Weight4.Value );
-        }
-
-        if ( submesh.Material is not null )
-        {
-          if ( !_materials.TryGetValue( submesh.Material.ShadingMaterialTexture, out var vertMat ) )
-          {
-            vertMat = _mesh.CreateElement( VertexElementType.Material, MappingMode.ControlPoint, ReferenceMode.Index ) as VertexElementMaterial;
-            _materials.Add( submesh.Material.ShadingMaterialTexture, vertMat );
-          }
-
-          vertMat.Indices.Add( _mesh.ControlPoints.Count - 1 );
         }
       }
     }
