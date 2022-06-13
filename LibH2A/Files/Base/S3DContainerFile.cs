@@ -102,8 +102,9 @@ namespace Saber3D.Files
        * In the UI, we'll want to hide Pck files from the FileTree to avoid confusion.
        */
 
-      if ( !fileName.EndsWith( ".pck" ) )
-        fileName = fileName + ".pck";
+      var ext = Path.GetExtension( fileName );
+      if ( ext != ".pck" )
+        fileName = Path.ChangeExtension( fileName, ".pck" );
 
       return fileName;
     }

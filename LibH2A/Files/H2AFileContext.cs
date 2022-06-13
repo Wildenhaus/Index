@@ -45,18 +45,18 @@ namespace Saber3D.Files
 
     public bool AddFile( IS3DFile file )
     {
+      bool filesAdded = false;
       if ( !_files.ContainsKey( file.Name ) )
       {
         _files.Add( file.Name, file );
         file.SetFileContext( this );
-
-        foreach ( var childFile in file.Children )
-          AddFile( childFile );
-
-        return true;
+        filesAdded = true;
       }
 
-      return false;
+      foreach ( var childFile in file.Children )
+        filesAdded |= AddFile( childFile );
+
+      return filesAdded;
     }
 
     public IEnumerable<IS3DFile> GetFiles( string searchPattern )
