@@ -65,7 +65,10 @@ namespace Saber3D.Files
       stream.Position = 0;
       var reader = new BinaryReader( stream, System.Text.Encoding.UTF8, true );
 
-      return reader.ReadStringNullTerminated();
+      var signature = reader.ReadStringNullTerminated();
+      reader.BaseStream.Position = 0;
+
+      return signature;
     }
 
     private static CreateFileDelegate BuildConstructorDelegate( Type fileType )
