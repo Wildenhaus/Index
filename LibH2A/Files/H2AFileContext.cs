@@ -45,16 +45,18 @@ namespace Saber3D.Files
 
     public bool AddFile( IS3DFile file )
     {
-      lock ( _files )
+      if ( !_files.ContainsKey( file.Name ) )
       {
-        if ( !_files.ContainsKey( file.Name ) )
-        {
-          _files.Add( file.Name, file );
-          return true;
-        }
+        _files.Add( file.Name, file );
+        file.SetFileContext( this );
 
-        return false;
+        foreach ( var childFile in file.Children )
+          AddFile( childFile );
+
+        return true;
       }
+
+      return false;
     }
 
     public IEnumerable<IS3DFile> GetFiles( string searchPattern )
@@ -69,7 +71,7 @@ namespace Saber3D.Files
     public bool OpenDirectory( string path )
     {
       var filesAdded = false;
-      var files = Directory.EnumerateFiles( path, "*.*", SearchOption.AllDirectories );
+      var files = Directory.EnumerateFiles( path, "*.pck", SearchOption.AllDirectories );
       foreach ( var file in files )
         filesAdded |= OpenFile( file );
 
@@ -78,44 +80,20 @@ namespace Saber3D.Files
 
     public bool OpenFile( string filePath )
     {
-      switch ( Path.GetExtension( filePath ) )
-      {
-        case ".pck":
-          return OpenPckFile( filePath );
+      var fileName = Path.GetFileName( filePath );
+      var fileExt = Path.GetExtension( fileName );
 
-        default:
-          return false;
-      }
+      var stream = H2ADecompressionStream.FromFile( filePath );
+      var file = S3DFileFactory.CreateFile( fileName, stream );
+      if ( file is null )
+        return false;
+
+      return AddFile( file );
     }
 
     public bool RemoveFile( IS3DFile file )
     {
       return _files.Remove( file.Name );
-    }
-
-    #endregion
-
-    #region Private Methods
-
-    private bool OpenPckFile( string filePath )
-    {
-      //try
-      //{
-      var fileName = Path.GetFileNameWithoutExtension( filePath );
-      var pckFile = S3DPackFile.FromFile( filePath );
-
-      AddFile( pckFile );
-
-      foreach ( var entry in pckFile.Entries.Values )
-        if ( !entry.IsReference )
-          AddFile( entry );
-
-      return true;
-      //}
-      //catch ( Exception ex )
-      //{
-      //  return false;
-      //}
     }
 
     #endregion

@@ -1,5 +1,5 @@
-﻿using System.IO;
-using static Saber3D.Assertions;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace Saber3D.Files
 {
@@ -7,24 +7,19 @@ namespace Saber3D.Files
   public abstract class S3DFile : IS3DFile
   {
 
-    #region Constants
-
-    protected const int SIGNATURE_SER = 0x52455331;
-
-    #endregion
-
     #region Data Members
 
     private string _name;
 
+    private IS3DFile _parent;
+    private IList<IS3DFile> _children;
     private H2AFileContext _fileContext;
 
-    protected Stream _stream;
-    protected BinaryReader _reader;
+    private Stream _stream;
+    private BinaryReader _reader;
 
     private bool _isInitialized;
     private bool _isDisposed;
-    private bool _shouldDisposeBaseStream;
 
     #endregion
 
@@ -35,20 +30,27 @@ namespace Saber3D.Files
       get => _name;
     }
 
+    public long SizeInBytes
+    {
+      get => _stream.Length;
+    }
+
+    public IS3DFile Parent
+    {
+      get => _parent;
+    }
+
+    public IEnumerable<IS3DFile> Children
+    {
+      get => _children;
+    }
+
     public H2AFileContext FileContext
     {
       get => _fileContext;
     }
 
-    public bool IsDisposed
-    {
-      get => _isDisposed;
-    }
-
-    public bool IsInitialized
-    {
-      get => _isInitialized;
-    }
+    public abstract string FileTypeDisplay { get; }
 
     protected Stream BaseStream
     {
@@ -64,15 +66,15 @@ namespace Saber3D.Files
 
     #region Constructor
 
-    protected S3DFile( string name, Stream stream, bool keepStreamOpen = false )
+    protected S3DFile( string name, Stream stream, IS3DFile parent = null )
     {
       _name = SanitizeName( name );
+
       _stream = stream;
+      _reader = new BinaryReader( _stream, System.Text.Encoding.UTF8, true );
 
-      if ( _stream != null )
-        _reader = new BinaryReader( stream );
-
-      _shouldDisposeBaseStream = !keepStreamOpen;
+      _parent = parent;
+      _children = new List<IS3DFile>();
     }
 
     ~S3DFile()
@@ -83,6 +85,16 @@ namespace Saber3D.Files
     #endregion
 
     #region Public Methods
+
+    public void Initialize()
+    {
+      if ( _isInitialized )
+        return;
+
+      OnInitialize();
+
+      _isInitialized = true;
+    }
 
     public virtual Stream GetStream()
     {
@@ -100,37 +112,29 @@ namespace Saber3D.Files
 
     #endregion
 
-    #region Private Methods
-
-    protected void Initialize()
-    {
-      if ( _isInitialized )
-        return;
-
-      OnInitialize();
-
-      _isInitialized = true;
-    }
+    #region Protected Methods
 
     protected virtual void OnInitialize()
     {
     }
 
-    protected void CheckSignature( int fileSignature )
+    protected void AddChild( IS3DFile file )
     {
-      Assert( Reader.ReadInt32() == SIGNATURE_SER, "1SER signature not found." );
-      Assert( Reader.ReadInt32() == fileSignature, "File signature not found." );
+      _children.Add( file );
     }
 
-    private static string SanitizeName( string name )
+    #endregion
+
+    #region Private Methods
+
+    private static string SanitizeName( string path )
     {
-      if ( name.Contains( ">" ) )
-        name = name.Substring( name.LastIndexOf( ">" ) + 1 );
+      path = path
+        .Replace( "<", "" )
+        .Replace( ">", "" )
+        .Replace( ":", "" );
 
-      if ( name.Contains( ":" ) )
-        name = name.Substring( name.LastIndexOf( ":" ) + 1 );
-
-      return Path.GetFileName( name );
+      return System.IO.Path.GetFileName( path );
     }
 
     #endregion
@@ -149,9 +153,10 @@ namespace Saber3D.Files
 
       if ( isDisposing )
       {
-        _reader?.Dispose();
-        if ( _shouldDisposeBaseStream )
-          _stream?.Dispose();
+        foreach ( var child in _children )
+          child?.Dispose();
+
+        _fileContext?.RemoveFile( this );
       }
 
       _isDisposed = true;
