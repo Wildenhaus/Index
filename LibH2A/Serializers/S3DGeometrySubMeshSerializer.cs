@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using Saber3D.Common;
@@ -48,8 +47,8 @@ namespace Saber3D.Serializers
           case SubMeshSentinel.BoneMap:
             ReadBoneIds( reader, submeshes );
             break;
-          case SubMeshSentinel.Unk_04:
-            ReadUnk04( reader, submeshes );
+          case SubMeshSentinel.UvScaling:
+            ReadUvScaling( reader, submeshes );
             break;
           case SubMeshSentinel.TransformInfo:
             ReadTransformInfo( reader, submeshes );
@@ -228,23 +227,21 @@ namespace Saber3D.Serializers
       }
     }
 
-    private void ReadUnk04( BinaryReader reader, List<S3DGeometrySubMesh> submeshes )
+    private void ReadUvScaling( BinaryReader reader, List<S3DGeometrySubMesh> submeshes )
     {
-      // TODO: Figure out what this data is.
-
       foreach ( var submesh in submeshes )
       {
         var mesh = GeometryGraph.Meshes[ ( int ) submesh.MeshId ];
-        if ( !mesh.Flags.HasFlag( S3DGeometryMeshFlags.Unk_1F_HasSubmeshSection04 ) )
+        if ( !mesh.Flags.HasFlag( S3DGeometryMeshFlags.HasUvScaling ) )
           continue;
 
         var count = reader.ReadByte();
-        var data = new Tuple<byte, short>[ count ];
+        var data = submesh.UvScaling = new Dictionary<byte, short>( count );
         for ( var i = 0; i < count; i++ )
         {
-          var unk_01 = reader.ReadByte();
-          var unk_02 = reader.ReadInt16();
-          data[ i ] = Tuple.Create( unk_01, unk_02 );
+          var uvSetIndex = reader.ReadByte();
+          var uvScale = reader.ReadInt16();
+          data[ uvSetIndex ] = uvScale;
         }
       }
     }
@@ -338,7 +335,7 @@ namespace Saber3D.Serializers
       MeshIds = 0x0001,
       Unk_02 = 0x0002,
       BoneMap = 0x0003,
-      Unk_04 = 0x0004,
+      UvScaling = 0x0004,
       TransformInfo = 0x0005,
       Materials_String = 0x0006,
       Materials_Static = 0x0007,

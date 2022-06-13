@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
 using Saber3D.Data.Materials;
 
 namespace Saber3D.Data
@@ -17,6 +18,12 @@ namespace Saber3D.Data
     public S3DMaterial Material { get; set; }
 
     public ushort[] BoneIds { get; set; }
+    public Dictionary<byte, short> UvScaling { get; set; }
+
+    public S3DGeometrySubMesh()
+    {
+      UvScaling = new Dictionary<byte, short>();
+    }
 
   }
 

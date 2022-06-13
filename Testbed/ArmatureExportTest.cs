@@ -5,6 +5,7 @@ using System.Numerics;
 using Aspose.ThreeD;
 using Aspose.ThreeD.Deformers;
 using Aspose.ThreeD.Entities;
+using Aspose.ThreeD.Shading;
 using Aspose.ThreeD.Utilities;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
@@ -52,7 +53,7 @@ namespace Testbed
 
       if ( obj.GeomData is not null )
       {
-        var objNode = parentNode.CreateChildNode( obj.Name );
+        var objNode = parentNode.CreateChildNode( obj.Name ?? obj.ReadName );
         AddMesh( obj, objNode );
       }
       else
@@ -64,8 +65,7 @@ namespace Testbed
 
     private void AddMesh( S3DObject obj, Node node )
     {
-      var mesh = MeshBuilder.Create( _armature, obj, _graph );
-      node.AddEntity( mesh );
+      MeshBuilder.Create( node, _armature, obj, _graph );
     }
 
   }
@@ -125,11 +125,11 @@ namespace Testbed
         return;
 
       // Create bone
-      var skelBone = new Skeleton( obj.Name ) { Type = SkeletonType.Bone };
-      var boneNode = parentNode.CreateChildNode( obj.Name, skelBone );
+      var skelBone = new Skeleton( obj.Name ?? obj.ReadName ) { Type = SkeletonType.Bone };
+      var boneNode = parentNode.CreateChildNode( obj.Name ?? obj.ReadName, skelBone );
 
       // Add bone to deformer
-      var deformerBone = new Bone( obj.Name );
+      var deformerBone = new Bone( obj.Name ?? obj.ReadName );
       deformerBone.Node = boneNode;
       deformerBone.BoneTransform = obj.MatrixLT.ToMatrix4();
       _bones.Add( obj.Id, deformerBone );
@@ -150,12 +150,14 @@ namespace Testbed
 
   internal class MeshBuilder
   {
+    private static Dictionary<string, Material> _materialCache = new Dictionary<string, Material>();
 
     private Armature _armature;
 
     private S3DObject _obj;
     private S3DGeometryGraph _graph;
 
+    private Node _node;
     private Mesh _mesh;
     private SkinDeformer _deformer;
 
@@ -164,23 +166,28 @@ namespace Testbed
     private VertexElementNormal _normals;
     private VertexElementTangent[] _tangents;
     private VertexElementUV[] _uvs;
+    private Dictionary<string, VertexElementMaterial> _materials;
 
-    private MeshBuilder( Armature armature, S3DObject obj, S3DGeometryGraph graph )
+    private MeshBuilder( Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
     {
+      _node = node;
       _armature = armature;
       _obj = obj;
       _graph = graph;
 
-      _mesh = new Mesh( obj.Name );
+      _mesh = new Mesh( obj.Name ?? obj.ReadName );
+      _node.AddEntity( _mesh );
+
       _faceMap = new Dictionary<int, int>();
 
       _tangents = new VertexElementTangent[ 5 ];
       _uvs = new VertexElementUV[ 5 ];
+      _materials = new Dictionary<string, VertexElementMaterial>();
     }
 
-    public static Mesh Create( Armature armature, S3DObject obj, S3DGeometryGraph graph )
+    public static Mesh Create( Node node, Armature armature, S3DObject obj, S3DGeometryGraph graph )
     {
-      var builder = new MeshBuilder( armature, obj, graph );
+      var builder = new MeshBuilder( node, armature, obj, graph );
       return builder.Build();
     }
 
@@ -189,7 +196,7 @@ namespace Testbed
       var submeshes = _graph.SubMeshes.Where( x => x.NodeId == _obj.Id )
         .OrderBy( x => x.BufferInfo.VertexOffset );
 
-      foreach ( var submesh in submeshes )
+      foreach ( var submesh in submeshes/*.Skip( 1 )*/ )
         AddSubMesh( submesh );
 
 
@@ -198,6 +205,8 @@ namespace Testbed
 
     private void AddSubMesh( S3DGeometrySubMesh submesh )
     {
+      AddSubMeshMaterial( submesh );
+
       var meshData = _graph.Meshes[ ( int ) submesh.MeshId ];
       foreach ( var meshBuffer in meshData.Buffers )
       {
@@ -217,8 +226,32 @@ namespace Testbed
           default:
             break;
         }
-
       }
+
+    }
+
+    private void AddSubMeshMaterial( S3DGeometrySubMesh subMesh )
+    {
+      if ( subMesh.Material is null )
+        return;
+
+      var referenceMat = subMesh.Material;
+
+      if ( !_materialCache.TryGetValue( referenceMat.ShadingMaterialTexture, out var mat ) )
+      {
+        var newMat = new PbrSpecularMaterial();
+        newMat.Name = subMesh.Material.ShadingMaterialTexture;
+
+        newMat.DiffuseTexture = new Texture( referenceMat.ShadingMaterialTexture + ".png" );
+        newMat.NormalTexture = new Texture( referenceMat.ShadingMaterialTexture + "_nm.png" );
+        newMat.SpecularGlossinessTexture = new TextureBase( referenceMat.ShadingMaterialTexture + "_spec.png" );
+
+        _materialCache.Add( referenceMat.ShadingMaterialTexture, newMat );
+
+        mat = newMat;
+      }
+
+      _node.Materials.Add( mat );
     }
 
     private void AddInterleavedData( S3DGeometryBuffer buffer, S3DGeometryMeshBuffer meshBuffer, S3DGeometrySubMesh submesh )
@@ -227,15 +260,17 @@ namespace Testbed
       var startIndex = offset + ( meshBuffer.SubBufferOffset / buffer.ElementSize );
       var endIndex = startIndex + submesh.BufferInfo.VertexCount;
 
+      var uvScaleLookup = submesh.UvScaling;
+
       for ( var i = startIndex; i < endIndex; i++ )
       {
         var data = buffer.Elements[ i ] as S3DInterleavedData;
 
-        if ( data.UV0.HasValue ) AddVertexUV( 0, data.UV0.Value );
-        if ( data.UV1.HasValue ) AddVertexUV( 1, data.UV1.Value );
-        if ( data.UV2.HasValue ) AddVertexUV( 2, data.UV2.Value );
-        if ( data.UV3.HasValue ) AddVertexUV( 3, data.UV3.Value );
-        if ( data.UV4.HasValue ) AddVertexUV( 4, data.UV4.Value );
+        if ( data.UV0.HasValue ) AddVertexUV( 0, data.UV0.Value, uvScaleLookup );
+        if ( data.UV1.HasValue ) AddVertexUV( 1, data.UV1.Value, uvScaleLookup );
+        if ( data.UV2.HasValue ) AddVertexUV( 2, data.UV2.Value, uvScaleLookup );
+        if ( data.UV3.HasValue ) AddVertexUV( 3, data.UV3.Value, uvScaleLookup );
+        if ( data.UV4.HasValue ) AddVertexUV( 4, data.UV4.Value, uvScaleLookup );
 
         if ( data.Tangent0.HasValue ) AddVertexTangent( 0, data.Tangent0.Value );
         if ( data.Tangent1.HasValue ) AddVertexTangent( 1, data.Tangent1.Value );
@@ -353,6 +388,17 @@ namespace Testbed
           if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index4 ) && skinnedVertex.Weight4.Value > 0 )
             deformer.Bones[ skinnedVertex.Index4 ].SetWeight( vertIndex, skinnedVertex.Weight4.Value );
         }
+
+        if ( submesh.Material is not null )
+        {
+          if ( !_materials.TryGetValue( submesh.Material.ShadingMaterialTexture, out var vertMat ) )
+          {
+            vertMat = _mesh.CreateElement( VertexElementType.Material, MappingMode.ControlPoint, ReferenceMode.Index ) as VertexElementMaterial;
+            _materials.Add( submesh.Material.ShadingMaterialTexture, vertMat );
+          }
+
+          vertMat.Indices.Add( _mesh.ControlPoints.Count - 1 );
+        }
       }
     }
 
@@ -365,12 +411,15 @@ namespace Testbed
       _tangents[ uvIndex ].Data.Add( vec );
     }
 
-    private void AddVertexUV( int uvIndex, System.Numerics.Vector4 uvVector )
+    private void AddVertexUV( int uvIndex, System.Numerics.Vector4 uvVector, Dictionary<byte, short> scaleLookup )
     {
+      if ( !scaleLookup.TryGetValue( ( byte ) uvIndex, out var scaleFactor ) )
+        scaleFactor = 1;
+
       if ( _uvs[ uvIndex ] is null )
         _uvs[ uvIndex ] = _mesh.CreateElementUV( TextureMapping.Diffuse, MappingMode.ControlPoint, ReferenceMode.Direct );
 
-      var uvVec = new Aspose.ThreeD.Utilities.Vector4( uvVector.X, uvVector.Y, 0, 0 );
+      var uvVec = new Aspose.ThreeD.Utilities.Vector4( uvVector.X * scaleFactor, uvVector.Y * scaleFactor, 0, 0 );
       _uvs[ uvIndex ].Data.Add( uvVec );
     }
 
