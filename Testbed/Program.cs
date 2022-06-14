@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Aspose.ThreeD;
+using Assimp;
 using Saber3D.Common;
 using Saber3D.Files;
 using Saber3D.Serializers;
@@ -16,8 +16,6 @@ namespace Testbed
 
     public static void Main( string[] args )
     {
-      TrialException.SuppressTrialException = true;
-
       // Index all game files
       H2AFileContext.Global.OpenDirectory( GAME_PATH );
 
@@ -46,12 +44,12 @@ namespace Testbed
       var stream = tplFile.GetStream();
       var reader = new BinaryReader( stream );
       var tpl = new S3DTemplateSerializer().Deserialize( reader );
-      var model = new ModelExporter( tpl.GeometryGraph, reader );
 
-      using ( var outfile = File.Create( outFbxPath ) )
+      var scene = SceneExporter.CreateScene( tpl.Name, tpl.GeometryGraph, reader );
+      using ( var ctx = new AssimpContext() )
       {
-        model.Save( outfile );
-        outfile.Flush();
+        var types = ctx.GetSupportedExportFormats();
+        ctx.ExportFile( scene, outFbxPath, "fbx" );
       }
     }
 
@@ -72,12 +70,12 @@ namespace Testbed
       var stream = lgFile.GetStream();
       var reader = new BinaryReader( stream );
       var lg = new S3DSceneSerializer().Deserialize( reader );
-      var model = new ModelExporter( lg.GeometryGraph, reader );
 
-      using ( var outfile = File.Create( outFbxPath ) )
+      var scene = SceneExporter.CreateScene( lgFile.Name, lg.GeometryGraph, reader );
+      using ( var ctx = new AssimpContext() )
       {
-        model.Save( outfile );
-        outfile.Flush();
+        var types = ctx.GetSupportedExportFormats();
+        ctx.ExportFile( scene, outFbxPath, "fbx" );
       }
     }
 
