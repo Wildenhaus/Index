@@ -10,6 +10,17 @@ namespace Saber3D.Serializers
   public class S3DObjectSerializer : SerializerBase<List<S3DObject>>
   {
 
+    #region Properties
+
+    private S3DGeometryGraph GeometryGraph { get; }
+
+    #endregion
+
+    public S3DObjectSerializer( S3DGeometryGraph geometryGraph )
+    {
+      GeometryGraph = geometryGraph;
+    }
+
     protected override void OnDeserialize( BinaryReader reader, List<S3DObject> objects )
     {
       var objectCount = reader.ReadUInt16();
@@ -19,7 +30,7 @@ namespace Saber3D.Serializers
       var unk_03 = reader.ReadUInt16(); // TODO: always 0, padding?
 
       for ( var i = 0; i < objectCount; i++ )
-        objects.Add( new S3DObject() );
+        objects.Add( new S3DObject( GeometryGraph ) );
 
       if ( propertyCount > 0 )
         ReadIdProperty( reader, objects );

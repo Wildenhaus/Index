@@ -51,7 +51,7 @@ namespace Saber3D.Serializers
       if ( reader.ReadByte() == 0 )
         return;
 
-      var objectSerializer = new S3DObjectSerializer();
+      var objectSerializer = new S3DObjectSerializer( graph );
       graph.Objects = objectSerializer.Deserialize( reader );
     }
 

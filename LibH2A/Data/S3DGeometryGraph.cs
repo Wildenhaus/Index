@@ -20,6 +20,11 @@ namespace Saber3D.Data
     public List<S3DGeometryMesh> Meshes { get; set; }
     public List<S3DGeometrySubMesh> SubMeshes { get; set; }
 
+    public S3DObject RootObject
+    {
+      get => Objects[ RootNodeIndex ];
+    }
+
   }
 
 }
