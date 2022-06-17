@@ -1,34 +1,36 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialNormalMap
   {
 
-    [MaterialProperty( "end" )]
+    [ConfigurationProperty( "end" )]
     public float End { get; set; }
 
-    [MaterialProperty( "falloff" )]
+    [ConfigurationProperty( "falloff" )]
     public float Falloff { get; set; }
 
-    [MaterialProperty( "isVisible" )]
+    [ConfigurationProperty( "isVisible" )]
     public int IsVisible { get; set; }
 
-    [MaterialProperty( "scale" )]
+    [ConfigurationProperty( "scale" )]
     public float Scale { get; set; }
 
-    [MaterialProperty( "start" )]
+    [ConfigurationProperty( "start" )]
     public float Start { get; set; }
 
-    [MaterialProperty( "textureName" )]
+    [ConfigurationProperty( "textureName" )]
     public string TextureName { get; set; }
 
-    [MaterialProperty( "tilingU" )]
+    [ConfigurationProperty( "tilingU" )]
     public float TilingU { get; set; }
 
-    [MaterialProperty( "tilingV" )]
+    [ConfigurationProperty( "tilingV" )]
     public float TilingV { get; set; }
 
-    [MaterialProperty( "uvSetIdx" )]
+    [ConfigurationProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
   }

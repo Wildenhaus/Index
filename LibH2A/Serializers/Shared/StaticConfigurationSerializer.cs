@@ -3,14 +3,12 @@ using System.IO;
 using Saber3D.Common;
 using static Saber3D.Assertions;
 
-namespace Saber3D.Serializers.Materials
+namespace Saber3D.Serializers.Shared
 {
 
-  public class DynamicMaterialSerializer<T> : MaterialSerializerBase<T>
+  public class StaticConfigurationSerializer<T> : ConfigurationSerializerBase<T>
     where T : class, new()
   {
-
-    #region Overrides
 
     protected override void OnDeserialize( BinaryReader reader, T obj )
     {
@@ -20,13 +18,10 @@ namespace Saber3D.Serializers.Materials
         ReadProperty( reader, obj );
     }
 
-    #endregion
-
-    #region Private Methods
-
     private void ReadProperty( BinaryReader reader, T obj )
     {
-      var propertyName = reader.ReadPascalString32();
+      var propertyName = reader.ReadStringNullTerminated();
+      var unk_01 = reader.ReadUInt32();
       var dataType = ReadDataType( reader );
 
       switch ( dataType )
@@ -51,7 +46,7 @@ namespace Saber3D.Serializers.Materials
           {
             // TODO: Arrays only seem to be used for floats, so it's hardcoded here.
             var arrayDataType = ( DataType ) reader.ReadUInt32();
-            Assert( arrayDataType == DataType.Float, "Found a material array that isn't float!" );
+            Assert( arrayDataType == DataType.Float, "Found a configuration array that isn't float!" );
 
             value[ i ] = reader.ReadSingle();
           }
@@ -66,6 +61,7 @@ namespace Saber3D.Serializers.Materials
           Fail( $"Unhandled property: {dataType} {propertyName}" );
           break;
       }
+
     }
 
     protected void ReadNestedType( BinaryReader reader, T obj, string propertyName )
@@ -75,15 +71,13 @@ namespace Saber3D.Serializers.Materials
       var property = GetProperty( propertyName );
 
       // Create Serializer
-      var serializerType = typeof( DynamicMaterialSerializer<> ).MakeGenericType( property.PropertyType );
+      var serializerType = typeof( StaticConfigurationSerializer<> ).MakeGenericType( property.PropertyType );
       var deserializeMethod = serializerType.GetMethod( "Deserialize" );
       var serializer = Activator.CreateInstance( serializerType );
 
       var value = deserializeMethod.Invoke( serializer, new[] { reader } );
       SetPropertyValue( obj, propertyName, value );
     }
-
-    #endregion
 
   }
 

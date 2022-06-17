@@ -1,31 +1,33 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialLayer
   {
 
-    [MaterialProperty( "texName" )]
+    [ConfigurationProperty( "texName" )]
     public string TextureName { get; set; }
 
-    [MaterialProperty( "mtlName" )]
+    [ConfigurationProperty( "mtlName" )]
     public string MaterialName { get; set; }
 
-    [MaterialProperty( "tint" )]
+    [ConfigurationProperty( "tint" )]
     public float[] Tint { get; set; }
 
-    [MaterialProperty( "vcSet" )]
+    [ConfigurationProperty( "vcSet" )]
     public int VcSet { get; set; }
 
-    [MaterialProperty( "tilingU" )]
+    [ConfigurationProperty( "tilingU" )]
     public float TilingU { get; set; }
 
-    [MaterialProperty( "tilingV" )]
+    [ConfigurationProperty( "tilingV" )]
     public float TilingV { get; set; }
 
-    [MaterialProperty( "blending" )]
+    [ConfigurationProperty( "blending" )]
     public S3DMaterialBlending Blending { get; set; }
 
-    [MaterialProperty( "uvSetIdx" )]
+    [ConfigurationProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
   }

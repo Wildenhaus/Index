@@ -1,19 +1,21 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialTransparency
   {
 
-    [MaterialProperty( "colorSetIdx" )]
+    [ConfigurationProperty( "colorSetIdx" )]
     public int ColorSetIndex { get; set; }
 
-    [MaterialProperty( "enabled" )]
+    [ConfigurationProperty( "enabled" )]
     public int Enabled { get; set; }
 
-    [MaterialProperty( "multiplier" )]
+    [ConfigurationProperty( "multiplier" )]
     public float Multiplier { get; set; }
 
-    [MaterialProperty( "sources" )]
+    [ConfigurationProperty( "sources" )]
     public int Sources { get; set; }
 
   }

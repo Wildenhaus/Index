@@ -1,16 +1,18 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialReliefNormalMaps
   {
 
-    [MaterialProperty( "macro" )]
+    [ConfigurationProperty( "macro" )]
     public S3DMaterialNormalMap Macro { get; set; }
 
-    [MaterialProperty( "micro1" )]
+    [ConfigurationProperty( "micro1" )]
     public S3DMaterialNormalMap Micro1 { get; set; }
 
-    [MaterialProperty( "micro2" )]
+    [ConfigurationProperty( "micro2" )]
     public S3DMaterialNormalMap Micro2 { get; set; }
 
   }

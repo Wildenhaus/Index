@@ -1,19 +1,21 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialExtraParams
   {
 
-    [MaterialProperty( "reliefNormalmaps" )]
+    [ConfigurationProperty( "reliefNormalmaps" )]
     public S3DMaterialReliefNormalMaps ReliefNormalMaps { get; set; }
 
-    [MaterialProperty( "auxiliaryTextures" )]
+    [ConfigurationProperty( "auxiliaryTextures" )]
     public S3DMaterialAuxiliaryTextures AuxiliaryTextures { get; set; }
 
-    [MaterialProperty( "transparency" )]
+    [ConfigurationProperty( "transparency" )]
     public S3DMaterialTransparency Transparency { get; set; }
 
-    [MaterialProperty( "extraVertexColorData" )]
+    [ConfigurationProperty( "extraVertexColorData" )]
     public S3DMaterialExtraVertexColorData ExtraVertexColorData { get; set; }
 
   }

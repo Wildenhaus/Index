@@ -1,16 +1,18 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialUpVector
   {
 
-    [MaterialProperty( "angle" )]
+    [ConfigurationProperty( "angle" )]
     public float Angle { get; set; }
 
-    [MaterialProperty( "enabled" )]
+    [ConfigurationProperty( "enabled" )]
     public bool Enabled { get; set; }
 
-    [MaterialProperty( "falloff" )]
+    [ConfigurationProperty( "falloff" )]
     public float Falloff { get; set; }
 
   }

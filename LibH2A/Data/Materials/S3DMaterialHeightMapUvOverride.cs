@@ -1,19 +1,21 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialHeightMapUvOverride
   {
 
-    [MaterialProperty( "enabled" )]
+    [ConfigurationProperty( "enabled" )]
     public bool Enabled { get; set; }
 
-    [MaterialProperty( "tilingU" )]
+    [ConfigurationProperty( "tilingU" )]
     public float TilingU { get; set; }
 
-    [MaterialProperty( "tilingV" )]
+    [ConfigurationProperty( "tilingV" )]
     public float TilingV { get; set; }
 
-    [MaterialProperty( "uvSetIdx" )]
+    [ConfigurationProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
   }

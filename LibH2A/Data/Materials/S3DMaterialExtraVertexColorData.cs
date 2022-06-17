@@ -1,19 +1,21 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialExtraVertexColorData
   {
 
-    [MaterialProperty( "colorA" )]
+    [ConfigurationProperty( "colorA" )]
     public S3DMaterialColor ColorA { get; set; }
 
-    [MaterialProperty( "colorB" )]
+    [ConfigurationProperty( "colorB" )]
     public S3DMaterialColor ColorB { get; set; }
 
-    [MaterialProperty( "colorG" )]
+    [ConfigurationProperty( "colorG" )]
     public S3DMaterialColor ColorG { get; set; }
 
-    [MaterialProperty( "colorR" )]
+    [ConfigurationProperty( "colorR" )]
     public S3DMaterialColor ColorR { get; set; }
 
   }

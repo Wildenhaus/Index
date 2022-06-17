@@ -4,10 +4,10 @@ using System.IO;
 using Saber3D.Common;
 using static Saber3D.Assertions;
 
-namespace Saber3D.Serializers.Materials
+namespace Saber3D.Serializers.Shared
 {
 
-  public class StringMaterialSerializer<T> : MaterialSerializerBase<T>
+  public class StringConfigurationSerializer<T> : ConfigurationSerializerBase<T>
     where T : class, new()
   {
 
@@ -88,7 +88,7 @@ namespace Saber3D.Serializers.Materials
         return arr.ToArray();
       }
       else
-        return FailReturn<object>( $"Unable to parse value for material: {value}" );
+        return FailReturn<object>( $"Unable to parse value for configuration: {value}" );
     }
 
     private object ParseNestedValue( string propertyName, StringReader reader )
@@ -98,7 +98,7 @@ namespace Saber3D.Serializers.Materials
       var property = GetProperty( propertyName );
 
       // Create Serializer
-      var serializerType = typeof( StringMaterialSerializer<> ).MakeGenericType( property.PropertyType );
+      var serializerType = typeof( StringConfigurationSerializer<> ).MakeGenericType( property.PropertyType );
       var deserializeMethod = serializerType.GetMethod( "DeserializeFromString" );
       var serializer = Activator.CreateInstance( serializerType );
 

@@ -4,7 +4,7 @@ using System.Numerics;
 using Saber3D.Common;
 using Saber3D.Data;
 using Saber3D.Data.Materials;
-using Saber3D.Serializers.Materials;
+using Saber3D.Serializers.Shared;
 using static Saber3D.Assertions;
 
 namespace Saber3D.Serializers
@@ -295,7 +295,7 @@ namespace Saber3D.Serializers
     {
       /* Materials with this sentinel are represented as just a string.
        */
-      var serializer = new StringMaterialSerializer<S3DMaterial>();
+      var serializer = new StringConfigurationSerializer<S3DMaterial>();
       foreach ( var submesh in submeshes )
       {
         submesh.NodeId = reader.ReadUInt16();
@@ -308,7 +308,7 @@ namespace Saber3D.Serializers
       /* Materials with this sentinel are similar to the MaterialsDynamic section, but the strings 
        * are null-terminated and there's an additional int32 after the property name.
        */
-      var serializer = new StaticMaterialSerializer<S3DMaterial>();
+      var serializer = new StaticConfigurationSerializer<S3DMaterial>();
       foreach ( var submesh in submeshes )
       {
         submesh.NodeId = reader.ReadUInt16();
@@ -321,7 +321,7 @@ namespace Saber3D.Serializers
       /* This is the most common form of materials.
        * The properties are pascal strings, followed by the data type, and then the value.
        */
-      var serializer = new DynamicMaterialSerializer<S3DMaterial>();
+      var serializer = new DynamicConfigurationSerializer<S3DMaterial>();
       foreach ( var submesh in submeshes )
       {
         submesh.NodeId = reader.ReadUInt16();

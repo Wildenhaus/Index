@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Saber3D.Data.Materials;
+using Saber3D.Data.Shared;
 using static Saber3D.Assertions;
 
-namespace Saber3D.Serializers.Materials
+namespace Saber3D.Serializers.Shared
 {
 
-  public abstract class MaterialSerializerBase<T> : SerializerBase<T>
+  public abstract class ConfigurationSerializerBase<T> : SerializerBase<T>
     where T : class, new()
   {
 
@@ -20,7 +20,7 @@ namespace Saber3D.Serializers.Materials
 
     #region Constructor
 
-    static MaterialSerializerBase()
+    static ConfigurationSerializerBase()
     {
       _propertyLookup = BuildPropertyLookup();
     }
@@ -58,7 +58,7 @@ namespace Saber3D.Serializers.Materials
       var dataType = ( DataType ) reader.ReadUInt32();
 
       Assert( Enum.IsDefined( typeof( DataType ), dataType ),
-        $"Unknown Material Property Data Type: {dataType:X}" );
+        $"Unknown Configuration Property Data Type: {dataType:X}" );
 
       return dataType;
     }
@@ -70,7 +70,7 @@ namespace Saber3D.Serializers.Materials
       var properties = typeof( T ).GetProperties();
       foreach ( var property in properties )
       {
-        var attr = property.GetCustomAttribute<MaterialPropertyAttribute>();
+        var attr = property.GetCustomAttribute<ConfigurationPropertyAttribute>();
         if ( attr is null )
           continue;
 

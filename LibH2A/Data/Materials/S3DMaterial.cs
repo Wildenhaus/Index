@@ -1,34 +1,36 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterial
   {
 
-    [MaterialProperty( "version" )]
+    [ConfigurationProperty( "version" )]
     public int Version { get; set; }
 
-    [MaterialProperty( "shadingMtl_Tex" )]
+    [ConfigurationProperty( "shadingMtl_Tex" )]
     public string ShadingMaterialTexture { get; set; }
 
-    [MaterialProperty( "shadingMtl_Mtl" )]
+    [ConfigurationProperty( "shadingMtl_Mtl" )]
     public string ShadingMaterialMaterial { get; set; }
 
-    [MaterialProperty( "lm" )]
+    [ConfigurationProperty( "lm" )]
     public S3DMaterialLM LM { get; set; }
 
-    [MaterialProperty( "layer0" )]
+    [ConfigurationProperty( "layer0" )]
     public S3DMaterialLayer Layer0 { get; set; }
 
-    [MaterialProperty( "layer1" )]
+    [ConfigurationProperty( "layer1" )]
     public S3DMaterialLayer Layer1 { get; set; }
 
-    [MaterialProperty( "layer2" )]
+    [ConfigurationProperty( "layer2" )]
     public S3DMaterialLayer Layer2 { get; set; }
 
-    [MaterialProperty( "layer3" )]
+    [ConfigurationProperty( "layer3" )]
     public S3DMaterialLayer Layer3 { get; set; }
 
-    [MaterialProperty( "extraParams" )]
+    [ConfigurationProperty( "extraParams" )]
     public S3DMaterialExtraParams ExtraParams { get; set; }
 
   }

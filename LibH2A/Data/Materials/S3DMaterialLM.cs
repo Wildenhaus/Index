@@ -1,19 +1,21 @@
-﻿namespace Saber3D.Data.Materials
+﻿using Saber3D.Data.Shared;
+
+namespace Saber3D.Data.Materials
 {
 
   public class S3DMaterialLM
   {
 
-    [MaterialProperty( "source" )]
+    [ConfigurationProperty( "source" )]
     public string Source { get; set; }
 
-    [MaterialProperty( "texName" )]
+    [ConfigurationProperty( "texName" )]
     public string TextureName { get; set; }
 
-    [MaterialProperty( "uvSetIdx" )]
+    [ConfigurationProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
-    [MaterialProperty( "tangent" )]
+    [ConfigurationProperty( "tangent" )]
     public S3DMaterialTangent Tangent { get; set; }
 
   }
