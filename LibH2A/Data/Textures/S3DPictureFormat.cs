@@ -4,7 +4,7 @@
   public enum S3DPictureFormat : byte
   {
     A8R8G8B8 = 0x00,
-    AI88 = 0x0A,
+    A8L8 = 0x0A,
     OXT1 = 0x0C,
     AXT1 = 0x0D,
     DXT3 = 0x0F,
