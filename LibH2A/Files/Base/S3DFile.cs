@@ -98,6 +98,7 @@ namespace Saber3D.Files
 
     public virtual Stream GetStream()
     {
+      _stream.Position = 0;
       return _stream;
     }
 
