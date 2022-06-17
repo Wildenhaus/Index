@@ -258,12 +258,16 @@ namespace Testbed
           if ( data.UV3.HasValue ) AddVertexUV( 3, data.UV3.Value );
           if ( data.UV4.HasValue ) AddVertexUV( 4, data.UV4.Value );
 
-          // TODO: Assimp only allows 1 tangent channel?
+          // TODO
+          /* Assimp only allows 1 Tangent channel.
+           * Multiple tangent channels seem to only occur for level geometry.
+           * See AddVertexTangent() for more info.
+           */
           if ( data.Tangent0.HasValue ) AddVertexTangent( 0, data.Tangent0.Value );
-          if ( data.Tangent1.HasValue ) System.Diagnostics.Debugger.Break();
-          if ( data.Tangent2.HasValue ) System.Diagnostics.Debugger.Break();
-          if ( data.Tangent3.HasValue ) System.Diagnostics.Debugger.Break();
-          if ( data.Tangent4.HasValue ) System.Diagnostics.Debugger.Break();
+          //if ( data.Tangent1.HasValue ) System.Diagnostics.Debugger.Break();
+          //if ( data.Tangent2.HasValue ) System.Diagnostics.Debugger.Break();
+          //if ( data.Tangent3.HasValue ) System.Diagnostics.Debugger.Break();
+          //if ( data.Tangent4.HasValue ) System.Diagnostics.Debugger.Break();
         }
       }
 
