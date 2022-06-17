@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using Assimp;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
@@ -147,7 +148,7 @@ namespace Testbed
               AddFaces( buffer, meshBuffer );
               break;
             case S3DGeometryElementType.Interleaved:
-              //AddInterleavedData( buffer, meshBuffer, submesh );
+              AddInterleavedData( buffer, meshBuffer );
               break;
             default:
               break;
@@ -200,7 +201,7 @@ namespace Testbed
           if ( vertex is S3DVertexSkinned skinnedVertex )
             AddVertexSkinningData( skinnedVertex );
           else
-            AddWeight( ( ushort ) _obj.ParentId, 1 );
+            AddBoneWeight( ( ushort ) _obj.ParentId, 1 );
 
           _vertexLookup.Add( offset++, _vertexLookup.Count );
         }
@@ -212,16 +213,16 @@ namespace Testbed
         var set = new HashSet<byte>();
 
         if ( skinnedVertex.Weight1.HasValue && set.Add( skinnedVertex.Index1 ) )
-          AddWeight( boneIds[ skinnedVertex.Index1 ], skinnedVertex.Weight1.Value );
+          AddBoneWeight( boneIds[ skinnedVertex.Index1 ], skinnedVertex.Weight1.Value );
         if ( skinnedVertex.Weight2.HasValue && set.Add( skinnedVertex.Index1 ) )
-          AddWeight( boneIds[ skinnedVertex.Index2 ], skinnedVertex.Weight2.Value );
+          AddBoneWeight( boneIds[ skinnedVertex.Index2 ], skinnedVertex.Weight2.Value );
         if ( skinnedVertex.Weight3.HasValue && set.Add( skinnedVertex.Index1 ) )
-          AddWeight( boneIds[ skinnedVertex.Index3 ], skinnedVertex.Weight3.Value );
+          AddBoneWeight( boneIds[ skinnedVertex.Index3 ], skinnedVertex.Weight3.Value );
         if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index1 ) )
-          AddWeight( boneIds[ skinnedVertex.Index4 ], skinnedVertex.Weight4.Value );
+          AddBoneWeight( boneIds[ skinnedVertex.Index4 ], skinnedVertex.Weight4.Value );
       }
 
-      private void AddWeight( ushort boneObjectId, float weight )
+      private void AddBoneWeight( ushort boneObjectId, float weight )
       {
         if ( !_boneLookup.TryGetValue( boneObjectId, out var bone ) )
         {
@@ -240,6 +241,60 @@ namespace Testbed
         }
 
         bone.VertexWeights.Add( new VertexWeight( _mesh.Vertices.Count - 1, weight ) );
+      }
+
+      private void AddInterleavedData( S3DGeometryBuffer buffer, S3DGeometryMeshBuffer meshBuffer )
+      {
+        var offset = _submesh.BufferInfo.VertexOffset;
+        var startIndex = offset + ( meshBuffer.SubBufferOffset / buffer.ElementSize );
+        var endIndex = startIndex + _submesh.BufferInfo.VertexCount;
+
+        var serializer = new S3DInterleavedDataSerializer( buffer );
+        foreach ( var data in serializer.DeserializeRange( _reader, ( int ) startIndex, ( int ) endIndex ) )
+        {
+          if ( data.UV0.HasValue ) AddVertexUV( 0, data.UV0.Value );
+          if ( data.UV1.HasValue ) AddVertexUV( 1, data.UV1.Value );
+          if ( data.UV2.HasValue ) AddVertexUV( 2, data.UV2.Value );
+          if ( data.UV3.HasValue ) AddVertexUV( 3, data.UV3.Value );
+          if ( data.UV4.HasValue ) AddVertexUV( 4, data.UV4.Value );
+
+          // TODO: Assimp only allows 1 tangent channel?
+          if ( data.Tangent0.HasValue ) AddVertexTangent( 0, data.Tangent0.Value );
+          if ( data.Tangent1.HasValue ) System.Diagnostics.Debugger.Break();
+          if ( data.Tangent2.HasValue ) System.Diagnostics.Debugger.Break();
+          if ( data.Tangent3.HasValue ) System.Diagnostics.Debugger.Break();
+          if ( data.Tangent4.HasValue ) System.Diagnostics.Debugger.Break();
+        }
+      }
+
+      private void AddVertexTangent( byte tangentChannel, Vector4 tangentVector )
+      {
+        /* It seems that Assimp only supports 1 tangent channel.
+         * In the vertex buffers, there can be up to 4 tangents.
+         * Not sure if I'm just not applying this in the right place
+         * or if there's more trickery involved.
+         * 
+         * Just setting the main tangent channel to the first tangent in the buffer for now.
+         */
+        _mesh.Tangents.Add( tangentVector.ToAssimp3D() );
+      }
+
+      private void AddVertexUV( byte uvChannel, Vector4 uvVector )
+      {
+        if ( !_submesh.UvScaling.TryGetValue( uvChannel, out var scaleFactor ) )
+          scaleFactor = 1;
+
+        var scaleVector = new Vector3D( scaleFactor );
+        var scaledUvVector = uvVector.ToAssimp3D() * scaleVector;
+
+        _mesh.TextureCoordinateChannels[ uvChannel ].Add( scaledUvVector );
+
+        /* This is a bit confusing, but this property denotes the size of the UV element.
+         * E.g. setting it to 2 means there is a U and a V.
+         * I don't know how 4D UVs work, but if we ever add support for them, we'd need to
+         * adjust this accordingly.
+         */
+        _mesh.UVComponentCount[ uvChannel ] = 2;
       }
 
     }
