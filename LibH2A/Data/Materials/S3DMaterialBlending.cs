@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,37 +6,37 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialBlending
   {
 
-    [ConfigurationProperty( "method" )]
+    [ScriptingProperty( "method" )]
     public string Method { get; set; }
 
-    [ConfigurationProperty( "useLayerAlpha" )]
+    [ScriptingProperty( "useLayerAlpha" )]
     public bool UseLayerAlpha { get; set; }
 
-    [ConfigurationProperty( "useHeightmap" )]
+    [ScriptingProperty( "useHeightmap" )]
     public bool UseHeightMap { get; set; }
 
-    [ConfigurationProperty( "weightMultiplier" )]
+    [ScriptingProperty( "weightMultiplier" )]
     public float WeightMultiplier { get; set; }
 
-    [ConfigurationProperty( "heightmapSoftness" )]
+    [ScriptingProperty( "heightmapSoftness" )]
     public float HeightMapSoftness { get; set; }
 
-    [ConfigurationProperty( "texChannelBlendMask" )]
+    [ScriptingProperty( "texChannelBlendMask" )]
     public int TexChannelBlendMask { get; set; }
 
-    [ConfigurationProperty( "weights" )]
+    [ScriptingProperty( "weights" )]
     public S3DMaterialWeights Weights { get; set; }
 
-    [ConfigurationProperty( "heightmap" )]
+    [ScriptingProperty( "heightmap" )]
     public S3DMaterialHeightMap HeightMap { get; set; }
 
-    [ConfigurationProperty( "heightmapOverride" )]
+    [ScriptingProperty( "heightmapOverride" )]
     public string HeightMapOverride { get; set; }
 
-    [ConfigurationProperty( "upVector" )]
+    [ScriptingProperty( "upVector" )]
     public S3DMaterialUpVector UpVector { get; set; }
 
-    [ConfigurationProperty( "heightmapUVOverride" )]
+    [ScriptingProperty( "heightmapUVOverride" )]
     public S3DMaterialHeightMapUvOverride HeightMapUvOverride { get; set; }
 
   }

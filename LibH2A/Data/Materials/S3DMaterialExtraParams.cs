@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,16 +6,16 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialExtraParams
   {
 
-    [ConfigurationProperty( "reliefNormalmaps" )]
+    [ScriptingProperty( "reliefNormalmaps" )]
     public S3DMaterialReliefNormalMaps ReliefNormalMaps { get; set; }
 
-    [ConfigurationProperty( "auxiliaryTextures" )]
+    [ScriptingProperty( "auxiliaryTextures" )]
     public S3DMaterialAuxiliaryTextures AuxiliaryTextures { get; set; }
 
-    [ConfigurationProperty( "transparency" )]
+    [ScriptingProperty( "transparency" )]
     public S3DMaterialTransparency Transparency { get; set; }
 
-    [ConfigurationProperty( "extraVertexColorData" )]
+    [ScriptingProperty( "extraVertexColorData" )]
     public S3DMaterialExtraVertexColorData ExtraVertexColorData { get; set; }
 
   }

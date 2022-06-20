@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,13 +6,13 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialReliefNormalMaps
   {
 
-    [ConfigurationProperty( "macro" )]
+    [ScriptingProperty( "macro" )]
     public S3DMaterialNormalMap Macro { get; set; }
 
-    [ConfigurationProperty( "micro1" )]
+    [ScriptingProperty( "micro1" )]
     public S3DMaterialNormalMap Micro1 { get; set; }
 
-    [ConfigurationProperty( "micro2" )]
+    [ScriptingProperty( "micro2" )]
     public S3DMaterialNormalMap Micro2 { get; set; }
 
   }

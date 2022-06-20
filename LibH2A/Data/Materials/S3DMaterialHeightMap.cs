@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,10 +6,10 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialHeightMap
   {
 
-    [ConfigurationProperty( "colorSetIdx" )]
+    [ScriptingProperty( "colorSetIdx" )]
     public int ColorSetIndex { get; set; }
 
-    [ConfigurationProperty( "invert" )]
+    [ScriptingProperty( "invert" )]
     public bool Invert { get; set; }
 
   }

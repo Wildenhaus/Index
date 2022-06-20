@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,16 +6,16 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialTransparency
   {
 
-    [ConfigurationProperty( "colorSetIdx" )]
+    [ScriptingProperty( "colorSetIdx" )]
     public int ColorSetIndex { get; set; }
 
-    [ConfigurationProperty( "enabled" )]
+    [ScriptingProperty( "enabled" )]
     public int Enabled { get; set; }
 
-    [ConfigurationProperty( "multiplier" )]
+    [ScriptingProperty( "multiplier" )]
     public float Multiplier { get; set; }
 
-    [ConfigurationProperty( "sources" )]
+    [ScriptingProperty( "sources" )]
     public int Sources { get; set; }
 
   }

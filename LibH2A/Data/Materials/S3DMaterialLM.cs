@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,16 +6,16 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialLM
   {
 
-    [ConfigurationProperty( "source" )]
+    [ScriptingProperty( "source" )]
     public string Source { get; set; }
 
-    [ConfigurationProperty( "texName" )]
+    [ScriptingProperty( "texName" )]
     public string TextureName { get; set; }
 
-    [ConfigurationProperty( "uvSetIdx" )]
+    [ScriptingProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
-    [ConfigurationProperty( "tangent" )]
+    [ScriptingProperty( "tangent" )]
     public S3DMaterialTangent Tangent { get; set; }
 
   }

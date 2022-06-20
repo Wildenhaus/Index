@@ -109,7 +109,7 @@ namespace Testbed
 
       private Mesh _mesh;
 
-      private Dictionary<ushort, Bone> _boneLookup;
+      private Dictionary<short, Bone> _boneLookup;
       private Dictionary<int, int> _vertexLookup;
 
       private MeshBuilder( S3DObject obj, S3DGeometrySubMesh submesh, BinaryReader reader )
@@ -120,7 +120,7 @@ namespace Testbed
         _graph = obj.GeometryGraph;
         _reader = reader;
 
-        _boneLookup = new Dictionary<ushort, Bone>();
+        _boneLookup = new Dictionary<short, Bone>();
         _vertexLookup = new Dictionary<int, int>();
       }
 
@@ -201,7 +201,7 @@ namespace Testbed
           if ( vertex is S3DVertexSkinned skinnedVertex )
             AddVertexSkinningData( skinnedVertex );
           else
-            AddBoneWeight( ( ushort ) _obj.ParentId, 1 );
+            AddBoneWeight( _obj.ParentId, 1 );
 
           _vertexLookup.Add( offset++, _vertexLookup.Count );
         }
@@ -222,8 +222,11 @@ namespace Testbed
           AddBoneWeight( boneIds[ skinnedVertex.Index4 ], skinnedVertex.Weight4.Value );
       }
 
-      private void AddBoneWeight( ushort boneObjectId, float weight )
+      private void AddBoneWeight( short boneObjectId, float weight )
       {
+        if ( boneObjectId == -1 )
+          return;
+
         if ( !_boneLookup.TryGetValue( boneObjectId, out var bone ) )
         {
           var boneObject = _graph.Objects[ boneObjectId ];

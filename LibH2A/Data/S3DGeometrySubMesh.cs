@@ -17,7 +17,7 @@ namespace Saber3D.Data
     public ushort NodeId { get; set; }
     public S3DMaterial Material { get; set; }
 
-    public ushort[] BoneIds { get; set; }
+    public short[] BoneIds { get; set; }
     public Dictionary<byte, short> UvScaling { get; set; }
 
     public S3DGeometrySubMesh()

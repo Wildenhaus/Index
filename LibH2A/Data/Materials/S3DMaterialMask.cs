@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,16 +6,16 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialMask
   {
 
-    [ConfigurationProperty( "textureName" )]
+    [ScriptingProperty( "textureName" )]
     public string TextureName { get; set; }
 
-    [ConfigurationProperty( "tilingU" )]
+    [ScriptingProperty( "tilingU" )]
     public float TilingU { get; set; }
 
-    [ConfigurationProperty( "tilingV" )]
+    [ScriptingProperty( "tilingV" )]
     public float TilingV { get; set; }
 
-    [ConfigurationProperty( "uvSetIdx" )]
+    [ScriptingProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
   }

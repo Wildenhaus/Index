@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,16 +6,16 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialExtraVertexColorData
   {
 
-    [ConfigurationProperty( "colorA" )]
+    [ScriptingProperty( "colorA" )]
     public S3DMaterialColor ColorA { get; set; }
 
-    [ConfigurationProperty( "colorB" )]
+    [ScriptingProperty( "colorB" )]
     public S3DMaterialColor ColorB { get; set; }
 
-    [ConfigurationProperty( "colorG" )]
+    [ScriptingProperty( "colorG" )]
     public S3DMaterialColor ColorG { get; set; }
 
-    [ConfigurationProperty( "colorR" )]
+    [ScriptingProperty( "colorR" )]
     public S3DMaterialColor ColorR { get; set; }
 
   }

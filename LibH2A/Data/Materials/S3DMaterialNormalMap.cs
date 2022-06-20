@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,31 +6,31 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialNormalMap
   {
 
-    [ConfigurationProperty( "end" )]
+    [ScriptingProperty( "end" )]
     public float End { get; set; }
 
-    [ConfigurationProperty( "falloff" )]
+    [ScriptingProperty( "falloff" )]
     public float Falloff { get; set; }
 
-    [ConfigurationProperty( "isVisible" )]
+    [ScriptingProperty( "isVisible" )]
     public int IsVisible { get; set; }
 
-    [ConfigurationProperty( "scale" )]
+    [ScriptingProperty( "scale" )]
     public float Scale { get; set; }
 
-    [ConfigurationProperty( "start" )]
+    [ScriptingProperty( "start" )]
     public float Start { get; set; }
 
-    [ConfigurationProperty( "textureName" )]
+    [ScriptingProperty( "textureName" )]
     public string TextureName { get; set; }
 
-    [ConfigurationProperty( "tilingU" )]
+    [ScriptingProperty( "tilingU" )]
     public float TilingU { get; set; }
 
-    [ConfigurationProperty( "tilingV" )]
+    [ScriptingProperty( "tilingV" )]
     public float TilingV { get; set; }
 
-    [ConfigurationProperty( "uvSetIdx" )]
+    [ScriptingProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
   }

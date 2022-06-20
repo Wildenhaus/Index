@@ -1,4 +1,4 @@
-﻿using Saber3D.Data.Shared;
+﻿using Saber3D.Data.Scripting;
 
 namespace Saber3D.Data.Materials
 {
@@ -6,7 +6,7 @@ namespace Saber3D.Data.Materials
   public class S3DMaterialTangent
   {
 
-    [ConfigurationProperty( "uvSetIdx" )]
+    [ScriptingProperty( "uvSetIdx" )]
     public int UvSetIndex { get; set; }
 
   }
