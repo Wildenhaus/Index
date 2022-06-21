@@ -95,7 +95,7 @@ namespace Saber3D.Serializers
           FaceOffset = reader.ReadUInt16(),
           FaceCount = reader.ReadUInt16(),
           NodeId = reader.ReadUInt16(),
-          SkinCompoundId = reader.ReadUInt16()
+          SkinCompoundId = reader.ReadInt16()
         };
 
         /* Not sure what this data is, but we're just gonna seek past it for now.

@@ -34,7 +34,7 @@ namespace Saber3D.Data
     public ushort FaceOffset;
     public ushort FaceCount;
     public ushort NodeId;
-    public ushort SkinCompoundId;
+    public short SkinCompoundId;
   }
 
 }
