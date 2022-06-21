@@ -75,6 +75,8 @@ namespace Saber3D.Serializers
 
       Assert( Enum.IsDefined( typeof( S3DPictureFormat ), format ),
         $"Unknown DDS Format Value: {formatValue:X}" );
+
+      pict.Format = format;
     }
 
     private void ReadMipMaps( BinaryReader reader, S3DPicture pict )
