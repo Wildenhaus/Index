@@ -22,9 +22,12 @@ namespace Testbed
       TestReadTemplateModels();
       TestReadLevelGeometry();
       TestReadTextures();
+      TestConvertTexturesToDDS();
+      TestConvertTexturesToTGA();
 
       ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
       ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
+
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
@@ -170,6 +173,72 @@ namespace Testbed
       }
 
       Console.WriteLine( $"{success}/{count}" );
+    }
+
+    private static void TestConvertTexturesToDDS()
+    {
+      int success = 0, count = 0;
+      foreach ( var file in H2AFileContext.Global.GetFiles( ".pct" ) )
+      {
+        var fs = file.GetStream();
+        var reader = new BinaryReader( fs );
+        var pct = new S3DPictureSerializer().Deserialize( reader );
+
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.Write( "{0}...", file.Name );
+
+        try
+        {
+          var converted = TextureConverter.ConvertToDDS( pct );
+          if ( converted is null || converted.Length <= 0 )
+            throw new Exception();
+
+          Console.ForegroundColor = ConsoleColor.Green;
+          Console.WriteLine( "SUCCESS" );
+          success++;
+        }
+        catch ( Exception ex )
+        {
+          Console.ForegroundColor = ConsoleColor.Red;
+          Console.WriteLine( "FAILED" );
+        }
+
+        Console.Title = $"{success}/{++count}";
+      }
+      Console.ForegroundColor = ConsoleColor.White;
+    }
+
+    private static void TestConvertTexturesToTGA()
+    {
+      int success = 0, count = 0;
+      foreach ( var file in H2AFileContext.Global.GetFiles( ".pct" ) )
+      {
+        var fs = file.GetStream();
+        var reader = new BinaryReader( fs );
+        var pct = new S3DPictureSerializer().Deserialize( reader );
+
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.Write( "{0}...", file.Name );
+
+        try
+        {
+          var converted = TextureConverter.ConvertToTGA( pct, 0 );
+          if ( converted is null || converted.Length <= 0 )
+            throw new Exception();
+
+          Console.ForegroundColor = ConsoleColor.Green;
+          Console.WriteLine( "SUCCESS" );
+          success++;
+        }
+        catch ( Exception ex )
+        {
+          Console.ForegroundColor = ConsoleColor.Red;
+          Console.WriteLine( "FAILED" );
+        }
+
+        Console.Title = $"{success}/{++count}";
+      }
+      Console.ForegroundColor = ConsoleColor.White;
     }
 
   }
