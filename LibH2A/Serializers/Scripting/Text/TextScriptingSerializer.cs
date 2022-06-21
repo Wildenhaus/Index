@@ -122,6 +122,12 @@ namespace Saber3D.Serializers.Configurations
       {
         propertyValue = parts[ 0 ].Trim();
       }
+      else if ( parts.Length > 2 )
+      {
+        // Handle quote-delimited property names with spaces
+        propertyValue = parts[ parts.Length - 1 ].Replace( "\"", "" ).Replace( ",", "" ).Trim();
+        propertyName = String.Join( " ", new ArraySegment<string>( parts, 0, parts.Length - 1 ) ).Replace( "\"", "" ).Trim();
+      }
       else
       {
         propertyName = parts[ 0 ].Trim();
@@ -151,8 +157,10 @@ namespace Saber3D.Serializers.Configurations
         return value;
       else if ( type.IsArray )
       {
-        Assert( value.Contains( "[" ) );
-        return ParseArray( reader, type );
+        if ( value.StartsWith( "[" ) )
+          return ParseArray( reader, type );
+        else
+          return ParseSingleValueArray( reader, type, value );
       }
       else if ( typeof( IDictionary ).IsAssignableFrom( type ) )
       {
@@ -160,8 +168,10 @@ namespace Saber3D.Serializers.Configurations
           return null;
         else
         {
-          Assert( value.Contains( "{" ) );
-          return ParseDictionary( reader, type );
+          if ( value.StartsWith( "{" ) )
+            return ParseDictionary( reader, type );
+          else
+            return ParseSingleValueDictionary( reader, type, value );
         }
       }
       else
@@ -190,6 +200,16 @@ namespace Saber3D.Serializers.Configurations
       return elements.ToArray();
     }
 
+    private dynamic ParseSingleValueArray( StringReader reader, Type arrayType, string value )
+    {
+      var elementType = arrayType.GetElementType();
+      var elements = new List<dynamic>();
+
+      elements.Add( ParseValue( reader, elementType, value ) );
+
+      return elements.ToArray();
+    }
+
     private dynamic ParseDictionary( StringReader reader, Type dictionaryType )
     {
       var keyType = dictionaryType.GenericTypeArguments[ 0 ];
@@ -211,6 +231,24 @@ namespace Saber3D.Serializers.Configurations
 
         dictionary.Add( parsedKey, parsedValue );
       }
+
+      return dictionary;
+    }
+
+    private dynamic ParseSingleValueDictionary( StringReader reader, Type dictionaryType, string value )
+    {
+      var keyType = dictionaryType.GenericTypeArguments[ 0 ];
+      var valueType = dictionaryType.GenericTypeArguments[ 1 ];
+      var dictionary = ( IDictionary ) Activator.CreateInstance( dictionaryType );
+
+      dynamic defaultKey;
+      if ( keyType == typeof( string ) )
+        defaultKey = string.Empty;
+      else
+        defaultKey = Activator.CreateInstance( keyType );
+
+      var parsedValue = ParseValue( reader, valueType, value );
+      dictionary.Add( defaultKey, parsedValue );
 
       return dictionary;
     }
