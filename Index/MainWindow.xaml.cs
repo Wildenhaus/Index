@@ -1,17 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Forms;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
-using Index.Controls;
-using Index.Tools;
 using Saber3D.Files;
-using Saber3D.Serializers;
 
 namespace Index
 {
@@ -21,20 +12,18 @@ namespace Index
 
     public MainWindow()
     {
-      AppDaemon.SetMainWindow( this );
-
       InitializeComponent();
       SetIcon();
 
-      H2AFileContext.Global.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
-      var file = H2AFileContext.Global.Files.Values.First();
+      //H2AFileContext.Global.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
+      //var file = H2AFileContext.Global.Files.Values.First();
+      //
+      //var stream = file.GetStream();
+      //var reader = new BinaryReader( stream );
+      //var tpl = new S3DTemplateSerializer().Deserialize( reader );
+      //var scene = SceneExporter.CreateScene( file.Name, tpl.GeometryGraph, reader );
 
-      var stream = file.GetStream();
-      var reader = new BinaryReader( stream );
-      var tpl = new S3DTemplateSerializer().Deserialize( reader );
-      var scene = SceneExporter.CreateScene( file.Name, tpl.GeometryGraph, reader );
-
-      AppDaemon.AddEditorTab( new ModelViewerControl( scene ), file.Name );
+      //AppDaemon.AddEditorTab( new ModelViewerControl( scene ), file.Name );
     }
 
     private void SetIcon()
@@ -44,63 +33,54 @@ namespace Index
         Icon = BitmapFrame.Create( iconStream );
     }
 
-    private async void OnOpenDirectoryClick( object sender, RoutedEventArgs e )
+    #region Event Handlers
+
+    private void OnOpenDirectoryClick( object sender, RoutedEventArgs e )
     {
-      using ( var dialog = new FolderBrowserDialog() )
+      //using ( var dialog = new FolderBrowserDialog() )
+      //{
+      //  dialog.Description = "Open H2A Directory";
+
+      //  if ( dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK )
+      //    return;
+
+      //  var files = Directory.GetFiles( dialog.SelectedPath, "*.pck", SearchOption.AllDirectories );
+      //  if ( files.Length == 0 )
+      //    return;
+      //}
+
+
+      var path = @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo1";
+      var files = Directory.GetFiles( path, "*.pck", SearchOption.AllDirectories );
+      if ( files.Length == 0 )
       {
-        dialog.Description = "Open H2A Directory";
-
-        if ( dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK )
-          return;
-
-        var files = Directory.GetFiles( dialog.SelectedPath, "*.pck", SearchOption.AllDirectories );
-        if ( files.Length == 0 )
-          return;
-
-        using ( var vm = AppDaemon.ShowLoadingView( "Loading H2A Directory" ) )
-        {
-          await Task.Factory.StartNew( () =>
-          {
-
-            vm.IsIndeterminate = false;
-            vm.TotalUnits = files.Length;
-
-            foreach ( var file in files )
-            {
-              vm.Title = $"Loading {Path.GetFileName( file )}";
-              H2AFileContext.Global.OpenFile( file );
-              vm.UnitsCompleted++;
-            }
-
-            vm.Title = "Organizing Files";
-            FileTree.Refresh();
-          }, TaskCreationOptions.LongRunning );
-        }
+        AppDaemon.ShowMessageModal( ContentHost,
+          title: "No Files Found",
+          message: "No Halo 2 Anniversary .pck files were found. " +
+                   "If you meant to open a file that you previously extracted, " +
+                   "use the 'Open File' menu item instead." );
+        return;
       }
-    }
 
-    public void ToggleContentBlur()
-    {
-      Dispatcher.Invoke( () =>
+      AppDaemon.PerformWork( ContentHost, vm =>
       {
-        RegisterName( "ContentBlur", ContentBlur );
-        var anim = new DoubleAnimation()
+        vm.TotalUnits = files.Length;
+        vm.UnitName = "files";
+
+        foreach ( var file in files )
         {
-          From = ContentBlur.Radius > 0 ? 5 : 0,
-          To = ContentBlur.Radius > 0 ? 0 : 5,
-          FillBehavior = FillBehavior.HoldEnd,
-          Duration = TimeSpan.FromSeconds( 0.10 )
-        };
+          vm.Header = $"Loading {Path.GetFileName( file )}";
+          H2AFileContext.Global.OpenFile( file );
+          vm.CompletedUnits++;
+        }
 
-        var storyboard = new Storyboard();
-        storyboard.Children.Add( anim );
-
-        Storyboard.SetTargetName( anim, "ContentBlur" );
-        Storyboard.SetTargetProperty( anim, new PropertyPath( BlurEffect.RadiusProperty ) );
-
-        storyboard.Begin( this );
+        vm.Header = "Organizing Files";
+        vm.IsIndeterminate = true;
+        FileTree.Refresh();
       } );
     }
+
+    #endregion
 
   }
 

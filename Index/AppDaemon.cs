@@ -1,6 +1,9 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 using Index.Controls;
-using Index.ViewModels;
+using Index.Modals;
 
 namespace Index
 {
@@ -13,40 +16,34 @@ namespace Index
     public static void SetMainWindow( MainWindow mainWindow )
       => _mainWindow = mainWindow;
 
-    public static LoadingViewModel ShowLoadingView( string title = "Loading" )
+    public static Task<string> ShowMessageModal( ContentHost host, string title, string message,
+      IEnumerable<string> buttons = null )
     {
-      LoadingControl loadingControl = null;
-      LoadingViewModel viewModel = null;
-
-      _mainWindow.Dispatcher.Invoke( () =>
+      MessageModal messageModal = null;
+      host.Dispatcher.Invoke( () =>
       {
-        loadingControl = new LoadingControl();
-        Grid.SetColumnSpan( loadingControl, 2 );
-        Grid.SetZIndex( loadingControl, 99 );
-
-        viewModel = new LoadingViewModel();
-        viewModel.Title = title;
-
-        loadingControl.DataContext = viewModel;
-
-        viewModel.Disposing += ( s, e ) =>
-        {
-          loadingControl.Hide().ContinueWith( t =>
-          {
-            _mainWindow.ToggleContentBlur();
-            _mainWindow.Dispatcher.Invoke( () =>
-            {
-              _mainWindow.ContentHost.Children.Remove( loadingControl );
-            } );
-          } );
-        };
-
-        _mainWindow.ContentHost.Children.Add( loadingControl );
-        _mainWindow.ToggleContentBlur();
-        loadingControl.Show();
+        messageModal = new MessageModal( host, title, message, buttons );
+        host.Push( messageModal );
       } );
 
-      return viewModel;
+      return messageModal.AwaiterTask;
+    }
+
+    public static Task PerformWork( ContentHost host, Action<LoadingModalViewModel> doWork )
+    {
+      return Task.Factory.StartNew( () =>
+      {
+        // Create the modal on the UI thread
+        LoadingModal loadingModal = null;
+        host.Dispatcher.Invoke( () =>
+        {
+          loadingModal = new LoadingModal( host );
+          host.Push( loadingModal );
+        } );
+
+        using ( loadingModal )
+          doWork( loadingModal.ViewModel );
+      }, TaskCreationOptions.LongRunning );
     }
 
     public static void AddEditorTab( UserControl control, string tabName )

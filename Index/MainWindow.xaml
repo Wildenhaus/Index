@@ -17,18 +17,22 @@
                 <Separator />
                 <MenuItem Header="Close" />
             </MenuItem>
-            <MenuItem Header="Options">
-                <MenuItem Header="Settings" />
+            <MenuItem Header="Tools">
+                <MenuItem Header="Batch Export Models" />
+                <MenuItem Header="Batch Export Textures" />
+                <Separator />
+                <MenuItem Header="Preferences" />
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="GitHub" />
+                <MenuItem Header="Discord" />
                 <Separator />
                 <MenuItem Header="About" />
             </MenuItem>
         </Menu>
-        <Grid x:Name="ContentHost" 
-              DockPanel.Dock="Bottom">
-            <Grid x:Name="ContentGrid">
-                <Grid.Effect>
-                    <BlurEffect x:Name="ContentBlur" Radius="0" KernelType="Gaussian" />
-                </Grid.Effect>
+        <controls:ContentHost x:Name="ContentHost" 
+                              DockPanel.Dock="Bottom">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="3*" />
@@ -39,6 +43,6 @@
                 <TabControl x:Name="Tabs" Grid.Column="1">
                 </TabControl>
             </Grid>
-        </Grid>
+        </controls:ContentHost>
     </DockPanel>
 </Window>

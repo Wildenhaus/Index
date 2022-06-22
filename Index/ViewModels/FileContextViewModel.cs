@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
+using DebounceThrottle;
 using Saber3D.Files;
 
 namespace Index.ViewModels
@@ -13,7 +14,9 @@ namespace Index.ViewModels
 
     private H2AFileContext _context;
     private ObservableCollection<IS3DFile> _files;
+
     private readonly object _fileSynchronizer;
+    private ThrottleDispatcher _fileAddThrottler;
 
     private ICollectionView _collectionViewSource;
     private string _searchTerm;
