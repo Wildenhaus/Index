@@ -1,0 +1,44 @@
+﻿<Window x:Class="Index.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Index"
+        xmlns:controls="clr-namespace:Index.Controls"
+        mc:Ignorable="d"
+        Title="Index" 
+        Height="720" Width="1280"
+        Style="{DynamicResource CustomWindowStyle}">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Open File" />
+                <MenuItem Header="Open H2A Directory" Click="OnOpenDirectoryClick" />
+                <Separator />
+                <MenuItem Header="Close" />
+            </MenuItem>
+            <MenuItem Header="Options">
+                <MenuItem Header="Settings" />
+                <Separator />
+                <MenuItem Header="About" />
+            </MenuItem>
+        </Menu>
+        <Grid x:Name="ContentHost" 
+              DockPanel.Dock="Bottom">
+            <Grid x:Name="ContentGrid">
+                <Grid.Effect>
+                    <BlurEffect x:Name="ContentBlur" Radius="0" KernelType="Gaussian" />
+                </Grid.Effect>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
+
+                <controls:FileTreeControl x:Name="FileTree" Grid.Column="0" />
+
+                <TabControl x:Name="Tabs" Grid.Column="1">
+                </TabControl>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

@@ -5,7 +5,7 @@ using System.IO;
 namespace Saber3D.Files
 {
 
-  public interface IS3DFile : IDisposable
+  public interface IS3DFile : IDisposable, IEquatable<IS3DFile>
   {
 
     #region Properties

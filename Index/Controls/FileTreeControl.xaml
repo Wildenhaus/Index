@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="Index.Controls.FileTreeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Index.Controls"
+             xmlns:s3dFiles="clr-namespace:Saber3D.Files;assembly=LibH2A"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid x:Name="grid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <TextBox x:Name="SearchBox"
+                 Grid.Row="0"
+                 TextChanged="SearchBox_TextChanged"
+                 Background=" #0FFFFFFF"/>
+        
+        <TreeView x:Name="FileTree"
+                  Grid.Row="1"
+                  ItemsSource="{Binding Files.Groups}"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                  VirtualizingPanel.IsContainerVirtualizable="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type s3dFiles:IS3DFile}" 
+                                      ItemsSource="{Binding Items}">
+                    <TextBlock Text="{Binding Path=Name}" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </Grid>
+
+</UserControl>

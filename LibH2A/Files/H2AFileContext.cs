@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Saber3D.Files
@@ -6,6 +7,13 @@ namespace Saber3D.Files
 
   public class H2AFileContext
   {
+
+    #region Events
+
+    public event EventHandler<IS3DFile> FileAdded;
+    public event EventHandler<IS3DFile> FileRemoved;
+
+    #endregion
 
     #region Data Members
 
@@ -51,6 +59,8 @@ namespace Saber3D.Files
         _files.Add( file.Name, file );
         file.SetFileContext( this );
         filesAdded = true;
+
+        FileAdded?.Invoke( this, file );
       }
 
       foreach ( var childFile in file.Children )
@@ -83,7 +93,12 @@ namespace Saber3D.Files
       var fileName = Path.GetFileName( filePath );
       var fileExt = Path.GetExtension( fileName );
 
-      var stream = H2ADecompressionStream.FromFile( filePath );
+      Stream stream;
+      if ( fileExt == ".pck" )
+        stream = H2ADecompressionStream.FromFile( filePath );
+      else
+        stream = File.OpenRead( filePath );
+
       var file = S3DFileFactory.CreateFile( fileName, stream );
       if ( file is null )
         return false;
@@ -93,7 +108,13 @@ namespace Saber3D.Files
 
     public bool RemoveFile( IS3DFile file )
     {
-      return _files.Remove( file.Name );
+      if ( _files.Remove( file.Name ) )
+      {
+        FileRemoved?.Invoke( this, file );
+        return true;
+      }
+
+      return false;
     }
 
     #endregion

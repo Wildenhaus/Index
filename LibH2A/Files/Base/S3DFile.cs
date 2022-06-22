@@ -169,6 +169,15 @@ namespace Saber3D.Files
 
     #endregion
 
+    #region IEquatable Methods
+
+    public bool Equals( IS3DFile other )
+    {
+      return Name.Equals( other.Name );
+    }
+
+    #endregion
+
   }
 
 }
