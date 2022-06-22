@@ -29,7 +29,7 @@ namespace Saber3D.Serializers
         return;
 
       foreach ( var lodDef in lodDefs )
-        lodDef.ObjectId = reader.ReadUInt16();
+        lodDef.ObjectId = reader.ReadInt16();
     }
 
     private void ReadIndexProperty( BinaryReader reader, List<S3DLodDefinition> lodDefs )

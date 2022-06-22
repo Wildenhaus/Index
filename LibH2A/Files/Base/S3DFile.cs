@@ -9,13 +9,15 @@ namespace Saber3D.Files
 
     #region Data Members
 
-    private string _name;
-
     private IS3DFile _parent;
     private IList<IS3DFile> _children;
-    private H2AFileContext _fileContext;
 
-    private Stream _stream;
+    private string _name;
+    private string _extension;
+
+    private H2AStream _baseStream;
+    public long _dataStartOffset;
+    public long _dataEndOffset;
     private BinaryReader _reader;
 
     private bool _isInitialized;
@@ -25,53 +27,38 @@ namespace Saber3D.Files
 
     #region Properties
 
-    public string Name
-    {
-      get => _name;
-    }
+    public IS3DFile Parent => _parent;
+    public IEnumerable<IS3DFile> Children => _children;
 
+    public string Name => _name;
+    public string Extension => _extension;
     public long SizeInBytes
     {
-      get => _stream.Length;
-    }
-
-    public IS3DFile Parent
-    {
-      get => _parent;
-    }
-
-    public IEnumerable<IS3DFile> Children
-    {
-      get => _children;
-    }
-
-    public H2AFileContext FileContext
-    {
-      get => _fileContext;
+      get => _dataEndOffset - _dataStartOffset;
     }
 
     public abstract string FileTypeDisplay { get; }
 
-    protected Stream BaseStream
-    {
-      get => _stream;
-    }
-
-    protected BinaryReader Reader
-    {
-      get => _reader;
-    }
+    protected H2AStream BaseStream => _baseStream;
+    protected long DataStartOffset => _dataStartOffset;
+    protected long DataEndOffset => _dataEndOffset;
+    protected BinaryReader Reader => _reader;
 
     #endregion
 
     #region Constructor
 
-    protected S3DFile( string name, Stream stream, IS3DFile parent = null )
+    protected S3DFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
     {
       _name = SanitizeName( name );
+      _extension = Path.GetExtension( _name );
 
-      _stream = stream;
-      _reader = new BinaryReader( _stream, System.Text.Encoding.UTF8, true );
+      _baseStream = baseStream;
+      _dataStartOffset = dataStartOffset;
+      _dataEndOffset = dataEndOffset;
+      _reader = new BinaryReader( _baseStream, System.Text.Encoding.UTF8, true );
 
       _parent = parent;
       _children = new List<IS3DFile>();
@@ -96,20 +83,8 @@ namespace Saber3D.Files
       _isInitialized = true;
     }
 
-    public virtual Stream GetStream()
-    {
-      _stream.Position = 0;
-      return _stream;
-    }
-
-    public void SetFileContext( H2AFileContext fileContext )
-    {
-      if ( _fileContext != null )
-        _fileContext.RemoveFile( this );
-
-      fileContext.AddFile( this );
-      _fileContext = fileContext;
-    }
+    public virtual H2AStream GetStream()
+      => new H2AStreamSegment( _baseStream, _dataStartOffset, SizeInBytes );
 
     #endregion
 
@@ -124,11 +99,7 @@ namespace Saber3D.Files
       _children.Add( file );
     }
 
-    #endregion
-
-    #region Private Methods
-
-    private static string SanitizeName( string path )
+    protected virtual string SanitizeName( string path )
     {
       if ( path.Contains( ":" ) )
         path = path.Substring( path.IndexOf( ':' ) + 1 );
@@ -156,8 +127,6 @@ namespace Saber3D.Files
       {
         foreach ( var child in _children )
           child?.Dispose();
-
-        _fileContext?.RemoveFile( this );
       }
 
       _isDisposed = true;
@@ -165,6 +134,15 @@ namespace Saber3D.Files
 
     protected virtual void OnDisposing( bool isDisposing )
     {
+    }
+
+    #endregion
+
+    #region IEquatable Methods
+
+    public bool Equals( IS3DFile other )
+    {
+      return Name.Equals( other.Name );
     }
 
     #endregion

@@ -3,14 +3,15 @@
 namespace Saber3D.Files
 {
 
+  [AttributeUsage( AttributeTargets.Class, AllowMultiple = true )]
   public class FileExtensionAttribute : Attribute
   {
 
-    public string[] FileExtensions { get; }
+    public string FileExtension { get; }
 
-    public FileExtensionAttribute( params string[] fileExtensions )
+    public FileExtensionAttribute( string fileExtension )
     {
-      FileExtensions = fileExtensions;
+      FileExtension = fileExtension;
     }
 
   }

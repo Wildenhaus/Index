@@ -1,0 +1,141 @@
+﻿<view:View x:Class="H2AIndex.Views.TextureExportOptionsView"
+           x:TypeArguments="vm:TextureExportOptionsViewModel"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+           xmlns:controls="clr-namespace:H2AIndex.Controls"
+           xmlns:enums="clr-namespace:H2AIndex.Common.Enumerations"
+           xmlns:view="clr-namespace:H2AIndex.Views"
+           xmlns:vm="clr-namespace:H2AIndex.ViewModels"
+           mc:Ignorable="d" 
+           d:DesignHeight="500" d:DesignWidth="500"
+           Height="300"
+           Width="500">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="{Binding IsForBatch, 
+                                            Converter={StaticResource BoolToGridLengthConverter}}" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <GroupBox Header="Output Path"
+                  Grid.Row="0"
+                  Grid.ColumnSpan="2"
+                  Margin="5,5,5,0">
+            <controls:FileBrowserBox x:Name="OutputPath" 
+                                     Path="{Binding Options.OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     DialogPathType="Directory"
+                                     IsValidPath="{Binding IsValidPath, Mode=OneWayToSource}" />
+        </GroupBox>
+
+        <GroupBox Grid.Row="1"
+                  Grid.ColumnSpan="2"
+                  Margin="5,5,5,0"
+                  Visibility="{Binding IsForBatch, Converter={StaticResource BoolVisibilityConverter}}">
+            <GroupBox.Header>
+                <TextBlock>
+                    <Run>File Filters</Run>
+                    <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                               CommandParameter="STR_ExplainFileFilters">?</Hyperlink>
+                </TextBlock>
+            </GroupBox.Header>
+            <TextBox x:Name="FilterBox" Text="{Binding Options.Filters}" />
+        </GroupBox>
+
+        <GroupBox Header="Conversion Options" 
+                  Grid.Row="2" 
+                  Grid.Column="0"
+                  Margin="5,5,2,5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="File Format" />
+                <ComboBox Grid.Row="0" Grid.Column="1"
+                          SelectedIndex="0"
+                          ItemsSource="{Binding TextureFileFormats}"
+                          SelectedItem="{Binding Options.OutputFileFormat}"/>
+
+                <Label Grid.Row="2" Grid.Column="0" Content="Overwrite Existing" />
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Options.OverwriteExisting}" />
+
+                <Label Grid.Row="4" Grid.Column="0"
+                       IsEnabled="{Binding Options.ExportTextures}">
+                    <TextBlock>
+                        <Run>Export Texture Definitions</Run>
+                        <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                   CommandParameter="STR_ExplainTextureDefinitions">?</Hyperlink>
+                    </TextBlock>
+                </Label>
+                <CheckBox Grid.Row="4" Grid.Column="1"
+                          IsChecked="{Binding Options.ExportTextureDefinition}" />
+                
+                <Label Grid.Row="6" Grid.Column="0" 
+                       Content="Export All Mips"
+                       IsEnabled="{Binding Options.OutputFileFormat, 
+                                           Converter={StaticResource InequalityBoolConverter}, 
+                                           ConverterParameter={x:Static enums:TextureFileFormat.DDS}}"/>
+                <CheckBox Grid.Row="6" Grid.Column="1"
+                          IsChecked="{Binding Options.ExportAllMips}"
+                          IsEnabled="{Binding Options.OutputFileFormat, 
+                                              Converter={StaticResource InequalityBoolConverter}, 
+                                              ConverterParameter={x:Static enums:TextureFileFormat.DDS}}"/>
+
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Header="Normal Map Options" 
+                  Grid.Row="2" 
+                  Grid.Column="1"
+                  Margin="2,5,5,5"
+                  IsEnabled="{Binding Options.OutputFileFormat, 
+                                      Converter={StaticResource InequalityBoolConverter}, 
+                                      ConverterParameter={x:Static enums:TextureFileFormat.DDS}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="Normal Map Format" />
+                <ComboBox Grid.Row="0" Grid.Column="1"
+                          SelectedIndex="0"
+                          ItemsSource="{Binding NormalMapFormats}"
+                          SelectedItem="{Binding Options.OutputNormalMapFormat}" />
+
+                <Label Grid.Row="2" Grid.Column="0" Content="Recalculate Z Channel" />
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Options.RecalculateNormalMapZChannel}" />
+
+            </Grid>
+
+        </GroupBox>
+
+
+    </Grid>
+</view:View>

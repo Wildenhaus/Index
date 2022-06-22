@@ -76,6 +76,12 @@ namespace Saber3D.Common
         if ( _position + bytesToRead > _endOffset )
           bytesToRead = _endOffset - _position - offset;
 
+        if ( bytesToRead > _length - _position )
+          bytesToRead = Math.Max( 0, _length - _position );
+
+        if ( bytesToRead <= 0 )
+          return 0;
+
         var bytesRead = _baseStream.Read( buffer, offset, ( int ) bytesToRead );
         _position += bytesRead;
         return bytesRead;
@@ -100,13 +106,10 @@ namespace Saber3D.Common
       offset = Math.Max( _startOffset, offset );
       offset = Math.Min( _endOffset, offset );
 
-      lock ( _baseStream )
-      {
-        _baseStream.Seek( offset, SeekOrigin.Begin );
-        _position = offset - _startOffset;
+      _baseStream.Seek( offset, SeekOrigin.Begin );
+      _position = offset - _startOffset;
 
-        return _position;
-      }
+      return _position;
     }
 
     public override void SetLength( long value )
@@ -117,6 +120,10 @@ namespace Saber3D.Common
     public override void Write( byte[] buffer, int offset, int count )
     {
       throw new NotImplementedException();
+    }
+
+    public override void Close()
+    {
     }
 
     #endregion

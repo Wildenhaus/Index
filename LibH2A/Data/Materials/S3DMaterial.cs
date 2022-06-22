@@ -33,6 +33,11 @@ namespace Saber3D.Data.Materials
     [ScriptingProperty( "extraParams" )]
     public S3DMaterialExtraParams ExtraParams { get; set; }
 
+    public string MaterialName
+    {
+      get => $"{ShadingMaterialMaterial}_{ShadingMaterialTexture}";
+    }
+
   }
 
 }

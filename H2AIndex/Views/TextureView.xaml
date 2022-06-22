@@ -1,0 +1,105 @@
+﻿<view:View x:Class="H2AIndex.Views.TextureView"
+           x:TypeArguments="vm:TextureViewModel"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+           xmlns:view="clr-namespace:H2AIndex.Views"
+           xmlns:vm="clr-namespace:H2AIndex.ViewModels"
+           xmlns:m="clr-namespace:H2AIndex.Models"
+           mc:Ignorable="d" 
+           d:DesignHeight="450" d:DesignWidth="800">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="1*" MaxWidth="200" />
+            <ColumnDefinition Width="1*" MaxWidth="150"/>
+        </Grid.ColumnDefinitions>
+
+        <Menu Grid.ColumnSpan="3"
+              Padding="3"
+              BorderBrush="{DynamicResource Brush.Primary.3.Border.Static}"
+              Background="{DynamicResource Brush.Primary.3.Background.Static}">
+            <MenuItem Header="File">
+                <MenuItem Header="Open Texture Definition" Command="{Binding OpenTextureDefinitionCommand}" />
+                <Separator />
+                <MenuItem Header="Export" Command="{Binding ExportTextureCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <Image x:Name="CurrentTexturePreview"
+               Grid.Column="0"
+               Grid.Row="1"
+               RenderOptions.BitmapScalingMode="HighQuality"
+               Source="{Binding Texture.SelectedMip.Preview}" />
+
+        <StackPanel Grid.Column="0"
+                    Grid.Row="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Background="#a0000000">
+            <Label Content="{Binding Texture.FaceCount}" ContentStringFormat="Faces: {0}" Padding="10,5,10,0" FontWeight="Bold" />
+            <Label Content="{Binding Texture.MipLevels}" ContentStringFormat="Mip Levels: {0}" Padding="10,0" FontWeight="Bold" />
+            <Label Content="{Binding Texture.DimensionString}" ContentStringFormat="Dims: {0}" Padding="10,0" FontWeight="Bold" />
+            <Label Content="{Binding Texture.Format}" ContentStringFormat="Format: {0}" Padding="10,0,10,5" FontWeight="Bold" />
+
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.1" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+        </StackPanel>
+
+        <DockPanel Grid.Column="1" Grid.Row="1">
+            <Border DockPanel.Dock="Top"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource Brush.Primary.4.Border.Static}"
+                    Background="{DynamicResource Brush.Primary.4.Background.Static}">
+                <Label Content="Faces" FontSize="13" FontWeight="SemiBold" Margin="0" Padding="5,0" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+            </Border>
+            <ListView x:Name="FacesList"
+                      DockPanel.Dock="Bottom"
+                      Background="#10FFFFFF"
+                      ItemsSource="{Binding Texture.Faces}"
+                      SelectedItem="{Binding Texture.SelectedFace}"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="Auto" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </DockPanel>
+
+        <DockPanel Grid.Column="2" Grid.Row="1">
+            <Border DockPanel.Dock="Top"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource Brush.Primary.4.Border.Static}"
+                    Background="{DynamicResource Brush.Primary.4.Background.Static}">
+                <Label Content="MipMaps" FontSize="13" FontWeight="SemiBold" Margin="0" Padding="5,0" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+            </Border>
+            <ListView x:Name="MipsList"
+                      DockPanel.Dock="Bottom"
+                      Background="#10FFFFFF"
+                      ItemsSource="{Binding Texture.SelectedFace.MipMaps}"
+                      SelectedItem="{Binding Texture.SelectedMip}"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="Auto" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </DockPanel>
+        
+    </Grid>
+</view:View>

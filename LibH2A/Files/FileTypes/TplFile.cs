@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Saber3D.Data;
+using Saber3D.Serializers;
 
 namespace Saber3D.Files.FileTypes
 {
@@ -10,15 +11,32 @@ namespace Saber3D.Files.FileTypes
 
     #region Properties
 
-    public override string FileTypeDisplay => "Model/Template (.tpl)";
+    public override string FileTypeDisplay => "Model (.tpl)";
 
     #endregion
 
     #region Constructor
 
-    public TplFile( string name, Stream stream, IS3DFile parent = null )
-      : base( name, stream, parent )
+    public TplFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
+      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
     {
+    }
+
+    #endregion
+
+    #region Public Methods
+
+    public S3DTemplate Deserialize()
+    {
+      var stream = GetStream();
+      try
+      {
+        stream.AcquireLock();
+        return S3DTemplateSerializer.Deserialize( stream );
+      }
+      finally { stream.ReleaseLock(); }
     }
 
     #endregion

@@ -1,12 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Saber3D.Common;
 
 namespace Saber3D.Data
 {
 
   public class S3DObject
   {
+
+    #region Data Members
+
+    private string _name;
+    private string _boneName;
+    private string _meshName;
+
+    #endregion
 
     #region Properties
 
@@ -79,16 +88,62 @@ namespace Saber3D.Data
 
     public string GetName()
     {
-      if ( !string.IsNullOrWhiteSpace( Name ) )
-        return Name;
-
-      if ( !string.IsNullOrWhiteSpace( ReadName ) )
-        return ReadName;
+      if ( _name != null )
+        return _name;
 
       if ( !string.IsNullOrWhiteSpace( UnkName ) )
-        return UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries ).Last();
+        return _name = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries ).Last();
+
+      if ( !string.IsNullOrWhiteSpace( Name ) )
+        return _name = Name;
+
+      if ( !string.IsNullOrWhiteSpace( ReadName ) )
+        return _name = ReadName;
 
       return null;
+    }
+
+    public string GetParentName()
+      => Parent?.GetName();
+
+    public string GetMeshName()
+    {
+      if ( _meshName != null )
+        return _meshName;
+
+      if ( string.IsNullOrWhiteSpace( UnkName ) )
+        return null;
+
+      var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
+        .Where( x => x != "h" && !x.StartsWith( "_b_" ) && !x.StartsWith( "_m_" ) );
+
+      return _meshName = string.Join( "_", nameParts.TakeLast( 2 ) ).Trim();
+    }
+
+    public string GetParentMeshName()
+    {
+
+      if ( string.IsNullOrWhiteSpace( UnkName ) )
+        return null;
+
+      var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
+        .Where( x => x != "h" && !x.StartsWith( "_b_" ) && !x.StartsWith( "_m_" ) );
+
+      return nameParts.FirstOrDefault();
+    }
+
+    public string GetBoneName()
+    {
+      if ( _boneName != null )
+        return _boneName;
+
+      if ( string.IsNullOrWhiteSpace( UnkName ) )
+        return null;
+
+      var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
+        .Where( x => x == "h" || x.StartsWith( "_b_" ) || x.StartsWith( "_m_" ) );
+
+      return _boneName = nameParts.LastOrDefault();
     }
 
     #endregion

@@ -9,8 +9,10 @@ namespace Saber3D.Files
 
     #region Constructor
 
-    protected S3DContainerFile( string name, Stream stream, IS3DFile parent = null )
-      : base( SanitizeFileName( name ), stream, parent )
+    protected S3DContainerFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
+      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
     {
     }
 
@@ -32,15 +34,20 @@ namespace Saber3D.Files
 
     protected virtual IS3DFile CreateChildFile( string name, long offset, long size )
     {
-      var childStream = new StreamSegment( BaseStream, offset, size );
-      return S3DFileFactory.CreateFile( name, childStream, this );
+      var dataStartOffset = CalculateTrueChildOffset( offset );
+      var dataEndOffset = dataStartOffset + size;
+
+      return S3DFileFactory.CreateFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
     }
+
+    protected long CalculateTrueChildOffset( long offset )
+      => DataStartOffset + offset;
 
     private void ReadHeader()
     {
       // TODO
       // Skipping this for now. We might want to read it though.
-      BaseStream.Position = 0x45;
+      BaseStream.Position = DataStartOffset + 0x45;
     }
 
     private void ReadChildren()
@@ -48,7 +55,7 @@ namespace Saber3D.Files
       var entryCount = Reader.ReadInt32();
       _ = Reader.ReadInt32(); // TODO: Unk
 
-      _ = Reader.ReadByte(); // Delimiter
+      var d = Reader.ReadByte(); // Delimiter
 
       // Read Entry Names
       var names = new string[ entryCount ];
@@ -92,8 +99,10 @@ namespace Saber3D.Files
 
     }
 
-    private static string SanitizeFileName( string fileName )
+    protected override string SanitizeName( string fileName )
     {
+      fileName = base.SanitizeName( fileName );
+
       /* A lot of times, files will be encapsulated in a Pck file, but will still
        * use the extension of the file they contain. We don't want these Pck containers
        * to use their child file's extension. The files within these containers have

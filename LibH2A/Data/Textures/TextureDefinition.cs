@@ -5,7 +5,7 @@ using Saber3D.Data.Scripting;
 namespace Saber3D.Data.Textures
 {
 
-  public class TextureDefinition
+  public class TextureDefinition : ITextureNameProvider
   {
 
     [ScriptingProperty( "__type_id" )]
@@ -52,6 +52,27 @@ namespace Saber3D.Data.Textures
 
     [ScriptingProperty( "version" )]
     public Single Version { get; set; }
+
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( GameMaterial ) )
+        yield return GameMaterial;
+
+      if ( Materials != null )
+      {
+        foreach ( var material in Materials )
+        {
+          yield return material.Key;
+          foreach ( var materialName in material.Value.GetTextureNames() )
+            yield return materialName;
+        }
+      }
+
+      if ( Shaders != null )
+        foreach ( var shader in Shaders.Values )
+          foreach ( var textureName in shader.GetTextureNames() )
+            yield return textureName;
+    }
 
   }
 
@@ -157,7 +178,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionMaterial
+  public class TextureDefinitionMaterial : ITextureNameProvider
   {
 
     [ScriptingProperty( "__type_id" )]
@@ -175,9 +196,24 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "shaders" )]
     public Dictionary<string, TextureDefinitionShader> Shaders { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( DefaultMaterial != null )
+        foreach ( var textureName in DefaultMaterial.GetTextureNames() )
+          yield return textureName;
+
+      if ( !string.IsNullOrWhiteSpace( GameMaterial ) )
+        yield return GameMaterial;
+
+      if ( Shaders != null )
+        foreach ( var shader in Shaders.Values )
+          foreach ( var textureName in shader.GetTextureNames() )
+            yield return textureName;
+    }
+
   }
 
-  public class TextureDefinitionShader
+  public class TextureDefinitionShader : ITextureNameProvider
   {
 
     [ScriptingProperty( "__type_id" )]
@@ -253,13 +289,13 @@ namespace Saber3D.Data.Textures
     public TextureDefinitionShaderDoubleSideLighting DoubleSideLighting { get; set; }
 
     [ScriptingProperty( "emissive" )]
-    public TextureDefinitionShaderEmissive emissive { get; set; }
+    public TextureDefinitionShaderEmissive Emissive { get; set; }
 
     [ScriptingProperty( "eyes" )]
     public TextureDefinitionShaderEyes Eyes { get; set; }
 
     [ScriptingProperty( "fadeDist" )]
-    public Single DadeDist { get; set; }
+    public Single FadeDist { get; set; }
 
     [ScriptingProperty( "fakeLight" )]
     public TextureDefinitionShaderFakeLight FakeLight { get; set; }
@@ -301,7 +337,7 @@ namespace Saber3D.Data.Textures
     public TextureDefinitionTextureLayer TextureLayerThird { get; set; }
 
     [ScriptingProperty( "maps" )]
-    public TextureDefinitionShaderMaps maps { get; set; }
+    public TextureDefinitionShaderMaps Maps { get; set; }
 
     [ScriptingProperty( "maskOffDistortion" )]
     public Boolean MaskOffDistortionEnabled { get; set; }
@@ -399,6 +435,79 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "zTest" )]
     public Boolean ZTestEnabled { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( Animation != null )
+        foreach ( var textureName in Animation.GetTextureNames() )
+          yield return textureName;
+
+      if ( Detail != null )
+        foreach ( var textureName in Detail.GetTextureNames() )
+          yield return textureName;
+
+      if ( DetailDiffuse != null )
+        foreach ( var textureName in DetailDiffuse.GetTextureNames() )
+          yield return textureName;
+
+      if ( Distort != null )
+        foreach ( var textureName in Distort.GetTextureNames() )
+          yield return textureName;
+
+      if ( DistortBackground != null )
+        foreach ( var textureName in DistortBackground.GetTextureNames() )
+          yield return textureName;
+
+      if ( Emissive != null )
+        foreach ( var textureName in Emissive.GetTextureNames() )
+          yield return textureName;
+
+      if ( GradientBlink != null )
+        foreach ( var textureName in GradientBlink.GetTextureNames() )
+          yield return textureName;
+
+      if ( GradientScroll != null )
+        foreach ( var textureName in GradientScroll.GetTextureNames() )
+          yield return textureName;
+
+      if ( ShaderLayer1 != null )
+        foreach ( var textureName in ShaderLayer1.GetTextureNames() )
+          yield return textureName;
+
+      if ( ShaderLayer2 != null )
+        foreach ( var textureName in ShaderLayer2.GetTextureNames() )
+          yield return textureName;
+
+      if ( ShaderLayerBase != null )
+        foreach ( var textureName in ShaderLayerBase.GetTextureNames() )
+          yield return textureName;
+
+      if ( TextureLayerSecond != null )
+        foreach ( var textureName in TextureLayerSecond.GetTextureNames() )
+          yield return textureName;
+
+      if ( TextureLayerThird != null )
+        foreach ( var textureName in TextureLayerThird.GetTextureNames() )
+          yield return textureName;
+
+      if ( Maps != null )
+        foreach ( var textureName in Maps.GetTextureNames() )
+          yield return textureName;
+
+      if ( Perturbation != null )
+        foreach ( var textureName in Perturbation.GetTextureNames() )
+          yield return textureName;
+
+      if ( Skin != null )
+        foreach ( var textureName in Skin.GetTextureNames() )
+          yield return textureName;
+
+      if ( Textures != null )
+        foreach ( var textureName in Textures.Values )
+          yield return textureName;
+
+      if ( !string.IsNullOrWhiteSpace( TextureNormalMap ) )
+        yield return TextureNormalMap;
+    }
   }
 
   public class TextureDefinitionShaderGlossiness
@@ -412,7 +521,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionShaderDetailMap
+  public class TextureDefinitionShaderDetailMap : ITextureNameProvider
   {
 
     [ScriptingProperty( "density" )]
@@ -430,9 +539,17 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "useDetailMask" )]
     public Boolean UseDetailMask { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( DiffuseTexture ) )
+        yield return DiffuseTexture;
+
+      if ( !string.IsNullOrWhiteSpace( Texture ) )
+        yield return Texture;
+    }
   }
 
-  public class TextureDefinitionShaderEmissive
+  public class TextureDefinitionShaderEmissive : ITextureNameProvider
   {
 
     [ScriptingProperty( "adaptiveIntensity" )]
@@ -450,6 +567,12 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "tint" )]
     public S3DColor Tint { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( Animation != null )
+        foreach ( var textureName in Animation.GetTextureNames() )
+          yield return textureName;
+    }
   }
 
   public class TextureDefinitionShaderSoftFresnel
@@ -469,7 +592,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionTextureLayer
+  public class TextureDefinitionTextureLayer : ITextureNameProvider
   {
 
     [ScriptingProperty( "alphaSource" )]
@@ -493,9 +616,17 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "textureScaleY" )]
     public Single TextureScaleY { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( AlphaSource ) )
+        yield return AlphaSource;
+
+      if ( !string.IsNullOrWhiteSpace( Texture ) )
+        yield return Texture;
+    }
   }
 
-  public class TextureDefinitionShaderDistortion
+  public class TextureDefinitionShaderDistortion : ITextureNameProvider
   {
 
     [ScriptingProperty( "distortionScale" )]
@@ -519,9 +650,14 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "useWCS" )]
     public Boolean UseWCS { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( DistortTexture ) )
+        yield return DistortTexture;
+    }
   }
 
-  public class TextureDefinitionShaderGradient
+  public class TextureDefinitionShaderGradient : ITextureNameProvider
   {
 
     [ScriptingProperty( "speed" )]
@@ -533,6 +669,11 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "texPhaseOffset" )]
     public String TexturePhaseOffset { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( Texture ) )
+        yield return Texture;
+    }
   }
 
   public class TextureDefinitionShaderSoftZ
@@ -566,7 +707,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionShaderDistortionBackground
+  public class TextureDefinitionShaderDistortionBackground : ITextureNameProvider
   {
 
     [ScriptingProperty( "affectedBySelfDistortion" )]
@@ -590,6 +731,11 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "textureSpeedScale" )]
     public Single TextureSpeedScale { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( Texture ) )
+        yield return Texture;
+    }
   }
 
   public class TextureDefinitionShaderCarPaint
@@ -663,7 +809,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionShaderAnimation
+  public class TextureDefinitionShaderAnimation : ITextureNameProvider
   {
 
     [ScriptingProperty( "bending" )]
@@ -681,6 +827,16 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "noise" )]
     public TextureDefinitionAnimationNoise Noise { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( Blink != null )
+        foreach ( var textureName in Blink.GetTextureNames() )
+          yield return textureName;
+
+      if ( Gradient != null )
+        foreach ( var textureName in Gradient.GetTextureNames() )
+          yield return textureName;
+    }
   }
 
   public class TextureDefinitionShaderReflection
@@ -737,7 +893,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionShaderPerturbation
+  public class TextureDefinitionShaderPerturbation : ITextureNameProvider
   {
 
     [ScriptingProperty( "enabled" )]
@@ -749,9 +905,19 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "second" )]
     public TextureDefinitionShaderPerturbationLayer SecondLayer { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( FirstLayer != null )
+        foreach ( var textureName in FirstLayer.GetTextureNames() )
+          yield return textureName;
+
+      if ( SecondLayer != null )
+        foreach ( var textureName in SecondLayer.GetTextureNames() )
+          yield return textureName;
+    }
   }
 
-  public class TextureDefinitionShaderPerturbationLayer
+  public class TextureDefinitionShaderPerturbationLayer : ITextureNameProvider
   {
 
     [ScriptingProperty( "NM" )]
@@ -766,6 +932,11 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "wave_len" )]
     public Single WaveLength { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( NormalMap ) )
+        yield return NormalMap;
+    }
   }
 
   public class TextureDefinitionShaderGlass
@@ -776,7 +947,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionShaderSkin
+  public class TextureDefinitionShaderSkin : ITextureNameProvider
   {
 
     [ScriptingProperty( "detail" )]
@@ -785,9 +956,19 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "wrinkles" )]
     public TextureDefinitionShaderSkinWrinkles Wrinkles { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( Detail != null )
+        foreach ( var textureName in Detail.GetTextureNames() )
+          yield return textureName;
+
+      if ( Wrinkles != null )
+        foreach ( var textureName in Wrinkles.GetTextureNames() )
+          yield return textureName;
+    }
   }
 
-  public class TextureDefinitionShaderSkinWrinkles
+  public class TextureDefinitionShaderSkinWrinkles : ITextureNameProvider
   {
 
     [ScriptingProperty( "enable" )]
@@ -808,6 +989,23 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "normalmap" )]
     public String NormalMap { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( Mask0_3 ) )
+        yield return Mask0_3;
+
+      if ( !string.IsNullOrWhiteSpace( Mask4_7 ) )
+        yield return Mask4_7;
+
+      if ( !string.IsNullOrWhiteSpace( Mask8_11 ) )
+        yield return Mask8_11;
+
+      if ( !string.IsNullOrWhiteSpace( Mask12_15 ) )
+        yield return Mask12_15;
+
+      if ( !string.IsNullOrWhiteSpace( NormalMap ) )
+        yield return NormalMap;
+    }
   }
 
   public class TextureDefinitionShaderEyes
@@ -934,7 +1132,7 @@ namespace Saber3D.Data.Textures
 
   }
 
-  public class TextureDefinitionShaderMaps
+  public class TextureDefinitionShaderMaps : ITextureNameProvider
   {
 
     [ScriptingProperty( "caustics" )]
@@ -964,9 +1162,40 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "tintMask" )]
     public String TintMask { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( Caustics ) )
+        yield return Caustics;
+
+      if ( !string.IsNullOrWhiteSpace( Debris ) )
+        yield return Debris;
+
+      if ( Detail != null )
+        foreach ( var textureName in Detail.GetTextureNames() )
+          yield return textureName;
+
+      if ( DetailNormalMap != null )
+        foreach ( var textureName in DetailNormalMap.GetTextureNames() )
+          yield return textureName;
+
+      if ( !string.IsNullOrWhiteSpace( Foam ) )
+        yield return Foam;
+
+      if ( !string.IsNullOrWhiteSpace( GlobalMask ) )
+        yield return GlobalMask;
+
+      if ( !string.IsNullOrWhiteSpace( ShoreDataMap ) )
+        yield return ShoreDataMap;
+
+      if ( !string.IsNullOrWhiteSpace( ShoreMask ) )
+        yield return ShoreMask;
+
+      if ( !string.IsNullOrWhiteSpace( TintMask ) )
+        yield return TintMask;
+    }
   }
 
-  public class TextureDefinitionShaderLayer
+  public class TextureDefinitionShaderLayer : ITextureNameProvider
   {
 
     [ScriptingProperty( "add_bloom" )]
@@ -1023,6 +1252,20 @@ namespace Saber3D.Data.Textures
     [ScriptingProperty( "uv_source" )]
     public String UvSource { get; set; }
 
+    public IEnumerable<string> GetTextureNames()
+    {
+      if ( !string.IsNullOrWhiteSpace( AlphaSource ) )
+        yield return AlphaSource;
+
+      if ( !string.IsNullOrWhiteSpace( TextureDiffuse ) )
+        yield return TextureDiffuse;
+
+      if ( !string.IsNullOrWhiteSpace( TextureNormalMap ) )
+        yield return TextureNormalMap;
+
+      if ( !string.IsNullOrWhiteSpace( Texture ) )
+        yield return Texture;
+    }
   }
 
   public class TextureDefinitionShaderColors

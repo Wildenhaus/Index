@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Saber3D.Files
+﻿namespace Saber3D.Files
 {
 
   [FileSignature( "1SERpak" )]
@@ -16,23 +14,11 @@ namespace Saber3D.Files
 
     #region Constructor
 
-    public PckFile( string name, Stream stream, IS3DFile parent = null )
-      : base( name, stream, parent )
+    public PckFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
+      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
     {
-    }
-
-    public static PckFile FromStream( string name, H2ADecompressionStream stream, IS3DFile parent = null )
-    {
-      var file = new PckFile( name, stream, parent );
-      file.Initialize();
-
-      return file;
-    }
-
-    public static PckFile FromFile( string filePath )
-    {
-      var name = Path.GetFileName( filePath );
-      return FromStream( name, H2ADecompressionStream.FromFile( filePath ) );
     }
 
     #endregion

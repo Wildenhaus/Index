@@ -1,29 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Saber3D.Files
 {
 
-  public interface IS3DFile : IDisposable
+  public interface IS3DFile : IDisposable, IEquatable<IS3DFile>
   {
 
     #region Properties
 
-    string Name { get; }
     IS3DFile Parent { get; }
     IEnumerable<IS3DFile> Children { get; }
 
-    string FileTypeDisplay { get; }
+    string Name { get; }
+    string Extension { get; }
+    long SizeInBytes { get; }
 
-    H2AFileContext FileContext { get; }
+    string FileTypeDisplay { get; }
 
     #endregion
 
     #region Public Methods
 
-    Stream GetStream();
-    void SetFileContext( H2AFileContext fileContext );
+    H2AStream GetStream();
 
     #endregion
 

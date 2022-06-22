@@ -1,0 +1,116 @@
+﻿<UserControl x:Class="H2AIndex.Models.FileTreeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:H2AIndex.Controls"
+             xmlns:model="clr-namespace:H2AIndex.Models"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="400">
+    <Grid>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--#region Header -->
+        
+        <Border Grid.Row="0"
+                BorderThickness="1"
+                BorderBrush="{DynamicResource Brush.Primary.3.Border.Static}"
+                Background="{DynamicResource Brush.Primary.3.Background.Static}"
+                HorizontalAlignment="Stretch">
+            <DockPanel HorizontalAlignment="Stretch">
+
+                <Label Content="File Tree"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Margin="0"
+                       Padding="5,2"
+                       DockPanel.Dock="Left"
+                       VerticalAlignment="Center" />
+
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+
+                    <ToggleButton Padding="0"
+                                  Margin="0,0,10,0"
+                                  Background="Transparent"
+                                  ToolTip="Show Unsupported Files"
+                                  IsChecked="{Binding FileContext.ShowUnsupportedFiles}">
+                        <ToggleButton.Content>
+                            <Path Data="{Binding Source={StaticResource Icon_Eye}, Path=Data}"
+                                  Fill="{DynamicResource Brush.Glyph.Static}" 
+                                  Stretch="Uniform"
+                                  Width="14"
+                                  Height="14" />
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    
+                    <Button x:Name="BtnExpandAll" 
+                            Padding="0"
+                            Background="Transparent"
+                            ToolTip="Expand All Groups">
+                        <Button.Content>
+                            <Path Data="{Binding Source={StaticResource Icon_Expand}, Path=Data}"
+                                  Fill="{DynamicResource Brush.Glyph.Static}" 
+                                  Stretch="Uniform"
+                                  Width="14"
+                                  Height="14" />
+                        </Button.Content>
+                    </Button>
+
+                    <Button x:Name="BtnCollapseAll" 
+                            Padding="0"
+                            Background="Transparent"
+                            ToolTip="Collapse All Groups">
+                        <Button.Content>
+                            <Path Data="{Binding Source={StaticResource Icon_Collapse}, Path=Data}"
+                                  Fill="{DynamicResource Brush.Glyph.Static}" 
+                                  Stretch="Uniform"
+                                  Width="14"
+                                  Height="14" />
+                        </Button.Content>
+                    </Button>
+
+                </StackPanel>
+
+            </DockPanel>
+        </Border>
+        
+        <!--#endregion-->
+
+        <!--#region Search Box -->
+
+        <controls:SearchBox x:Name="SearchBox"
+                            Grid.Row="1"
+                            TextChangedCommand="{Binding FileContext.SearchTermChangedCommand}"/>
+
+        <!--#endregion-->
+        
+        <!--#region File Tree -->
+
+        <TreeView x:Name="FileTree"
+                  Grid.Row="2"
+                  ItemsSource="{Binding FileContext.Files.Groups}"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                  VirtualizingPanel.IsContainerVirtualizable="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  PreviewMouseDoubleClick="OnPreviewMouseDoubleClick">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type model:FileModel}"
+                                          ItemsSource="{Binding Items}">
+                    <TextBlock Text="{Binding Path=Name}" />
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        
+        <!--#endregion-->
+        
+    </Grid>
+</UserControl>

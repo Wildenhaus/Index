@@ -37,7 +37,11 @@ namespace Saber3D.Data
 
         if ( Flags == S3DGeometryBufferFlags._FACE ) // TODO: Is there a better way to detect this?
           return S3DGeometryElementType.Face;
-        else return S3DGeometryElementType.Unknown;
+
+        if ( Flags == S3DGeometryBufferFlags._BONE )
+          return S3DGeometryElementType.BoneId;
+
+        return S3DGeometryElementType.Unknown;
       }
     }
 

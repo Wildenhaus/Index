@@ -1,0 +1,292 @@
+﻿<view:View x:Class="H2AIndex.Views.PreferencesView"
+           x:TypeArguments="vm:PreferencesViewModel"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+           xmlns:controls="clr-namespace:H2AIndex.Controls"
+           xmlns:enums="clr-namespace:H2AIndex.Common.Enumerations"
+           xmlns:view="clr-namespace:H2AIndex.Views"
+           xmlns:vm="clr-namespace:H2AIndex.ViewModels"
+           mc:Ignorable="d" 
+           d:DesignHeight="300" d:DesignWidth="500"
+           
+           Height="300" Width="500">
+
+    <TabControl>
+
+        <TabItem Header="Files">
+            <StackPanel>
+                <GroupBox Grid.Row="0"
+                          Margin="5,5,5,0">
+                    <GroupBox.Header>
+                        <DockPanel>
+                            <Label DockPanel.Dock="Left"
+                                   Content="Default H2A Directory" />
+                            <CheckBox DockPanel.Dock="Right"
+                                      Content="Load on Startup"
+                                      FlowDirection="RightToLeft"
+                                      IsChecked="{Binding Preferences.LoadH2ADirectoryOnStartup}" />
+                        </DockPanel>
+                    </GroupBox.Header>
+                    <controls:FileBrowserBox Path="{Binding Preferences.H2ADirectoryPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     DialogPathType="Directory"  />
+                </GroupBox>
+
+                <GroupBox Header="Default Export Path"
+                  Grid.Row="1"
+                  Margin="5,5,5,0">
+                    <controls:FileBrowserBox Path="{Binding Preferences.DefaultExportPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     DialogPathType="Directory"  />
+                </GroupBox>
+            </StackPanel>
+        </TabItem>
+
+        <TabItem Header="Models">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Model Export Defaults" Grid.Column="0" Margin="5,5,0,5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0">
+                            <TextBlock>
+                                <Run>Create Folder for Model</Run>
+                                <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                           CommandParameter="STR_ExplainCreateDirectoryForModel">?</Hyperlink>
+                            </TextBlock>
+                        </Label>
+                        <CheckBox Grid.Row="0" Grid.Column="1"
+                          IsChecked="{Binding Preferences.ModelExportOptions.CreateDirectoryForModel}" />
+                        
+                        <Label Grid.Row="1" Grid.Column="0"
+                               Content="File Format" />
+                        <ComboBox Grid.Row="1" Grid.Column="1"
+                                  ItemsSource="{Binding ModelFileFormats}"
+                                  SelectedItem="{Binding Preferences.ModelExportOptions.OutputFileFormat}" />
+                        
+                        <Label Grid.Row="2" Grid.Column="0"
+                               Content="Overwrite Existing" />
+                        <CheckBox Grid.Row="2" Grid.Column="1"
+                                  IsChecked="{Binding Preferences.ModelExportOptions.OverwriteExisting}" />
+
+                        <Label Grid.Row="3" Grid.Column="0"
+                               Content="Export Textures" />
+                        <CheckBox Grid.Row="3" Grid.Column="1"
+                                  IsChecked="{Binding Preferences.ModelExportOptions.ExportTextures}" />
+
+                        <Label Grid.Row="4" Grid.Column="0"
+                               Content="Export Material Definitions" />
+                        <CheckBox Grid.Row="4" Grid.Column="1"
+                                  IsChecked="{Binding Preferences.ModelExportOptions.ExportMaterialDefinitions}" />
+
+                        <Label Grid.Row="5" Grid.Column="0">
+                            <TextBlock>
+                                <Run>Remove LODs</Run>
+                                <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                           CommandParameter="STR_ExplainLODs">?</Hyperlink>
+                            </TextBlock>
+                        </Label>
+                        <CheckBox Grid.Row="5" Grid.Column="1"
+                          IsChecked="{Binding Preferences.ModelExportOptions.RemoveLODs}" />
+
+                        <Label Grid.Row="6" Grid.Column="0">
+                            <TextBlock>
+                                <Run>Remove Volumes</Run>
+                                <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                           CommandParameter="STR_ExplainVolumes">?</Hyperlink>
+                            </TextBlock>
+                        </Label>
+                        <CheckBox Grid.Row="6" Grid.Column="1"
+                          IsChecked="{Binding Preferences.ModelExportOptions.RemoveVolumes}" />
+
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Model Viewer" Grid.Column="2" Margin="0,5,5,5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Show FPS" />
+                        <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowFps}" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Content="Show Model Info" />
+                        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowModelInfo}" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Content="FXAA Quality" />
+                        <ComboBox Grid.Row="2" Grid.Column="1" 
+                                  ItemsSource="{Binding RenderFxaaLevels}" 
+                                  SelectedItem="{Binding Preferences.ModelViewerOptions.RenderFxaaQuality}" />
+
+                        <Label Grid.Row="3" Grid.Column="0" 
+                               Content="{Binding Preferences.ModelViewerOptions.ModelTexturePreviewQuality}"
+                               ContentStringFormat="Texture Quality ({0:0%})"/>
+                        <Slider Grid.Row="3" Grid.Column="1" Margin="0,3,0,0"
+                                Value="{Binding Preferences.ModelViewerOptions.ModelTexturePreviewQuality}" 
+                                Minimum="0.01" Maximum="1.0" TickFrequency="0.01" />
+
+                        <Label Grid.Row="4" Grid.Column="0" 
+                               Content="Default to Flycam" />
+                        <CheckBox Grid.Row="4" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.ModelViewerOptions.DefaultToFlycam}" />
+
+                        <Label Grid.Row="5" Grid.Column="0" 
+                               Content="Default Hide LODs" />
+                        <CheckBox Grid.Row="5" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.ModelViewerOptions.DefaultHideLODs}" />
+
+                        <Label Grid.Row="6" Grid.Column="0" 
+                               Content="Default Hide Volumes" />
+                        <CheckBox Grid.Row="6" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.ModelViewerOptions.DefaultHideVolumes}" />
+
+                    </Grid>
+
+                </GroupBox>
+
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Textures">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="Texture Export Defaults" Grid.Column="0" Margin="5,5,0,5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="File Format" />
+                        <ComboBox Grid.Row="0" Grid.Column="1"
+                                  ItemsSource="{Binding TextureFileFormats}"
+                                  SelectedItem="{Binding Preferences.TextureExportOptions.OutputFileFormat}"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" 
+                               Content="Overwrite Existing" />
+                        <CheckBox Grid.Row="1" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.TextureExportOptions.OverwriteExisting}" />
+
+                        <Label Grid.Row="2" Grid.Column="0">
+                            <TextBlock>
+                        <Run>Export Texture Definitions</Run>
+                        <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                   CommandParameter="STR_ExplainTextureDefinitions">?</Hyperlink>
+                            </TextBlock>
+                        </Label>
+                        <CheckBox Grid.Row="2" Grid.Column="1"
+                                  IsChecked="{Binding Preferences.TextureExportOptions.ExportTextureDefinition}" />
+
+                        <Label Grid.Row="3" Grid.Column="0" 
+                               Content="Export All Mips"
+                               IsEnabled="{Binding Preferences.TextureExportOptions.OutputFileFormat, 
+                                                   Converter={StaticResource InequalityBoolConverter}, 
+                                                   ConverterParameter={x:Static enums:TextureFileFormat.DDS}}"/>
+                        <CheckBox Grid.Row="3" Grid.Column="1"
+                                  IsChecked="{Binding Preferences.TextureExportOptions.ExportAllMips}"
+                                  IsEnabled="{Binding Preferences.TextureExportOptions.OutputFileFormat, 
+                                                      Converter={StaticResource InequalityBoolConverter}, 
+                                                      ConverterParameter={x:Static enums:TextureFileFormat.DDS}}"/>
+
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Normal Map Options" Grid.Column="0" Grid.Row="1" Margin="5,0,0,5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" 
+                               Content="Normal Map Format" />
+                        <ComboBox Grid.Row="0" Grid.Column="1"
+                                  SelectedIndex="0"
+                                  ItemsSource="{Binding NormalMapFormats}"
+                                  SelectedItem="{Binding Preferences.TextureExportOptions.OutputNormalMapFormat}" />
+
+                        <Label Grid.Row="2" Grid.Column="0" 
+                               Content="Recalculate Z Channel" />
+                        <CheckBox Grid.Row="2" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.TextureExportOptions.RecalculateNormalMapZChannel}" />
+
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Texture Viewer" Grid.Column="2" Margin="0,5,5,5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" 
+                               Content="{Binding Preferences.TextureViewerOptions.PreviewQuality}"
+                               ContentStringFormat="Preview Quality ({0:0%})"/>
+                        <Slider Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" 
+                                Minimum="0" Maximum="1" TickFrequency="0.01"
+                                Value="{Binding Preferences.TextureViewerOptions.PreviewQuality}" />
+
+                    </Grid>
+                </GroupBox>
+
+            </Grid>
+        </TabItem>
+        
+    </TabControl>
+
+</view:View>

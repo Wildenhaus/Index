@@ -1,0 +1,52 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="STR_ExplainCreateDirectoryForModel_Title">Create Folder for Model</sys:String>
+    <sys:Boolean x:Key="STR_ExplainCreateDirectoryForModel_ShowOnMainView">True</sys:Boolean>
+    <sys:String x:Key="STR_ExplainCreateDirectoryForModel_Message">
+        When this option is checked, models and any additional exported files such as (textures
+        and materials) will be placed in a new folder named after the model.
+    </sys:String>
+    
+    <sys:String x:Key="STR_ExplainFileFilters_Title">File Filters</sys:String>
+    <sys:Boolean x:Key="STR_ExplainFileFilters_ShowOnMainView">True</sys:Boolean>
+    <sys:String x:Key="STR_ExplainFileFilters_Message">
+        This textbox allows you to filter your batch export down to files that match certain criteria.
+        Filters are delimited by a semicolon (;) and are case-insensitive. Wildcard (*) is not supported.
+        \n
+        \nExample Usage: masterchief;dervish
+        \nThis will only export files with 'masterchief' and 'dervish' in their names.
+    </sys:String>
+
+    <sys:String x:Key="STR_ExplainTextureDefinitions_Title">Export Texture Definitions</sys:String>
+    <sys:Boolean x:Key="STR_ExplainTextureDefinitions_ShowOnMainView">True</sys:Boolean>
+    <sys:String x:Key="STR_ExplainTextureDefinitions_Message">
+        Texture Definitions are text files that describe how materials use a particular texture.
+        
+        \nNot much is known about how these work in the engine, but they provide important information 
+        when setting up game-accurate shaders.
+    </sys:String>
+
+    <sys:String x:Key="STR_ExplainLODs_Title">Remove LODs</sys:String>
+    <sys:Boolean x:Key="STR_ExplainLODs_ShowOnMainView">True</sys:Boolean>
+    <sys:String x:Key="STR_ExplainLODs_Message">
+        This setting attempts to remove LOD (Level of Detail) meshes from the exported file. 
+        LOD Meshes are low-poly and are only used by the game engine when objects are far away.
+        \n
+        \nDue to meshes and nodes not following any specific naming convention, this option may not 
+        always successfully remove LOD meshes from the exported file. This is expecially the case 
+        for level geometry (maps).
+    </sys:String>
+
+    <sys:String x:Key="STR_ExplainVolumes_Title">Remove Volumes</sys:String>
+    <sys:Boolean x:Key="STR_ExplainVolumes_ShowOnMainView">True</sys:Boolean>
+    <sys:String x:Key="STR_ExplainVolumes_Message">
+        This setting attempts to remove trigger volumes and other invisible 
+        meshes from the exported file. These are typically only present in level geometry (maps).
+        \n
+        \nDue to meshes and nodes not following any specific naming convention, this option may not 
+        always successfully remove volume meshes from the exported file.
+    </sys:String>
+
+</ResourceDictionary>

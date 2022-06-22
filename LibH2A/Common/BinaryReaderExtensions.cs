@@ -209,6 +209,33 @@ namespace Saber3D.Common
     }
 
     /// <summary>
+    ///   Reads a null-terminated string.
+    /// </summary>
+    /// <param name="reader">
+    ///   The <see cref="BinaryReader" />.
+    /// </param>
+    /// <param name="maxLength">
+    ///   The maximum length of the string.
+    /// </param>
+    /// <returns>
+    ///   The value of the string.
+    /// </returns>
+    [DebuggerHidden]
+    public static string ReadStringNullTerminated( this BinaryReader reader, int maxLength )
+    {
+      var builder = new StringBuilder();
+
+      var c = reader.ReadByte();
+      while ( c != 0 && builder.Length < maxLength )
+      {
+        builder.Append( ( char ) c );
+        c = reader.ReadByte();
+      }
+
+      return builder.ToString();
+    }
+
+    /// <summary>
     ///   Reads a 128-bit <see cref="Guid" />.
     /// </summary>
     /// <param name="reader">

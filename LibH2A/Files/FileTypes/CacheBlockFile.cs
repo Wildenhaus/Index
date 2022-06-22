@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using Saber3D.Common;
 
 namespace Saber3D.Files.FileTypes
 {
@@ -17,8 +16,10 @@ namespace Saber3D.Files.FileTypes
 
     #region Constructor
 
-    public CacheBlockFile( string name, Stream stream, IS3DFile parent = null )
-      : base( name, stream, parent )
+    public CacheBlockFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
+      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
     {
     }
 
@@ -32,14 +33,39 @@ namespace Saber3D.Files.FileTypes
        * material settings, and a lot more.
        * 
        * Since they are all plaintext files, we can avoid the performance overhead of 
-       * S3DFileFactory by just treating them all as generic text files.
-       * 
-       * If we want to convert material settings when we're exporting models, we'll need to
-       * deserialize the .td files.
+       * S3DFileFactory by just treating them all as generic text files unless defined here.
        */
 
-      var stream = new StreamSegment( BaseStream, offset, size );
-      return new GenericTextFile( name, stream, this );
+      var dataStartOffset = CalculateTrueChildOffset( offset );
+      var dataEndOffset = dataStartOffset + size;
+
+      switch ( Path.GetExtension( name ) )
+      {
+        case ".td":
+          return new TextureDefinitionFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".s3dprs":
+        case ".grsp":
+          return new PresetFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".sd":
+          return new ShaderDefinitionFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".ssc":
+        case ".ssl":
+        case ".ps":
+        case ".fsm":
+          return new ScriptingFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".cls":
+          return new ObjectClassFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".dsh":
+        case ".fx":
+        case ".hsh":
+        case ".psh":
+        case ".vsh":
+          return new ShaderCodeFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+
+        default:
+          return new GenericTextFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+      }
+
     }
 
     #endregion

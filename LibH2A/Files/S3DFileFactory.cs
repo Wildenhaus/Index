@@ -10,16 +10,18 @@ using static Saber3D.Assertions;
 namespace Saber3D.Files
 {
 
-  public static class S3DFileFactory
+  internal static class S3DFileFactory
   {
 
     #region Delegates
 
-    private delegate IS3DFile CreateFileDelegate( string name, Stream stream, IS3DFile parent = null );
+    private delegate IS3DFile CreateFileDelegate( string name, H2AStream stream, long startOffset, long endOffset, IS3DFile parent = null );
 
     #endregion
 
     #region Data Members
+
+    public static readonly IReadOnlyCollection<string> SupportedFileExtensions;
 
     private static Dictionary<string, Type> _extensionLookup;
     private static Dictionary<string, Type> _signatureLookup;
@@ -35,16 +37,21 @@ namespace Saber3D.Files
       _extensionLookup = BuildExtensionLookup();
       _signatureLookup = BuildSignatureLookup();
       _constructorLookup = BuildConstructorLookup();
+
+      SupportedFileExtensions = new HashSet<string>( _extensionLookup.Keys );
     }
 
     #endregion
 
     #region Public Methods
 
-    public static IS3DFile CreateFile( string name, Stream stream, IS3DFile parent = null )
+    public static IS3DFile CreateFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
     {
+      baseStream.Position = 0;
       var ext = Path.GetExtension( name );
-      var signature = ReadSignature( stream );
+      var signature = ReadSignature( baseStream, dataStartOffset );
 
       if ( !_signatureLookup.TryGetValue( signature, out var fileType ) )
         if ( !_extensionLookup.TryGetValue( ext, out fileType ) )
@@ -53,19 +60,19 @@ namespace Saber3D.Files
       if ( !_constructorLookup.TryGetValue( fileType, out var ctorDelegate ) )
         return FailReturn<IS3DFile>( $"FileType '{fileType.Name}' does not have a constructor delegate!" );
 
-      return ctorDelegate( name, stream, parent );
+      return ctorDelegate( name, baseStream, dataStartOffset, dataEndOffset, parent );
     }
 
     #endregion
 
     #region Private Methods
 
-    private static string ReadSignature( Stream stream )
+    private static string ReadSignature( H2AStream stream, long dataStartOffset )
     {
-      stream.Position = 0;
+      stream.Position = dataStartOffset;
       var reader = new BinaryReader( stream, System.Text.Encoding.UTF8, true );
 
-      var signature = reader.ReadStringNullTerminated();
+      var signature = reader.ReadStringNullTerminated( maxLength: 32 );
       reader.BaseStream.Position = 0;
 
       return signature;
@@ -80,7 +87,7 @@ namespace Saber3D.Files
         BindingFlags.NonPublic;
 
       // Get the constructor
-      var ctorArgTypes = new Type[] { typeof( string ), typeof( Stream ), typeof( IS3DFile ) };
+      var ctorArgTypes = new Type[] { typeof( string ), typeof( H2AStream ), typeof( long ), typeof( long ), typeof( IS3DFile ) };
       var ctorMethod = fileType.GetConstructor( BINDING_FLAGS, null, ctorArgTypes, new ParameterModifier[ 0 ] );
       Assert( ctorMethod != null, $"Could not find constructor for {fileType.Name}" );
 
@@ -90,9 +97,11 @@ namespace Saber3D.Files
 
       // Initialize the call arguments
       var nameParameter = Expression.Parameter( typeof( string ), "name" );
-      var streamParameter = Expression.Parameter( typeof( Stream ), "stream" );
+      var streamParameter = Expression.Parameter( typeof( H2AStream ), "stream" );
+      var startOffsetParameter = Expression.Parameter( typeof( long ), "startOffset" );
+      var endOffsetParameter = Expression.Parameter( typeof( long ), "endOffset" );
       var parentParameter = Expression.Parameter( typeof( IS3DFile ), "parent" );
-      var parameters = new[] { nameParameter, streamParameter, parentParameter };
+      var parameters = new[] { nameParameter, streamParameter, startOffsetParameter, endOffsetParameter, parentParameter };
 
       // Initialize the local variables
       var instanceVariable = Expression.Variable( fileType, "instance" );
@@ -136,12 +145,14 @@ namespace Saber3D.Files
 
       foreach ( var fileType in GetDefinedFileTypes() )
       {
-        var extAttribute = fileType.GetCustomAttributes( typeof( FileExtensionAttribute ), false ).FirstOrDefault() as FileExtensionAttribute;
-        if ( extAttribute is null )
-          continue;
+        var extAttributes = fileType.GetCustomAttributes( typeof( FileExtensionAttribute ), false )
+          .Cast<FileExtensionAttribute>();
 
-        foreach ( var extension in extAttribute.FileExtensions )
+        foreach ( var extAttribute in extAttributes )
+        {
+          var extension = extAttribute.FileExtension;
           extLookup.Add( extension, fileType );
+        }
       }
 
       return extLookup;
@@ -164,7 +175,6 @@ namespace Saber3D.Files
     }
 
     #endregion
-
 
   }
 

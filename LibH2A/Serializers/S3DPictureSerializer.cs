@@ -55,6 +55,18 @@ namespace Saber3D.Serializers
 
     #endregion
 
+    #region Public Methods
+
+    public static S3DPicture Deserialize( Stream stream )
+    {
+      var reader = new BinaryReader( stream );
+      return new S3DPictureSerializer().Deserialize( reader );
+    }
+
+    #endregion
+
+    #region Private Methods
+
     private void ReadHeader( BinaryReader reader, S3DPicture pict )
     {
       Assert( reader.ReadInt32() == SIGNATURE_PICT, "Invalid PICT signature." );
@@ -92,6 +104,10 @@ namespace Saber3D.Serializers
       reader.Read( pict.Data, 0, ( int ) dataSize );
     }
 
+    #endregion
+
+    #region Embedded Types
+
     private enum PictureSentinel : ushort
     {
       Header = 0xF0,
@@ -101,6 +117,8 @@ namespace Saber3D.Serializers
       Data = 0xFF,
       Footer = 0x01
     }
+
+    #endregion
 
   }
 

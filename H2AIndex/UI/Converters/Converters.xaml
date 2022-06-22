@@ -1,0 +1,15 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:H2AIndex.UI.Converters">
+
+    <converters:EqualityBoolConverter x:Key="EqualityBoolConverter" />
+    <converters:InequalityBoolConverter x:Key="InequalityBoolConverter" />
+    <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+    
+    <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
+    <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
+    <converters:IntVisibilityConverter x:Key="IntVisibilityConverter" />
+
+    <converters:BoolToGridLengthConverter x:Key="BoolToGridLengthConverter" />
+
+</ResourceDictionary>

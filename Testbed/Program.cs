@@ -12,12 +12,13 @@ namespace Testbed
   public static class Program
   {
     // Change this
+    static readonly IH2AFileContext FileContext = new H2AFileContext();
     const string GAME_PATH = @"G:\Steam\steamapps\common\Halo The Master Chief Collection\";
 
     public static void Main( string[] args )
     {
       // Index all game files
-      H2AFileContext.Global.OpenDirectory( GAME_PATH );
+      FileContext.OpenDirectory( GAME_PATH );
 
       TestReadTemplateModels();
       TestReadLevelGeometry();
@@ -27,12 +28,11 @@ namespace Testbed
 
       ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
       ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
-
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var tplFile = fileContext.GetFiles( tplName )
         .Where( x => x.Name.Contains( tplName ) )
@@ -58,7 +58,7 @@ namespace Testbed
 
     private static void ExportLevelGeometry( string lgName, string outFbxPath )
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var lgFile = fileContext.GetFiles( lgName )
         .Where( x => x.Name.Contains( lgName ) )
@@ -84,7 +84,7 @@ namespace Testbed
 
     private static void TestReadLevelGeometry()
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var count = 0;
       var success = 0;
@@ -115,7 +115,7 @@ namespace Testbed
 
     private static void TestReadTemplateModels()
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var count = 0;
       var success = 0;
@@ -146,7 +146,7 @@ namespace Testbed
 
     private static void TestReadTextures()
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var count = 0;
       var success = 0;
@@ -178,7 +178,7 @@ namespace Testbed
     private static void TestConvertTexturesToDDS()
     {
       int success = 0, count = 0;
-      foreach ( var file in H2AFileContext.Global.GetFiles( ".pct" ) )
+      foreach ( var file in FileContext.GetFiles( ".pct" ) )
       {
         var fs = file.GetStream();
         var reader = new BinaryReader( fs );
@@ -211,7 +211,7 @@ namespace Testbed
     private static void TestConvertTexturesToTGA()
     {
       int success = 0, count = 0;
-      foreach ( var file in H2AFileContext.Global.GetFiles( ".pct" ) )
+      foreach ( var file in FileContext.GetFiles( ".pct" ) )
       {
         var fs = file.GetStream();
         var reader = new BinaryReader( fs );
