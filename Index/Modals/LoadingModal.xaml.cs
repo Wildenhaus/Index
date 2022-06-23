@@ -1,6 +1,5 @@
-﻿using System;
-using Index.Controls;
-using PropertyChanged;
+﻿using Index.Controls;
+using Index.ViewModels;
 
 namespace Index.Modals
 {
@@ -10,7 +9,7 @@ namespace Index.Modals
 
     #region Properties
 
-    public LoadingModalViewModel ViewModel { get; }
+    public ProgressViewModel ViewModel { get; }
 
     #endregion
 
@@ -20,42 +19,10 @@ namespace Index.Modals
       : base( host )
     {
       InitializeComponent();
-      DataContext = ViewModel = new LoadingModalViewModel();
+      DataContext = ViewModel = new ProgressViewModel();
     }
 
     #endregion
-
-  }
-
-  [AddINotifyPropertyChangedInterface]
-  public class LoadingModalViewModel
-  {
-
-    public string Header { get; set; }
-
-    public string UnitName { get; set; }
-
-    public int CompletedUnits { get; set; }
-
-    public int TotalUnits { get; set; }
-
-    public bool IsIndeterminate { get; set; }
-
-    [DependsOn( nameof( CompletedUnits ) )]
-    public string SubHeader
-    {
-      get
-      {
-        if ( IsIndeterminate ) return null;
-        return $"{CompletedUnits} of {TotalUnits} {UnitName} ({Percentage:0.00%})";
-      }
-    }
-
-    [DependsOn( nameof( CompletedUnits ) )]
-    public double Percentage
-    {
-      get => ( double ) CompletedUnits / Math.Max( 1, TotalUnits );
-    }
 
   }
 

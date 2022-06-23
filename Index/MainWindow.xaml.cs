@@ -1,7 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using Index.ViewModels;
 using Saber3D.Files;
 
 namespace Index
@@ -12,6 +15,7 @@ namespace Index
 
     public MainWindow()
     {
+      AppManager.SetMainWindow( this );
       InitializeComponent();
       SetIcon();
 
@@ -24,6 +28,11 @@ namespace Index
       //var scene = SceneExporter.CreateScene( file.Name, tpl.GeometryGraph, reader );
 
       //AppDaemon.AddEditorTab( new ModelViewerControl( scene ), file.Name );
+
+      H2AFileContext.Global.OpenFile( @"G:\h2a\d\shared\_textures_\ch_masterchief_chest.pct" );
+      var file = H2AFileContext.Global.Files.Values.First();
+
+      AppManager.CreateViewForFile( file );
     }
 
     private void SetIcon()
@@ -37,24 +46,12 @@ namespace Index
 
     private void OnOpenDirectoryClick( object sender, RoutedEventArgs e )
     {
-      //using ( var dialog = new FolderBrowserDialog() )
-      //{
-      //  dialog.Description = "Open H2A Directory";
+      var path = AppManager.BrowseForDirectory( "Open H2A Directory" );
 
-      //  if ( dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK )
-      //    return;
-
-      //  var files = Directory.GetFiles( dialog.SelectedPath, "*.pck", SearchOption.AllDirectories );
-      //  if ( files.Length == 0 )
-      //    return;
-      //}
-
-
-      var path = @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo1";
       var files = Directory.GetFiles( path, "*.pck", SearchOption.AllDirectories );
       if ( files.Length == 0 )
       {
-        AppDaemon.ShowMessageModal( ContentHost,
+        AppManager.ShowMessageModal( ContentHost,
           title: "No Files Found",
           message: "No Halo 2 Anniversary .pck files were found. " +
                    "If you meant to open a file that you previously extracted, " +
@@ -62,10 +59,20 @@ namespace Index
         return;
       }
 
-      AppDaemon.PerformWork( ContentHost, vm =>
+      AppManager.PerformWork( ContentHost, vm => OpenH2ADirectoryFiles( files, vm ) );
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private void OpenH2ADirectoryFiles( string[] files, ProgressViewModel vm )
+    {
+      string currentFile = null;
+      try
       {
         vm.TotalUnits = files.Length;
-        vm.UnitName = "files";
+        vm.UnitName = "file(s) loaded";
 
         foreach ( var file in files )
         {
@@ -77,7 +84,16 @@ namespace Index
         vm.Header = "Organizing Files";
         vm.IsIndeterminate = true;
         FileTree.Refresh();
-      } );
+      }
+      catch ( Exception ex )
+      {
+        AppManager.ShowMessageModal( ContentHost,
+          title: "Error",
+          message: "Encountered an error while attempting to load the game files:\n"
+                + $"File: {currentFile}\n"
+                + $"Error: {ex.Message}"
+          ); ;
+      }
     }
 
     #endregion

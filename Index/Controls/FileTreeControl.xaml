@@ -24,7 +24,8 @@
                   VirtualizingPanel.IsVirtualizing="True"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                   VirtualizingPanel.IsContainerVirtualizable="True"
-                  VirtualizingPanel.VirtualizationMode="Recycling">
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  MouseDoubleClick="FileTree_MouseDoubleClick">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate DataType="{x:Type s3dFiles:IS3DFile}" 
                                       ItemsSource="{Binding Items}">

@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
     <PackageReference Include="DebounceThrottle" Version="1.0.0" />
+    <PackageReference Include="DirectXTexNet" Version="1.0.3" />
     <PackageReference Include="Fody" Version="6.6.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

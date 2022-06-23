@@ -78,10 +78,13 @@ namespace Index.ViewModels
 
     #region Event Handlers
 
-    private void OnFileAdded( object? sender, IS3DFile e )
+    private void OnFileAdded( object? sender, IS3DFile file )
     {
+      if ( file.Extension == ".pck" )
+        return;
+
       lock ( _fileSynchronizer )
-        _files.Add( e );
+        _files.Add( file );
     }
 
     #endregion

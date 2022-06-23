@@ -1,6 +1,7 @@
 ﻿using System.Windows.Controls;
 using DebounceThrottle;
 using Index.ViewModels;
+using Saber3D.Files;
 
 namespace Index.Controls
 {
@@ -48,6 +49,15 @@ namespace Index.Controls
         foreach ( TreeViewItem item in FileTree.Items )
           item.IsExpanded = false;
       } );
+    }
+
+    private void FileTree_MouseDoubleClick( object sender, System.Windows.Input.MouseButtonEventArgs e )
+    {
+      var item = FileTree.SelectedItem as IS3DFile;
+      if ( item is null )
+        return;
+
+      AppManager.CreateViewForFile( item );
     }
 
   }

@@ -10,6 +10,7 @@ namespace Saber3D.Files
     #region Data Members
 
     private string _name;
+    private string _extension;
 
     private IS3DFile _parent;
     private IList<IS3DFile> _children;
@@ -28,6 +29,11 @@ namespace Saber3D.Files
     public string Name
     {
       get => _name;
+    }
+
+    public string Extension
+    {
+      get => _extension;
     }
 
     public long SizeInBytes
@@ -69,6 +75,7 @@ namespace Saber3D.Files
     protected S3DFile( string name, Stream stream, IS3DFile parent = null )
     {
       _name = SanitizeName( name );
+      _extension = Path.GetExtension( _name );
 
       _stream = stream;
       _reader = new BinaryReader( _stream, System.Text.Encoding.UTF8, true );

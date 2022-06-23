@@ -11,6 +11,8 @@ namespace Saber3D.Files
     #region Properties
 
     string Name { get; }
+    string Extension { get; }
+
     IS3DFile Parent { get; }
     IEnumerable<IS3DFile> Children { get; }
 
