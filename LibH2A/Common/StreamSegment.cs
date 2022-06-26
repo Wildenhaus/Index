@@ -76,6 +76,12 @@ namespace Saber3D.Common
         if ( _position + bytesToRead > _endOffset )
           bytesToRead = _endOffset - _position - offset;
 
+        if ( bytesToRead > _length - _position )
+          bytesToRead = Math.Max( 0, _length - _position );
+
+        if ( bytesToRead <= 0 )
+          return 0;
+
         var bytesRead = _baseStream.Read( buffer, offset, ( int ) bytesToRead );
         _position += bytesRead;
         return bytesRead;

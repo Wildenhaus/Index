@@ -7,9 +7,17 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/DeepDark.xaml" />
+                <!--<ResourceDictionary Source="/Styles/DeepDark.xaml" />
                 <ResourceDictionary Source="/Styles/ControlColours.xaml" />
-                <ResourceDictionary Source="/Styles/Controls.xaml" />
+                <ResourceDictionary Source="/Styles/Controls.xaml" />-->
+
+                <ResourceDictionary Source="/UI/Converters/Converters.xaml" />
+
+                <ResourceDictionary Source="/UI/Styles/Icons.xaml" />
+                <ResourceDictionary Source="/UI/Styles/Colors.xaml" />
+                <ResourceDictionary Source="/UI/Styles/Controls.xaml" />
+                
+                
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

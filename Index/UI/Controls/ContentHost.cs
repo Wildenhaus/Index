@@ -7,7 +7,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
-namespace Index.Controls
+namespace Index.UI.Controls
 {
 
   public class ContentHost : Panel
@@ -120,7 +120,15 @@ namespace Index.Controls
       var storyboard = new Storyboard();
 
       if ( onComplete != null )
-        storyboard.Completed += ( s, e ) => onComplete( element );
+      {
+        void HandleOnComplete( object? sender, EventArgs e )
+        {
+          onComplete( element );
+          storyboard.Completed -= HandleOnComplete;
+        }
+
+        storyboard.Completed += HandleOnComplete;
+      }
 
       var anim = new DoubleAnimation()
       {

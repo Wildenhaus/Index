@@ -1,32 +1,39 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System;
+using PropertyChanged;
 
 namespace Index.ViewModels
 {
 
-  public abstract class ViewModel : INotifyPropertyChanged
+  [AddINotifyPropertyChangedInterface]
+  public class ViewModel : IDisposable
   {
 
-    #region Events
+    #region Data Members
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    private bool _isDisposed;
 
     #endregion
 
-    #region Private Methods
+    #region IDisposable Methods
 
-    protected void RaisePropertyChanged( [CallerMemberName] string propertyName = null )
+    public void Dispose()
     {
-      PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
+      Dispose( true );
     }
 
-    protected void SetProperty<T>( ref T propertyField, T value, [CallerMemberName] string propertyName = null )
+    private void Dispose( bool disposing )
     {
-      if ( propertyField?.Equals( value ) ?? false )
+      if ( _isDisposed )
         return;
 
-      propertyField = value;
-      RaisePropertyChanged( propertyName );
+      if ( disposing )
+        OnDisposing();
+
+      _isDisposed = true;
+    }
+
+    protected virtual void OnDisposing()
+    {
     }
 
     #endregion

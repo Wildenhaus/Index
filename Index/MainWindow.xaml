@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Index"
         xmlns:controls="clr-namespace:Index.Controls"
+        xmlns:ui="clr-namespace:Index.UI.Controls"
         mc:Ignorable="d"
         Title="Index" 
         Height="720" Width="1280"
@@ -30,7 +31,7 @@
                 <MenuItem Header="About" />
             </MenuItem>
         </Menu>
-        <controls:ContentHost x:Name="ContentHost" 
+        <ui:ContentHost x:Name="ContentHost" 
                               DockPanel.Dock="Bottom">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -43,6 +44,6 @@
                 <TabControl x:Name="Tabs" Grid.Column="1">
                 </TabControl>
             </Grid>
-        </controls:ContentHost>
+        </ui:ContentHost>
     </DockPanel>
 </Window>

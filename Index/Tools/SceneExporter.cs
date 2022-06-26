@@ -3,8 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Assimp;
+using Index.ViewModels;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
+using Saber3D.Data.Materials;
 using Saber3D.Serializers.Geometry;
 
 namespace Index.Tools
@@ -16,6 +18,7 @@ namespace Index.Tools
     #region Data Members
 
     private BinaryReader _reader;
+    private S3DGeometryGraph _graph;
 
     private Scene _scene;
     private Dictionary<short, Node> _nodes;
@@ -28,13 +31,22 @@ namespace Index.Tools
 
     public IReadOnlyDictionary<short, Node> Nodes => _nodes;
 
+    public ProgressViewModel Progress { get; }
+
     #endregion
 
     #region Constructor
 
-    private SceneExporter( string name, BinaryReader reader )
+    private SceneExporter( string name, S3DGeometryGraph graph, BinaryReader reader, ProgressViewModel progress )
     {
       _reader = reader;
+      _graph = graph;
+      Progress = progress;
+
+      Progress.TotalUnits = graph.Objects.Count;
+      Progress.CompletedUnits = 0;
+      Progress.UnitName = "objects converted";
+      Progress.IsIndeterminate = false;
 
       _scene = new Scene();
       _scene.RootNode = new Node( name );
@@ -47,9 +59,9 @@ namespace Index.Tools
       _scene.Materials.Add( new Material() { Name = "DefaultMaterial" } );
     }
 
-    public static Scene CreateScene( string name, S3DGeometryGraph graph, BinaryReader reader )
+    public static Scene CreateScene( string name, S3DGeometryGraph graph, BinaryReader reader, ProgressViewModel progress )
     {
-      var exporter = new SceneExporter( name, reader );
+      var exporter = new SceneExporter( name, graph, reader, progress );
 
       exporter.AddObject( graph.RootObject );
 
@@ -74,13 +86,16 @@ namespace Index.Tools
       if ( obj.SubMeshes.Any() )
       {
         AddMeshData( obj, objectNode );
+        Progress.CompletedUnits++;
         return;
       }
       else
       {
+        Progress.CompletedUnits++;
         foreach ( var childObject in obj.EnumerateChildren() )
           AddObject( childObject, objectNode );
       }
+
     }
 
     #endregion
@@ -91,7 +106,7 @@ namespace Index.Tools
     {
       foreach ( var submesh in obj.SubMeshes )
       {
-        var mesh = MeshBuilder.Build( obj, submesh, _reader );
+        var mesh = MeshBuilder.Build( _scene, obj, submesh, _reader );
         _scene.Meshes.Add( mesh );
         objectNode.MeshIndices.Add( _scene.Meshes.Count - 1 );
       }
@@ -102,6 +117,7 @@ namespace Index.Tools
     internal class MeshBuilder
     {
 
+      private Scene _scene;
       private S3DObject _obj;
       private S3DGeometrySubMesh _submesh;
       private S3DGeometryGraph _graph;
@@ -112,8 +128,9 @@ namespace Index.Tools
       private Dictionary<short, Bone> _boneLookup;
       private Dictionary<int, int> _vertexLookup;
 
-      private MeshBuilder( S3DObject obj, S3DGeometrySubMesh submesh, BinaryReader reader )
+      private MeshBuilder( Scene scene, S3DObject obj, S3DGeometrySubMesh submesh, BinaryReader reader )
       {
+        _scene = scene;
         _obj = obj;
         _submesh = submesh;
 
@@ -124,9 +141,9 @@ namespace Index.Tools
         _vertexLookup = new Dictionary<int, int>();
       }
 
-      public static Mesh Build( S3DObject obj, S3DGeometrySubMesh submesh, BinaryReader reader )
+      public static Mesh Build( Scene scene, S3DObject obj, S3DGeometrySubMesh submesh, BinaryReader reader )
       {
-        var builder = new MeshBuilder( obj, submesh, reader );
+        var builder = new MeshBuilder( scene, obj, submesh, reader );
         return builder.Build();
       }
 
@@ -154,6 +171,9 @@ namespace Index.Tools
               break;
           }
         }
+
+        if ( _submesh.Material != null )
+          AddMaterial( _submesh.Material );
 
         return _mesh;
       }
@@ -302,6 +322,29 @@ namespace Index.Tools
          * adjust this accordingly.
          */
         _mesh.UVComponentCount[ uvChannel ] = 2;
+      }
+
+      private void AddMaterial( S3DMaterial material )
+      {
+        var materialTexName = material.ShadingMaterialTexture;
+
+        for ( var i = 0; i < _scene.Materials.Count; i++ )
+        {
+          var sceneMat = _scene.Materials[ i ];
+          if ( sceneMat.Name == materialTexName )
+          {
+            _mesh.MaterialIndex = i;
+            return;
+          }
+        }
+
+        var mat = new Material { Name = materialTexName };
+        mat.TextureDiffuse = new TextureSlot { FilePath = materialTexName };
+        mat.TextureNormal = new TextureSlot { FilePath = $"{materialTexName}_nm" };
+        mat.TextureSpecular = new TextureSlot { FilePath = $"{materialTexName}_spec" };
+
+        _scene.Materials.Add( mat );
+        _mesh.MaterialIndex = _scene.Materials.Count - 1;
       }
 
     }

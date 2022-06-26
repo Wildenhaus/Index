@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using Index.Controls;
 using Index.Modals;
+using Index.UI.Controls;
 using Index.ViewModels;
 using Index.Views;
 using Saber3D.Files;
@@ -17,21 +15,14 @@ namespace Index
 
     private static MainWindow _mainWindow;
 
-    public static ContentHost AddEditorTab( UIElement control, string tabName )
+    public static ContentHostTab AddEditorTab( string tabName, View view )
     {
-      var host = new ContentHost();
-      host.Children.Add( control );
-
-      var tab = new TabItem
-      {
-        Header = tabName,
-        Content = host
-      };
+      var tab = new ContentHostTab( tabName, view );
 
       _mainWindow.Tabs.Items.Add( tab );
       _mainWindow.Tabs.SelectedIndex = _mainWindow.Tabs.Items.Count - 1;
 
-      return host;
+      return tab;
     }
 
     public static string BrowseForDirectory( string description = null )
@@ -50,22 +41,37 @@ namespace Index
 
     public static Task CreateViewForFile( IS3DFile file )
     {
-      UIElement view = null;
+      View view = null;
       switch ( file.Extension )
       {
         case ".pct":
           view = new TextureView( file );
+          break;
+        case ".tpl":
+        case ".lg":
+          view = new ModelView( file );
+          break;
+        case ".td":
+          view = new TextEditorView( file );
           break;
       }
 
       if ( view == null )
         return ShowMessageModal( _mainWindow.ContentHost, "Unsupported File", "We can't open that file type yet." );
 
-      var tabHost = AddEditorTab( view, file.Name );
-      if ( view is IInitializableView initializableView )
-        return initializableView.Initialize( tabHost );
+      var tab = AddEditorTab( file.Name, view );
+      return view.Initialize( tab.ContentHost );
+    }
 
-      return Task.CompletedTask;
+    public static void ForceGarbageCollection()
+    {
+      // WPF has odd GC behavior when it comes to bitmaps and some other
+      // resource types. To actually clear them from memory, you need to
+      // collect twice, while waiting for the finalizers in between collects.
+      // Yes, I know this is hacky.
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+      GC.Collect();
     }
 
     public static Task PerformWork( ContentHost host, Action<ProgressViewModel> doWork )

@@ -28,6 +28,8 @@ namespace Index.Controls
     public void Refresh()
       => _viewModel.Refresh();
 
+    #region Event Handlers
+
     private void SearchBox_TextChanged( object sender, TextChangedEventArgs e )
     {
       _searchDebouncer.Debounce( () =>
@@ -39,15 +41,8 @@ namespace Index.Controls
 
         if ( string.IsNullOrWhiteSpace( searchTerm ) )
           CollapseAllGroups();
-      } );
-    }
-
-    private void CollapseAllGroups()
-    {
-      Dispatcher.Invoke( () =>
-      {
-        foreach ( TreeViewItem item in FileTree.Items )
-          item.IsExpanded = false;
+        else
+          ExpandAllGroups();
       } );
     }
 
@@ -59,6 +54,45 @@ namespace Index.Controls
 
       AppManager.CreateViewForFile( item );
     }
+
+    private void OnExpandAllGroupsClicked( object sender, System.Windows.RoutedEventArgs e )
+    {
+      ExpandAllGroups();
+    }
+
+    private void OnCollapseAllGroupsClicked( object sender, System.Windows.RoutedEventArgs e )
+    {
+      CollapseAllGroups();
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private void CollapseAllGroups()
+    {
+      Dispatcher.Invoke( () => ExpandCollapseInternal( FileTree, expand: false ) );
+    }
+
+    private void ExpandAllGroups()
+    {
+      Dispatcher.Invoke( () => ExpandCollapseInternal( FileTree, expand: true ) );
+    }
+
+    private void ExpandCollapseInternal( ItemsControl items, bool expand )
+    {
+      foreach ( var obj in items.Items )
+      {
+        var childControl = items.ItemContainerGenerator.ContainerFromItem( obj );
+
+        if ( childControl is TreeViewItem treeItem )
+          treeItem.IsExpanded = expand;
+        else if ( childControl is ItemsControl itemControl )
+          ExpandCollapseInternal( childControl as ItemsControl, expand );
+      }
+    }
+
+    #endregion
 
   }
 

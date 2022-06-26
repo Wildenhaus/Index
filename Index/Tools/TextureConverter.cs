@@ -5,7 +5,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using DirectXTexNet;
-using Index.Models;
 using Saber3D.Data.Textures;
 
 namespace Index.Tools
@@ -57,7 +56,36 @@ namespace Index.Tools
       }
     }
 
-    public static IEnumerable<TextureImageModel> ConvertToPreviewModel( S3DPicture pict, float quality = 0.5f )
+    public static BitmapImage ConvertToBitmap( S3DPicture pict, float quality = 1f )
+    {
+      var image = CreateScratchImage( pict );
+
+      _ = DecompressIfNeeded( ref image );
+      _ = ConvertIfNeeded( ref image );
+
+      using ( image )
+      {
+        using ( var imgStream = image.SaveToJPGMemory( 0, quality ) )
+        using ( var memStream = new MemoryStream() )
+        {
+          imgStream.CopyTo( memStream );
+          memStream.Position = 0;
+
+          var bitmap = new BitmapImage();
+          bitmap.BeginInit();
+          bitmap.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+          bitmap.CacheOption = BitmapCacheOption.OnLoad;
+          bitmap.StreamSource = memStream;
+          bitmap.UriSource = null;
+          bitmap.EndInit();
+
+          bitmap.Freeze();
+          return bitmap;
+        }
+      }
+    }
+
+    public static IEnumerable<BitmapImage> ConvertToBitmaps( S3DPicture pict, float quality = 1f )
     {
       var image = CreateScratchImage( pict );
 
@@ -70,12 +98,10 @@ namespace Index.Tools
 
         for ( var i = 0; i < imageCount; i++ )
         {
-          var model = new TextureImageModel();
           using ( var imgStream = image.SaveToJPGMemory( i, quality ) )
+          using ( var memStream = new MemoryStream() )
           {
-            var memStream = new MemoryStream();
             imgStream.CopyTo( memStream );
-
             memStream.Position = 0;
 
             var bitmap = new BitmapImage();
@@ -87,14 +113,12 @@ namespace Index.Tools
             bitmap.EndInit();
 
             bitmap.Freeze();
-
-            model.Index = i;
-            model.ImageData = bitmap;
+            yield return bitmap;
           }
-
-          yield return model;
         }
       }
+
+      image?.Dispose();
     }
 
     private static ScratchImage CreateScratchImage( S3DPicture pict )

@@ -43,6 +43,7 @@ namespace Saber3D.Files
 
     public static IS3DFile CreateFile( string name, Stream stream, IS3DFile parent = null )
     {
+      stream.Position = 0;
       var ext = Path.GetExtension( name );
       var signature = ReadSignature( stream );
 
@@ -65,7 +66,7 @@ namespace Saber3D.Files
       stream.Position = 0;
       var reader = new BinaryReader( stream, System.Text.Encoding.UTF8, true );
 
-      var signature = reader.ReadStringNullTerminated();
+      var signature = reader.ReadStringNullTerminated( maxLength: 32 );
       reader.BaseStream.Position = 0;
 
       return signature;

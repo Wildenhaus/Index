@@ -1,12 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using Index.Controls;
 using Index.Models;
 using Index.Tools;
-using PropertyChanged;
+using Index.ViewModels;
 using Saber3D.Data.Textures;
 using Saber3D.Files;
 using Saber3D.Serializers;
@@ -14,7 +11,7 @@ using Saber3D.Serializers;
 namespace Index.Views
 {
 
-  public partial class TextureView : UserControl, IInitializableView
+  public partial class TextureView : View
   {
 
     #region Data Members
@@ -25,9 +22,7 @@ namespace Index.Views
 
     #region Properties
 
-    public ContentHost Host { get; private set; }
-
-    public TextureViewViewModel ViewModel { get; }
+    public TextureViewViewModel ViewModel { get; set; }
 
     #endregion
 
@@ -38,19 +33,19 @@ namespace Index.Views
       InitializeComponent();
       _file = file;
 
-      DataContext = ViewModel = new TextureViewViewModel();
-      ViewModel.Name = file.Name;
+      ViewModel = new TextureViewViewModel();
+      DataContext = ViewModel;
     }
 
     #endregion
 
-    #region Public Methods
+    #region Overrides
 
-    public Task Initialize( ContentHost host )
+    protected override Task OnInitializing()
     {
-      Host = host;
+      ViewModel.Name = _file.Name;
 
-      return AppManager.PerformWork( host, prog =>
+      return AppManager.PerformWork( Host, prog =>
       {
         prog.IsIndeterminate = true;
 
@@ -59,11 +54,26 @@ namespace Index.Views
         ViewModel.ApplyMetadata( pict );
 
         prog.Header = "Generating Texture Previews";
-        foreach ( var imageModel in TextureConverter.ConvertToPreviewModel( pict ) )
-          Dispatcher.Invoke( () => ViewModel.Images.Add( imageModel ) );
+        foreach ( var image in TextureConverter.ConvertToBitmaps( pict ) )
+          Dispatcher.Invoke( () =>
+          {
+            var imageModel = new TextureImageModel
+            {
+              Index = ViewModel.Images.Count,
+              ImageData = image
+            };
+
+            ViewModel.Images.Add( imageModel );
+          } );
 
         ViewModel.SelectedTexture = ViewModel.Images[ 0 ];
       } );
+    }
+
+    protected override void OnDisposing()
+    {
+      ViewModel.Dispose();
+      AppManager.ForceGarbageCollection();
     }
 
     #endregion
@@ -79,36 +89,6 @@ namespace Index.Views
     }
 
     #endregion
-
-  }
-
-  [AddINotifyPropertyChangedInterface]
-  public class TextureViewViewModel
-  {
-
-    public TextureImageModel SelectedTexture { get; set; }
-
-    public string Name { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public int Depth { get; set; }
-    public int Faces { get; set; }
-    public int MipMapCount { get; set; }
-    public ObservableCollection<TextureImageModel> Images { get; }
-
-    public TextureViewViewModel()
-    {
-      Images = new ObservableCollection<TextureImageModel>();
-    }
-
-    internal void ApplyMetadata( S3DPicture pict )
-    {
-      Width = pict.Width;
-      Height = pict.Height;
-      Depth = pict.Depth;
-      Faces = pict.Faces;
-      MipMapCount = pict.MipMapCount;
-    }
 
   }
 

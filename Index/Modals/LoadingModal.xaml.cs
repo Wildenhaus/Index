@@ -1,4 +1,4 @@
-﻿using Index.Controls;
+﻿using Index.UI.Controls;
 using Index.ViewModels;
 
 namespace Index.Modals

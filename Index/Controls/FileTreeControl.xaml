@@ -9,17 +9,41 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid x:Name="grid">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="20" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" 
+                BorderThickness="1"
+                BorderBrush="{DynamicResource Brush.Primary.3.Border.Static}"
+                Background="{DynamicResource Brush.Primary.3.Background.Static}"
+                HorizontalAlignment="Stretch">
+            <DockPanel HorizontalAlignment="Stretch">
+                <Label Content="File Tree" Margin="0" Padding="5,2" DockPanel.Dock="Left" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                    <Button x:Name="btnExpandAll" Background="Transparent" ToolTip="Expand All Groups" Click="OnExpandAllGroupsClicked">
+                        <Button.Content>
+                            <Path Data="{Binding Source={StaticResource Icon_Expand}, Path=Data}" Fill="{DynamicResource Brush.Glyph.Static}" Stretch="Uniform" Width="14" Height="14"/>
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="btnCollapseAll" Background="Transparent" ToolTip="Collapse All Groups" Click="OnCollapseAllGroupsClicked">
+                        <Button.Content>
+                            <Path Data="{Binding Source={StaticResource Icon_Collapse}, Path=Data}" Fill="{DynamicResource Brush.Glyph.Static}" Stretch="Uniform" Width="14" Height="14" />
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
         
         <TextBox x:Name="SearchBox"
-                 Grid.Row="0"
+                 Grid.Row="1"
                  TextChanged="SearchBox_TextChanged"
-                 Background=" #0FFFFFFF"/>
+                 Background=" #0FFFFFFF"
+                 Style="{DynamicResource SearchTextBoxStyle}"/>
         
         <TreeView x:Name="FileTree"
-                  Grid.Row="1"
+                  Grid.Row="2"
                   ItemsSource="{Binding Files.Groups}"
                   VirtualizingPanel.IsVirtualizing="True"
                   VirtualizingPanel.IsVirtualizingWhenGrouping="True"
@@ -28,7 +52,7 @@
                   MouseDoubleClick="FileTree_MouseDoubleClick">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate DataType="{x:Type s3dFiles:IS3DFile}" 
-                                      ItemsSource="{Binding Items}">
+                                          ItemsSource="{Binding Items}">
                     <TextBlock Text="{Binding Path=Name}" />
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>

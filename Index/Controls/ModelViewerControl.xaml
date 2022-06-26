@@ -5,40 +5,59 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Index.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             d:DesignHeight="450" d:DesignWidth="800"
+             x:Name="self">
+
+    <Grid Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
             <RowDefinition Height="*" />
             <RowDefinition Height="20" />
         </Grid.RowDefinitions>
 
-        <Menu Grid.Row="0">
+        <Menu Grid.Row="0" Background="#10FFFFFF">
             <MenuItem Header="Tools" />
         </Menu>
 
-            <!-- The Viewport3D provides a rendering surface for 3-D visual content. -->
-            <Viewport3D Grid.Row="1" x:Name="ModelContainer" ClipToBounds="True">
+        <!-- The Viewport3D provides a rendering surface for 3-D visual content. -->
+        <Viewport3D Grid.Row="1" IsHitTestVisible="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
 
-                <!-- Defines the camera used to view the 3D object. -->
-                <Viewport3D.Camera>
-                    <PerspectiveCamera x:Name="Camera" Position="3,1,0" LookDirection="-90,0,0" FieldOfView="90" />
-                </Viewport3D.Camera>
+            <!-- Defines the camera used to view the 3D object. -->
+            <Viewport3D.Camera>
+                <PerspectiveCamera x:Name="Camera" 
+                                   Position="{Binding CameraPosition, ElementName=self}" 
+                                   LookDirection="{Binding CameraDirection, ElementName=self}"
+                                   UpDirection="0,0,1"
+                                   FieldOfView="{Binding FieldOfView, ElementName=self}" />
+            </Viewport3D.Camera>
 
-                <!-- The ModelVisual3D children contain the 3D models -->
-                <Viewport3D.Children>
+            <!-- The ModelVisual3D children contain the 3D models -->
+            <Viewport3D.Children>
 
-                    <!-- This ModelVisual3D defines the light cast in the scene. Without light, the 3D 
+                <!-- This ModelVisual3D defines the light cast in the scene. Without light, the 3D 
                  object cannot be seen. Also, the direction of the lights affect shadowing. If desired,
                  you can create multiple lights with different colors that shine from different directions. -->
-                    <ModelVisual3D>
-                        <ModelVisual3D.Content>
-                            <DirectionalLight Color="#FFFFFF" Direction="-0.612372,-0.5,-0.612372" />
-                        </ModelVisual3D.Content>
-                    </ModelVisual3D>
-                </Viewport3D.Children>
+                <ModelVisual3D>
+                    <ModelVisual3D.Content>
+                        <DirectionalLight Color="#FFFFFF" Direction="-0.612372,-0.5,-0.612372" />
+                    </ModelVisual3D.Content>
+                </ModelVisual3D>
 
-            </Viewport3D>
+                <ModelVisual3D Content="{Binding Model}" />
+            </Viewport3D.Children>
+
+        </Viewport3D>
+
+        <StackPanel Grid.Row="1" HorizontalAlignment="Left" Margin="5">
+            <Label ContentStringFormat="Pos: {0}" Padding="0" Content="{Binding CameraPosition, ElementName=self, Converter={StaticResource Point3DConverter}}"/>
+            <Label ContentStringFormat="Rot: {0}" Padding="0" Content="{Binding CameraDirection, ElementName=self, Converter={StaticResource Vector3DConverter}}" />
+            <Label ContentStringFormat="FOV: {0}&#176;" Padding="0" Content="{Binding FieldOfView, ElementName=self}" />
+            <Label ContentStringFormat="FPS: {0:0.00}" Padding="0" Content="{Binding FramesPerSecond, ElementName=self}" />
+
+            <Label ContentStringFormat="Meshes: {0:#,0}" Padding="0" Margin="0,10,0,0" Content="{Binding MeshCount}"/>
+            <Label ContentStringFormat="Vertices: {0:#,0}" Padding="0" Content="{Binding VertexCount}" />
+            <Label ContentStringFormat="Faces: {0:#,0}" Padding="0" Content="{Binding FaceCount}" />
+        </StackPanel>
 
     </Grid>
 </UserControl>

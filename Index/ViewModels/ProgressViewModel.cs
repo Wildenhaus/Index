@@ -4,8 +4,7 @@ using PropertyChanged;
 namespace Index.ViewModels
 {
 
-  [AddINotifyPropertyChangedInterface]
-  public class ProgressViewModel
+  public class ProgressViewModel : ViewModel
   {
 
     public string Header { get; set; }

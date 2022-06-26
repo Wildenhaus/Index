@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Controls;
-using Index.Controls;
+using Index.UI.Controls;
 
 namespace Index.Modals
 {
