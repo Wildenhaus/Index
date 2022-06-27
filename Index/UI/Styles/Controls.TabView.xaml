@@ -65,6 +65,9 @@
                         </StackPanel>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding CloseTabCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Hidden" TargetName="PART_BtnClose" />
+                        </DataTrigger>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
                                 <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />

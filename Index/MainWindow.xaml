@@ -28,7 +28,7 @@
                 <MenuItem Header="GitHub" />
                 <MenuItem Header="Discord" />
                 <Separator />
-                <MenuItem Header="About" />
+                <MenuItem Header="About" Click="OnShowAboutClick" />
             </MenuItem>
         </Menu>
         <ui:ContentHost x:Name="ContentHost" 

@@ -12,6 +12,7 @@
         <ResourceDictionary Source="/UI/Styles/Controls.TextBox.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.TreeView.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.Window.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.WindowedModal.xaml" />
 
     </ResourceDictionary.MergedDictionaries>
 

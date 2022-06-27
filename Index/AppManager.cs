@@ -95,6 +95,16 @@ namespace Index
       }, TaskCreationOptions.LongRunning );
     }
 
+    public static void ShowModal<TModal>( ContentHost host )
+      where TModal : HostedModal
+    {
+      host.Dispatcher.Invoke( () =>
+      {
+        var modal = ( TModal ) Activator.CreateInstance( typeof( TModal ), new object[] { host } );
+        host.Push( modal );
+      } );
+    }
+
     public static void SetMainWindow( MainWindow mainWindow )
       => _mainWindow = mainWindow;
 

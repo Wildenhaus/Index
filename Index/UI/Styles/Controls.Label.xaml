@@ -27,6 +27,7 @@
         <Setter Property="TextWrapping" Value="NoWrap" />
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextAlignment" Value="Left" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
         <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground.Static}" />
         <Style.Triggers>
             <Trigger Property="IsEnabled" Value="False">

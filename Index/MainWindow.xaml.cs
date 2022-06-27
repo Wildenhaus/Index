@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Index.Common;
+using Index.Modals;
 using Index.ViewModels;
 using Saber3D.Files;
 
@@ -29,9 +29,11 @@ namespace Index
       MinimizeWindowCommand = new DelegateCommand( OnMinimizeWindowClick );
       MaximizeWindowCommand = new DelegateCommand( OnMaximizeWindowClick );
 
-      H2AFileContext.Global.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
-      var file = H2AFileContext.Global.Files.Values.First();
-      AppManager.CreateViewForFile( file );
+      OnShowAboutClick( null, null );
+
+      //H2AFileContext.Global.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
+      //var file = H2AFileContext.Global.Files.Values.First();
+      //AppManager.CreateViewForFile( file );
 
       //
       //var stream = file.GetStream();
@@ -88,6 +90,11 @@ namespace Index
         WindowState = WindowState.Normal;
       else
         WindowState = WindowState.Maximized;
+    }
+
+    private void OnShowAboutClick( object sender, RoutedEventArgs e )
+    {
+      AppManager.ShowModal<AboutModal>( ContentHost );
     }
 
     #endregion

@@ -4,5 +4,8 @@
 
     <converters:Point3DConverter x:Key="Point3DConverter" />
     <converters:Vector3DConverter x:Key="Vector3DConverter" />
+    <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
+    <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
+    <converters:IntVisibilityConverter x:Key="IntVisibilityConverter" />
 
 </ResourceDictionary>
