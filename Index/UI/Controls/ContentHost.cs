@@ -32,6 +32,7 @@ namespace Index.UI.Controls
 
     public ContentHost()
     {
+      RenderOptions.SetClearTypeHint( this, ClearTypeHint.Enabled );
       _blackoutRect = new Rectangle { Fill = Brushes.Black };
       _childStack = new LinkedList<UIElement>();
     }

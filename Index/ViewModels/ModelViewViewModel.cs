@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Media3D;
+using Assimp;
 using PropertyChanged;
 
 namespace Index.ViewModels
@@ -17,6 +18,8 @@ namespace Index.ViewModels
       get;
       set;
     }
+
+    public Scene AssimpScene { get; set; }
 
     [DependsOn( nameof( Model ) )]
     public int MeshCount

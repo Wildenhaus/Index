@@ -51,12 +51,18 @@ namespace Index.UI.Controls
 
       CloseTabCommand = new DelegateCommand( _ => OnCloseTabClick() );
 
-      SetResourceReference( StyleProperty, typeof( TabItem ) );
+      SetResourceReference( TemplateProperty, "HostedTabItemTemplate" );
     }
 
     #endregion
 
     #region Event Handlers
+
+    protected override void OnMouseDown( MouseButtonEventArgs e )
+    {
+      if ( e.ChangedButton == MouseButton.Middle && e.ButtonState == MouseButtonState.Pressed )
+        OnCloseTabClick();
+    }
 
     private void OnCloseTabClick()
     {

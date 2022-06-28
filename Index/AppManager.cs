@@ -25,12 +25,18 @@ namespace Index
       return tab;
     }
 
-    public static string BrowseForDirectory( string description = null )
+    public static string BrowseForDirectory( string title = null, string defaultPath = null )
     {
       using ( var dialog = new System.Windows.Forms.FolderBrowserDialog() )
       {
-        if ( !string.IsNullOrWhiteSpace( description ) )
-          dialog.Description = description;
+        if ( !string.IsNullOrWhiteSpace( title ) )
+        {
+          dialog.Description = title;
+          dialog.UseDescriptionForTitle = true;
+        }
+
+        if ( !string.IsNullOrWhiteSpace( defaultPath ) )
+          dialog.SelectedPath = defaultPath;
 
         if ( dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK )
           return null;
@@ -39,8 +45,36 @@ namespace Index
       }
     }
 
+    public static string BrowseForSaveFile( string title = null, string defaultFileName = null, string filter = null )
+    {
+      using ( var dialog = new System.Windows.Forms.SaveFileDialog() )
+      {
+        dialog.CheckPathExists = true;
+        dialog.OverwritePrompt = true;
+        if ( !string.IsNullOrWhiteSpace( title ) )
+          dialog.Title = title;
+
+        if ( !string.IsNullOrWhiteSpace( defaultFileName ) )
+          dialog.FileName = defaultFileName;
+
+        if ( !string.IsNullOrWhiteSpace( filter ) )
+          dialog.Filter = filter;
+
+        if ( dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK )
+          return null;
+
+        return dialog.FileName;
+      }
+    }
+
     public static Task CreateViewForFile( IS3DFile file )
     {
+      if ( TryGetTabByName( file.Name, out var existingTab ) )
+      {
+        _mainWindow.Tabs.SelectedItem = existingTab;
+        return Task.CompletedTask;
+      }
+
       View view = null;
       switch ( file.Extension )
       {
@@ -119,6 +153,20 @@ namespace Index
       } );
 
       return messageModal.AwaiterTask;
+    }
+
+    private static bool TryGetTabByName( string name, out ContentHostTab tab )
+    {
+      tab = default;
+
+      foreach ( ContentHostTab tabItem in _mainWindow.Tabs.Items )
+        if ( tabItem.Header == name )
+        {
+          tab = tabItem;
+          return true;
+        }
+
+      return false;
     }
 
   }

@@ -33,8 +33,8 @@ namespace Index.Views
       mem.Position = 0;
       editor.Load( mem );
 
-      var r = new HighlightCurrentLineBackgroundRenderer( editor );
-      editor.TextArea.TextView.BackgroundRenderers.Add( r );
+      //var r = new HighlightCurrentLineBackgroundRenderer( editor );
+      //editor.TextArea.TextView.BackgroundRenderers.Add( r );
     }
 
   }

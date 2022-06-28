@@ -10,17 +10,12 @@
 
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height="20" />
             <RowDefinition Height="*" />
             <RowDefinition Height="20" />
         </Grid.RowDefinitions>
 
-        <Menu Grid.Row="0" Background="#10FFFFFF">
-            <MenuItem Header="Tools" />
-        </Menu>
-
         <!-- The Viewport3D provides a rendering surface for 3-D visual content. -->
-        <Viewport3D Grid.Row="1" IsHitTestVisible="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <Viewport3D x:Name="Viewport" Grid.Row="0" IsHitTestVisible="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
 
             <!-- Defines the camera used to view the 3D object. -->
             <Viewport3D.Camera>
@@ -39,7 +34,8 @@
                  you can create multiple lights with different colors that shine from different directions. -->
                 <ModelVisual3D>
                     <ModelVisual3D.Content>
-                        <DirectionalLight Color="#FFFFFF" Direction="-0.612372,-0.5,-0.612372" />
+                        <!--<DirectionalLight Color="#FFFFFF" Direction="-0.612372,-0.5,-0.612372" />-->
+                        <AmbientLight Color="#FFFFFF" />
                     </ModelVisual3D.Content>
                 </ModelVisual3D>
 
@@ -48,7 +44,7 @@
 
         </Viewport3D>
 
-        <StackPanel Grid.Row="1" HorizontalAlignment="Left" Margin="5">
+        <StackPanel Grid.Row="0" HorizontalAlignment="Left" Margin="5">
             <Label ContentStringFormat="Pos: {0}" Padding="0" Content="{Binding CameraPosition, ElementName=self, Converter={StaticResource Point3DConverter}}"/>
             <Label ContentStringFormat="Rot: {0}" Padding="0" Content="{Binding CameraDirection, ElementName=self, Converter={StaticResource Vector3DConverter}}" />
             <Label ContentStringFormat="FOV: {0}&#176;" Padding="0" Content="{Binding FieldOfView, ElementName=self}" />

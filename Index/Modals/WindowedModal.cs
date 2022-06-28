@@ -64,11 +64,23 @@ namespace Index.Modals
       set => SetValue( TitleProperty, value );
     }
 
+    public static readonly DependencyProperty MaxModalWidthProperty = DependencyProperty.Register(
+      nameof( MaxModalWidth ),
+      typeof( double ),
+      typeof( WindowedModal ),
+      new PropertyMetadata( 1000.0 ) );
+
+    public double MaxModalWidth
+    {
+      get => ( double ) GetValue( MaxModalWidthProperty );
+      set => SetValue( MaxModalWidthProperty, value );
+    }
+
     public static readonly DependencyProperty WidthRatioProperty = DependencyProperty.Register(
       nameof( WidthRatio ),
       typeof( GridLength ),
       typeof( WindowedModal ),
-      new PropertyMetadata( new GridLength( 4, GridUnitType.Star ) ) );
+      new PropertyMetadata( new GridLength( 1, GridUnitType.Star ) ) );
 
     public GridLength WidthRatio
     {

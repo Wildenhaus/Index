@@ -8,7 +8,22 @@
             mc:Ignorable="d" 
             d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+
+        <Menu Grid.ColumnSpan="2"
+              Padding="3"
+              BorderBrush="{DynamicResource Brush.Primary.3.Border.Static}"
+              Background="{DynamicResource Brush.Primary.3.Background.Static}">
+            <MenuItem Header="Export">
+                <MenuItem Header="Export Model" Command="{Binding ExportCommand, RelativeSource={RelativeSource AncestorType={x:Type local:ModelView}}}" />
+            </MenuItem>
+        </Menu>
+
         <controls:ModelViewerControl x:Name="ModelViewer"
+                                     Grid.Row="1"
                                      Model="{Binding Model}" />
     </Grid>
 </local:View>

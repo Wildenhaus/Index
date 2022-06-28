@@ -85,6 +85,9 @@ namespace Index.Tools
 
       if ( obj.SubMeshes.Any() )
       {
+        if ( obj.GetName().Contains( "shield" ) )
+          return;
+
         AddMeshData( obj, objectNode );
         Progress.CompletedUnits++;
         return;

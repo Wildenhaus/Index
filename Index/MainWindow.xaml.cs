@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Reflection;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using Index.Common;
 using Index.Modals;
 using Index.ViewModels;
@@ -15,7 +15,6 @@ namespace Index
   public partial class MainWindow : Window
   {
 
-
     public ICommand CloseWindowCommand { get; }
     public ICommand MaximizeWindowCommand { get; }
     public ICommand MinimizeWindowCommand { get; }
@@ -24,16 +23,20 @@ namespace Index
     {
       AppManager.SetMainWindow( this );
       InitializeComponent();
-      SetIcon();
       CloseWindowCommand = new DelegateCommand( OnCloseWindowClick );
       MinimizeWindowCommand = new DelegateCommand( OnMinimizeWindowClick );
       MaximizeWindowCommand = new DelegateCommand( OnMaximizeWindowClick );
 
-      OnShowAboutClick( null, null );
+      //OnShowAboutClick( null, null );
+      //OnShowPreferencesClick( null, null );
 
-      //H2AFileContext.Global.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
-      //var file = H2AFileContext.Global.Files.Values.First();
-      //AppManager.CreateViewForFile( file );
+      H2AFileContext.Global.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
+      foreach ( var texFile in Directory.GetFiles( @"G:\h2a\d\", "*.pct", SearchOption.AllDirectories ) )
+        if ( texFile.Contains( "masterchief" ) )
+          H2AFileContext.Global.OpenFile( texFile );
+
+      var file = H2AFileContext.Global.GetFiles( ".tpl" ).First();
+      AppManager.CreateViewForFile( file );
 
       //
       //var stream = file.GetStream();
@@ -49,18 +52,15 @@ namespace Index
       //AppManager.CreateViewForFile( file );
     }
 
-    private void SetIcon()
-    {
-      var assembly = Assembly.GetExecutingAssembly();
-      using ( var iconStream = assembly.GetManifestResourceStream( "Index.Index.ico" ) )
-        Icon = BitmapFrame.Create( iconStream );
-    }
-
     #region Event Handlers
 
     private void OnOpenDirectoryClick( object sender, RoutedEventArgs e )
     {
-      var path = AppManager.BrowseForDirectory( "Open H2A Directory" );
+      var prefs = PreferencesManager.Preferences;
+      var path = AppManager.BrowseForDirectory(
+        title: "Open H2A Directory",
+        defaultPath: prefs.H2AGameDirectory );
+
       if ( string.IsNullOrEmpty( path ) )
         return;
 
@@ -74,6 +74,9 @@ namespace Index
                    "use the 'Open File' menu item instead." );
         return;
       }
+
+      if ( string.IsNullOrWhiteSpace( prefs.H2AGameDirectory ) )
+        prefs.H2AGameDirectory = path;
 
       AppManager.PerformWork( ContentHost, vm => OpenH2ADirectoryFiles( files, vm ) );
     }
@@ -92,10 +95,14 @@ namespace Index
         WindowState = WindowState.Maximized;
     }
 
+    private void OnOpenDiscordClick( object sender, RoutedEventArgs e )
+      => Process.Start( new ProcessStartInfo( "https://discord.com/invite/haloarchive" ) { UseShellExecute = true } );
+
     private void OnShowAboutClick( object sender, RoutedEventArgs e )
-    {
-      AppManager.ShowModal<AboutModal>( ContentHost );
-    }
+      => AppManager.ShowModal<AboutModal>( ContentHost );
+
+    private void OnShowPreferencesClick( object sender, RoutedEventArgs e )
+      => AppManager.ShowModal<PreferencesModal>( ContentHost );
 
     #endregion
 
@@ -131,7 +138,9 @@ namespace Index
       }
     }
 
+
     #endregion
+
 
   }
 

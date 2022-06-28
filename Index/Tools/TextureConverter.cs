@@ -13,18 +13,20 @@ namespace Index.Tools
   public static class TextureConverter
   {
 
-    public static byte[] ConvertToDDS( S3DPicture pict )
+    public static MemoryStream ConvertToDDS( S3DPicture pict )
     {
       using ( var img = CreateScratchImage( pict ) )
       using ( var imgStream = img.SaveToDDSMemory( DDS_FLAGS.NONE ) )
-      using ( var outStream = new MemoryStream() )
       {
-        imgStream.CopyTo( outStream );
-        return outStream.ToArray();
+        var ddsStream = new MemoryStream();
+        imgStream.CopyTo( ddsStream );
+
+        ddsStream.Position = 0;
+        return ddsStream;
       }
     }
 
-    public static byte[] ConvertToJpg( S3DPicture pict, int imageIndex, float quality = .5f )
+    public static MemoryStream ConvertToJpg( S3DPicture pict, int imageIndex, float quality = 1f )
     {
       var image = CreateScratchImage( pict );
 
@@ -33,14 +35,16 @@ namespace Index.Tools
 
       using ( image )
       using ( var imgStream = image.SaveToJPGMemory( imageIndex, quality ) )
-      using ( var outStream = new MemoryStream() )
       {
-        imgStream.CopyTo( outStream );
-        return outStream.ToArray();
+        var jpgStream = new MemoryStream();
+        imgStream.CopyTo( jpgStream );
+
+        jpgStream.Position = 0;
+        return jpgStream;
       }
     }
 
-    public static byte[] ConvertToTGA( S3DPicture pict, int imageIndex )
+    public static MemoryStream ConvertToTGA( S3DPicture pict, int imageIndex )
     {
       var image = CreateScratchImage( pict );
 
@@ -49,10 +53,12 @@ namespace Index.Tools
 
       using ( image )
       using ( var imgStream = image.SaveToTGAMemory( imageIndex ) )
-      using ( var outStream = new MemoryStream() )
       {
-        imgStream.CopyTo( outStream );
-        return outStream.ToArray();
+        var tgaStream = new MemoryStream();
+        imgStream.CopyTo( tgaStream );
+
+        tgaStream.Position = 0;
+        return tgaStream;
       }
     }
 

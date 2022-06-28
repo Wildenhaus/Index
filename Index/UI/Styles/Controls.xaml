@@ -3,13 +3,20 @@
     <ResourceDictionary.MergedDictionaries>
 
         <ResourceDictionary Source="/UI/Styles/Controls.Button.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.ComboBox.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.GridView.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.GroupBox.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.Label.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.ListView.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.Menu.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.ProgressBar.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.ScrollBar.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.ScrollViewer.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.Slider.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.TabView.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.TextBox.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.ToolBar.xaml" />
+        <ResourceDictionary Source="/UI/Styles/Controls.ToolTip.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.TreeView.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.Window.xaml" />
         <ResourceDictionary Source="/UI/Styles/Controls.WindowedModal.xaml" />

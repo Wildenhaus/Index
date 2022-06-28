@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Index.Common;
 using Index.Tools;
 using Index.ViewModels;
 using Saber3D.Data;
@@ -23,12 +26,15 @@ namespace Index.Views
 
     public ModelViewViewModel ViewModel { get; }
 
+    public ICommand ExportCommand { get; }
+
     #endregion
 
     #region Constructor
 
     public ModelView( IS3DFile file )
     {
+      ExportCommand = new DelegateCommand( ExportModel );
       InitializeComponent();
       _file = file;
 
@@ -49,20 +55,50 @@ namespace Index.Views
         prog.IsIndeterminate = true;
 
         prog.Header = "Deserializing Model";
-        var geometryGraph = DeserializeModel( _file );
+        S3DGeometryGraph geometryGraph;
+        try
+        {
+          geometryGraph = DeserializeModel( _file );
+        }
+        catch ( Exception ex )
+        {
+          AppManager.ShowMessageModal( Host,
+            title: "Error",
+            message: $"Encountered an error while deserializing the model:\n{ex.Message}" );
+          return;
+        }
 
         prog.Header = "Converting Model";
-        var stream = _file.GetStream();
-        var reader = new BinaryReader( stream, Encoding.UTF8, true );
-        var assimpScene = SceneExporter.CreateScene( _file.Name, geometryGraph, reader, prog );
+        try
+        {
+          var stream = _file.GetStream();
+          var reader = new BinaryReader( stream, Encoding.UTF8, true );
+          ViewModel.AssimpScene = SceneExporter.CreateScene( _file.Name, geometryGraph, reader, prog );
+        }
+        catch ( Exception ex )
+        {
+          AppManager.ShowMessageModal( Host,
+            title: "Error",
+            message: $"Encountered an error while converting the model:\n{ex.Message}" );
+          return;
+        }
 
         prog.Header = "Preparing Viewer";
-        var wpfModel = WpfModelHelper.PrepareModelForViewer( assimpScene, prog );
-        wpfModel.Freeze();
+        try
+        {
+          var wpfModel = WpfModelHelper.PrepareModelForViewer( ViewModel.AssimpScene, prog );
 
-        ViewModel.Model = wpfModel;
+          ViewModel.Model = wpfModel;
+          ModelViewer.Dispatcher.Invoke( () => ModelViewer.ZoomToBounds( wpfModel ) );
+        }
+        catch ( Exception ex )
+        {
+          AppManager.ShowMessageModal( Host,
+            title: "Error",
+            message: $"Encountered an error while preparing the model viewer:\n{ex.Message}" );
+          return;
+        }
 
-        ModelViewer.Dispatcher.Invoke( () => ModelViewer.ZoomToBounds( wpfModel ) );
       } );
     }
 
@@ -95,6 +131,10 @@ namespace Index.Views
       }
       else
         return null;
+    }
+
+    private async void ExportModel( object param )
+    {
     }
 
     #endregion

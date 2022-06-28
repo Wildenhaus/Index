@@ -9,14 +9,14 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="{TemplateBinding WidthRatio}" />
+                <ColumnDefinition Width="{TemplateBinding WidthRatio}" MaxWidth="{TemplateBinding MaxModalWidth}" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="1" 
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
-                        Width="{TemplateBinding Width}">
+                        MaxWidth="{TemplateBinding MaxModalWidth}">
                 <StackPanel.Effect>
                     <DropShadowEffect BlurRadius="25" 
                                       ShadowDepth="3" 
@@ -27,7 +27,7 @@
 
                 <!--#region Title Bar-->
                 <Border x:Name="PART_TitleBar" 
-                                        Background="#60000000">
+                                        Background="#000000">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" 
                                           ShadowDepth="1" 

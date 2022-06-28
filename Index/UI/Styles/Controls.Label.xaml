@@ -28,6 +28,8 @@
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         <Setter Property="TextAlignment" Value="Left" />
         <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled" />
+        <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
         <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground.Static}" />
         <Style.Triggers>
             <Trigger Property="IsEnabled" Value="False">
@@ -35,5 +37,21 @@
             </Trigger>
         </Style.Triggers>
     </Style>
-    
+
+    <Style x:Key="{x:Type Hyperlink}" TargetType="{x:Type Hyperlink}">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground.Static}"/>
+        <Setter Property="TextDecorations" Value="Underline"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="true">
+                <Setter Property="Foreground" Value="{DynamicResource Brush.ColourfulGlyph.Static}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="false">
+                <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground.Disabled}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="true">
+                <Setter Property="Cursor" Value="Hand"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>

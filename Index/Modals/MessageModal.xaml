@@ -5,13 +5,21 @@
                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                      xmlns:local="clr-namespace:Index.Modals"
                      mc:Ignorable="d" 
-                     d:DesignHeight="450" d:DesignWidth="800">
+                     d:DesignHeight="450" d:DesignWidth="800"
+                     
+                     UseLayoutRounding="True"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor"
+                     SnapsToDevicePixels="True"
+                     RenderOptions.ClearTypeHint="Enabled">
     
     <Grid>
         <TextBlock x:Name="MessageLabel" 
                    Text="Message"
                    FontSize="14"
+                   FontWeight="Regular"
                    TextWrapping="WrapWithOverflow"
+                   RenderOptions.ClearTypeHint="Enabled"
+                   TextOptions.TextRenderingMode="ClearType"
                    Margin="10,10,10,25" />
 
     </Grid>

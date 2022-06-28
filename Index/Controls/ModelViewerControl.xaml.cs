@@ -13,6 +13,10 @@ namespace Index.Controls
   public partial class ModelViewerControl : UserControl, IDisposable
   {
 
+    /* Code is largely based off of the model renderer from Reclaimer.
+     * Credits to Gravemind2401
+     */
+
     #region Constants
 
     private const double RAD_089 = 1.5706217940;
@@ -129,6 +133,8 @@ namespace Index.Controls
       _timer = new DispatcherTimer( DispatcherPriority.Send ) { Interval = TimeSpan.FromMilliseconds( MS_PER_FRAME_60FPS ) };
       _timer.Tick += OnFrameTick;
       _timer.Start();
+
+      Viewport.LayoutUpdated += ( s, e ) => _fpsProfiler.Register();
     }
 
     private void OnFrameTick( object? sender, EventArgs e )
@@ -139,7 +145,7 @@ namespace Index.Controls
       UpdateCameraPosition();
       UpdateCameraDirection( new Point( mousePos.X, mousePos.Y ) );
 
-      _fpsProfiler.Register();
+      //_fpsProfiler.Register();
       _frameEvent.Set();
     }
 
@@ -163,10 +169,14 @@ namespace Index.Controls
 
     protected override void OnPreviewMouseWheel( MouseWheelEventArgs e )
     {
-      if ( !IsMouseCaptured )
-        FieldOfView -= e.Delta / 100.0;
+      //if ( !IsMouseCaptured )
+      //  FieldOfView -= e.Delta / 100.0;
+      //else
+
+      if ( e.Delta < 0 )
+        _speed = Clamp( _speed / 2, 0.001, 10 );
       else
-        _speed -= e.Delta / 1000.0;
+        _speed = Clamp( _speed * 2, 0.001, 10 );
     }
 
     private void UpdateCameraDirection( Point mousePos )
@@ -192,6 +202,9 @@ namespace Index.Controls
 
     private bool UpdateCameraPosition()
     {
+      if ( !IsMouseOver )
+        return false;
+
       var speed = _speed;
       var nextPos = CameraPosition;
       var cameraDir = CameraDirection;

@@ -34,6 +34,7 @@ namespace Index.Tools
     {
       var b = new ImageBrush( new BitmapImage( new System.Uri( @"C:\Users\Reid\Desktop\uv.png" ) ) );
       UvBrush = b;
+      b.Freeze();
     }
 
     private WpfModelHelper( Scene assimpScene, ProgressViewModel progress )
@@ -67,7 +68,7 @@ namespace Index.Tools
           wpfMesh.TriangleIndices.Add( face.Indices[ 2 ] );
         }
         foreach ( var uv in assimpMesh.TextureCoordinateChannels[ 0 ] )
-          wpfMesh.TextureCoordinates.Add( new System.Windows.Point( uv.X, uv.Y ) );
+          wpfMesh.TextureCoordinates.Add( new System.Windows.Point( uv.X, 1 - uv.Y ) );
 
         var geomModel = new GeometryModel3D();
         geomModel.Geometry = wpfMesh;
@@ -80,10 +81,12 @@ namespace Index.Tools
 
         geomModel.Transform = t;
 
+        geomModel.Freeze();
         group.Children.Add( geomModel );
         Progress.CompletedUnits++;
       }
 
+      _group.Freeze();
       return _group;
     }
 
@@ -99,7 +102,10 @@ namespace Index.Tools
 
       var assimpMat = _assimpScene.Materials[ index ];
       var matFileName = assimpMat.Name;
-      var matFile = H2AFileContext.Global.GetFiles( $"{matFileName}.pct" ).FirstOrDefault();
+      var matFile = H2AFileContext.Global.GetFiles( $"{matFileName}.pct" )
+        .Where( x => x.Name == $"{matFileName}.pct" )
+        .FirstOrDefault();
+
       if ( matFile is null )
         return false;
 
@@ -107,9 +113,17 @@ namespace Index.Tools
       var reader = new BinaryReader( stream );
       var pict = new S3DPictureSerializer().Deserialize( reader );
 
-      var bitmapTexture = TextureConverter.ConvertToBitmap( pict );
-      material = new DiffuseMaterial( new ImageBrush( bitmapTexture ) );
+      var textureQuality = PreferencesManager.Preferences.TextureModelViewerQuality;
+      var bitmapTexture = TextureConverter.ConvertToBitmap( pict, textureQuality );
+      var brush = new ImageBrush( bitmapTexture )
+      {
+        ViewportUnits = BrushMappingMode.Absolute,
+        TileMode = TileMode.Tile
+      };
+      material = new DiffuseMaterial( brush );
 
+      brush.Freeze();
+      material.Freeze();
       _diffuseMaterialCache[ index ] = material;
       return true;
     }

@@ -17,6 +17,8 @@
         <Setter Property="WindowStyle" Value="SingleBorderWindow" />
 
         <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
 
         <Setter Property="WindowChrome.WindowChrome">
             <Setter.Value>
@@ -48,7 +50,7 @@
                                 
                                 <Grid x:Name="PART_TitleBar" 
                                       Height="30"
-                                      Background="{TemplateBinding Background}"
+                                      Background="#000"
                                       VerticalAlignment="Top"
                                       Margin="0">
 

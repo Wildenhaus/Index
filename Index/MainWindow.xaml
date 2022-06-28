@@ -9,7 +9,8 @@
         mc:Ignorable="d"
         Title="Index" 
         Height="720" Width="1280"
-        Style="{DynamicResource CustomWindowStyle}">
+        Style="{DynamicResource CustomWindowStyle}"
+        Icon="pack://application:,,,/Index;component/Index.ico">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
@@ -22,11 +23,11 @@
                 <MenuItem Header="Batch Export Models" />
                 <MenuItem Header="Batch Export Textures" />
                 <Separator />
-                <MenuItem Header="Preferences" />
+                <MenuItem Header="Preferences" Click="OnShowPreferencesClick" />
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="GitHub" />
-                <MenuItem Header="Discord" />
+                <MenuItem Header="Discord" Click="OnOpenDiscordClick" />
                 <Separator />
                 <MenuItem Header="About" Click="OnShowAboutClick" />
             </MenuItem>
@@ -35,7 +36,7 @@
                               DockPanel.Dock="Bottom">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" MaxWidth="400" />
                     <ColumnDefinition Width="3*" />
                 </Grid.ColumnDefinitions>
 

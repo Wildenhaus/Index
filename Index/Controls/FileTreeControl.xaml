@@ -20,14 +20,14 @@
                 Background="{DynamicResource Brush.Primary.3.Background.Static}"
                 HorizontalAlignment="Stretch">
             <DockPanel HorizontalAlignment="Stretch">
-                <Label Content="File Tree" Margin="0" Padding="5,2" DockPanel.Dock="Left" />
+                <Label Content="File Tree" FontSize="13" FontWeight="SemiBold" Margin="0" Padding="5,0" DockPanel.Dock="Left" VerticalAlignment="Top"/>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                    <Button x:Name="btnExpandAll" Background="Transparent" ToolTip="Expand All Groups" Click="OnExpandAllGroupsClicked">
+                    <Button x:Name="btnExpandAll" Background="Transparent" ToolTip="Expand All Groups" Click="OnExpandAllGroupsClicked" Padding="0">
                         <Button.Content>
                             <Path Data="{Binding Source={StaticResource Icon_Expand}, Path=Data}" Fill="{DynamicResource Brush.Glyph.Static}" Stretch="Uniform" Width="14" Height="14"/>
                         </Button.Content>
                     </Button>
-                    <Button x:Name="btnCollapseAll" Background="Transparent" ToolTip="Collapse All Groups" Click="OnCollapseAllGroupsClicked">
+                    <Button x:Name="btnCollapseAll" Background="Transparent" ToolTip="Collapse All Groups" Click="OnCollapseAllGroupsClicked" Padding="0">
                         <Button.Content>
                             <Path Data="{Binding Source={StaticResource Icon_Collapse}, Path=Data}" Fill="{DynamicResource Brush.Glyph.Static}" Stretch="Uniform" Width="14" Height="14" />
                         </Button.Content>

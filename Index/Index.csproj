@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Index.ico</ApplicationIcon>
+    <AssemblyVersion>0.1.*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
+    <Authors>Haus</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -17,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Index.ico" />
+    <Resource Include="Index.ico" />
   </ItemGroup>
 
   <ItemGroup>

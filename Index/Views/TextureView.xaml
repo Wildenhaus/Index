@@ -3,26 +3,97 @@
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+            xmlns:ui="clr-namespace:Index.UI.Controls"
             xmlns:local="clr-namespace:Index.Views"
-            xmlns:vm="clr-namespace:Index.ViewModels"
+            xmlns:model="clr-namespace:Index.Models"
             mc:Ignorable="d" 
-            d:DesignHeight="450" d:DesignWidth="800">
+            d:DesignHeight="450" d:DesignWidth="800"
+            UseLayoutRounding="True"
+            RenderOptions.BitmapScalingMode="NearestNeighbor"
+            SnapsToDevicePixels="True"
+            RenderOptions.ClearTypeHint="Enabled">
+    <local:View.Resources>
+        <ResourceDictionary>
+            <DataTemplate DataType="{x:Type model:TextureImageModel}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    
+                    <Image Source="{Binding ImageData}" 
+                           Stretch="UniformToFill"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Grid.ColumnSpan="2"
+                           Grid.RowSpan="2"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                    
+                    <Label Content="{Binding Index}"
+                           Background="#B0000000"
+                           FontWeight="Bold"
+                           Padding="10,3"
+                           BorderBrush="#60FFFFFF"
+                           BorderThickness="0,0,1,1"/>
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </local:View.Resources>
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
+        <Menu Grid.ColumnSpan="2"
+              Padding="3"
+              BorderBrush="{DynamicResource Brush.Primary.3.Border.Static}"
+              Background="{DynamicResource Brush.Primary.3.Background.Static}">
+            <MenuItem Header="File">
+                <MenuItem Header="Open Texture Definition" Command="{Binding OpenTextureDefinitionCommand, RelativeSource={RelativeSource AncestorType={x:Type local:TextureView}}}" />
+                <MenuItem Header="Close" Command="{Binding CloseTabCommand, RelativeSource={RelativeSource AncestorType={x:Type local:TextureView}}}" />
+            </MenuItem>
+            <MenuItem Header="Export">
+                <MenuItem Header="Export To DDS" Command="{Binding ExportCommand, RelativeSource={RelativeSource AncestorType={x:Type local:TextureView}}}" CommandParameter="DDS" />
+                <MenuItem Header="Export To TGA" Command="{Binding ExportCommand, RelativeSource={RelativeSource AncestorType={x:Type local:TextureView}}}" CommandParameter="TGA" />
+                <MenuItem Header="Export To JPG" Command="{Binding ExportCommand, RelativeSource={RelativeSource AncestorType={x:Type local:TextureView}}}" CommandParameter="JPG" />
+            </MenuItem>
+        </Menu>
+
         <Image x:Name="CurrentTexturePreview"
                Grid.Column="0"
+               Grid.Row="1"
+               RenderOptions.BitmapScalingMode="HighQuality"
                Source="{Binding Path=SelectedTexture.ImageData}" />
 
-        <!--<ListView x:Name="TextureThumbnails"
-                  Grid.Column="1"
-                  Background="#10FFFFFF"
-                  ItemsSource="{Binding Images}"
-                  SelectedItem="{Binding SelectedTexture, Mode=OneWayToSource}"
-                  VirtualizingPanel.IsContainerVirtualizable="True"
-                  VirtualizingPanel.IsVirtualizing="True" />-->
+        <DockPanel Grid.Column="1" Grid.Row="1">
+            <Border DockPanel.Dock="Top"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource Brush.Primary.4.Border.Static}"
+                    Background="{DynamicResource Brush.Primary.4.Background.Static}">
+                <Label Content="Mips/Faces" FontSize="13" FontWeight="SemiBold" Margin="0" Padding="5,0" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+            </Border>
+            <ListView x:Name="TextureThumbnails"
+                      DockPanel.Dock="Bottom"
+                      Background="#10FFFFFF"
+                      ItemsSource="{Binding Images}"
+                      SelectedItem="{Binding SelectedTexture, Mode=OneWayToSource}"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="Auto" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </DockPanel>
     </Grid>
 </local:View>

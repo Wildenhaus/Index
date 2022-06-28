@@ -23,20 +23,20 @@
                 <Label x:Name="TitleLabel" 
                    Content="{Binding Header, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                    FontWeight="Bold" 
-                   FontSize="15" 
+                   FontSize="20" 
                    HorizontalAlignment="Center" 
                    Padding="0" />
 
                 <Label x:Name="SubTitleLabel" 
                    Content="{Binding SubHeader, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
                    FontWeight="Light" 
-                   FontSize="12" 
+                   FontSize="14" 
                    HorizontalAlignment="Center" 
                    Padding="0" />
             </StackPanel>
             <ProgressBar x:Name="ProgressBar"
                      Grid.Row="1"
-                     Margin="50,5,50,50"
+                     Margin="50,10,50,50"
                      Height="10"
                      VerticalAlignment="Top"
                      Value="{Binding Percentage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"

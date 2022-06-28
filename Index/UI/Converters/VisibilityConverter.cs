@@ -57,7 +57,7 @@ namespace Index.UI.Converters
       => Convert( value, targetType, parameter, culture );
   }
 
-  [ValueConversion( typeof( ICollection ), typeof( int ) )]
+  [ValueConversion( typeof( Visibility ), typeof( ICollection ) )]
   public class CollectionVisibilityConverter : IValueConverter
   {
     public object Convert( object value, Type targetType, object parameter, CultureInfo culture )
@@ -71,6 +71,18 @@ namespace Index.UI.Converters
       }
 
       return null;
+    }
+
+    public object ConvertBack( object value, Type targetType, object parameter, CultureInfo culture )
+      => Convert( value, targetType, parameter, culture );
+  }
+
+  [ValueConversion( typeof( Visibility ), typeof( object ) )]
+  public class NullVisibilityConverter : IValueConverter
+  {
+    public object Convert( object value, Type targetType, object parameter, CultureInfo culture )
+    {
+      return value is null ? Visibility.Hidden : Visibility.Visible;
     }
 
     public object ConvertBack( object value, Type targetType, object parameter, CultureInfo culture )
