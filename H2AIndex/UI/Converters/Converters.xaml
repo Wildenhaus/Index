@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:H2AIndex.UI.Converters">
+
+    <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
+    <converters:IntVisibilityConverter x:Key="IntVisibilityConverter" />
+
+</ResourceDictionary>
