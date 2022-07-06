@@ -37,4 +37,19 @@ namespace H2AIndex.UI.Converters
       => Convert( value, targetType, parameter, culture );
   }
 
+  [ValueConversion( typeof( Visibility ), typeof( bool ) )]
+  public class BoolVisibilityConverter : IValueConverter
+  {
+    public object Convert( object value, Type targetType, object parameter, CultureInfo culture )
+    {
+      if ( value is bool isVisible )
+        return isVisible ? Visibility.Visible : Visibility.Hidden;
+      else
+        return Visibility.Hidden;
+    }
+
+    public object ConvertBack( object value, Type targetType, object parameter, CultureInfo culture )
+      => Convert( value, targetType, parameter, culture );
+  }
+
 }

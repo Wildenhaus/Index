@@ -8,7 +8,8 @@
 
     Face,
     Vertex,
-    Interleaved
+    Interleaved,
+    BoneId
 
   }
 

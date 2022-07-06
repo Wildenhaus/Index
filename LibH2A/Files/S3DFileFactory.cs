@@ -21,6 +21,8 @@ namespace Saber3D.Files
 
     #region Data Members
 
+    public static readonly IReadOnlyCollection<string> RecognizedExtensions;
+
     private static Dictionary<string, Type> _extensionLookup;
     private static Dictionary<string, Type> _signatureLookup;
 
@@ -35,6 +37,8 @@ namespace Saber3D.Files
       _extensionLookup = BuildExtensionLookup();
       _signatureLookup = BuildSignatureLookup();
       _constructorLookup = BuildConstructorLookup();
+
+      RecognizedExtensions = new HashSet<string>( _extensionLookup.Keys );
     }
 
     #endregion
@@ -165,7 +169,6 @@ namespace Saber3D.Files
     }
 
     #endregion
-
 
   }
 

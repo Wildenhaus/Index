@@ -26,6 +26,8 @@ namespace H2AIndex.Models
     private ConcurrentQueue<FileModel> _fileRemoveQueue;
     private ConcurrentDictionary<string, FileModel> _fileLookup;
 
+    private string _searchTerm;
+
     #endregion
 
     #region Properties
@@ -35,8 +37,7 @@ namespace H2AIndex.Models
       get => _collectionViewSource;
     }
 
-    public string SearchTerm { get; set; }
-
+    public ICommand SearchTermChangedCommand { get; }
     public ICommand OpenFileCommand { get; }
     public ICommand OpenDirectoryCommand { get; }
 
@@ -65,9 +66,13 @@ namespace H2AIndex.Models
       // Initialize the collection view source
       _collectionViewSource = InitializeCollectionView( _files );
 
+      // Initialize Commands
+      SearchTermChangedCommand = new Command<string>( OnSearchTermUpdated );
+
       _context.OpenFile( @"G:\h2a\d\shared\_textures_\01_m20_rock_lrg_crepuscular_a.pct" );
       _context.OpenFile( @"G:\h2a\d\shared\_textures_\01b_spacestation_cube.pct" );
       _context.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
+      _context.OpenFile( @"G:\h2a\re files\pelican__h.tpl" );
 
       foreach ( var file in Directory.GetFiles( @"G:\h2a\d\shared\_textures_\", "*.pct" ) )
         if ( file.Contains( "masterchief" ) )
@@ -122,10 +127,7 @@ namespace H2AIndex.Models
           _files.Remove( fileToRemove );
       }
 
-      App.Current.Dispatcher.Invoke( () =>
-      {
-        _collectionViewSource.Refresh();
-      } );
+      App.Current.Dispatcher.Invoke( _collectionViewSource.Refresh );
     }
 
     #endregion
@@ -156,11 +158,17 @@ namespace H2AIndex.Models
 
     private bool OnFilterFiles( object obj )
     {
-      if ( string.IsNullOrWhiteSpace( SearchTerm ) )
+      if ( string.IsNullOrWhiteSpace( _searchTerm ) )
         return true;
 
       var file = obj as FileModel;
-      return file.Name.Contains( SearchTerm, System.StringComparison.InvariantCultureIgnoreCase );
+      return file.Name.Contains( _searchTerm, System.StringComparison.InvariantCultureIgnoreCase );
+    }
+
+    private void OnSearchTermUpdated( string searchTerm )
+    {
+      _searchTerm = searchTerm;
+      _throttler.Execute();
     }
 
     #endregion

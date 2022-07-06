@@ -72,7 +72,7 @@ namespace Saber3D.Serializers.Geometry
 
     private bool HasNormal()
     {
-      return Flags.HasFlag( S3DGeometryBufferFlags._NORM )
+      return Flags.HasFlag( S3DGeometryBufferFlags._BONE )
           || Flags.HasFlag( S3DGeometryBufferFlags._NORM_IN_VERT4 )
           || Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_NORM );
     }
@@ -137,7 +137,7 @@ namespace Saber3D.Serializers.Geometry
         else
           vertex.Normal = DecompressNormalFromFloat( reader.ReadSingle() );
       }
-      else if ( Flags.HasFlag( S3DGeometryBufferFlags._NORM ) )
+      else if ( Flags.HasFlag( S3DGeometryBufferFlags._BONE ) )
       {
         // TODO: If not _NORM_IN_VERT4, we should be reading the normal from somewhere.
         if ( Flags.HasFlag( S3DGeometryBufferFlags._COMPRESSED_NORM ) )

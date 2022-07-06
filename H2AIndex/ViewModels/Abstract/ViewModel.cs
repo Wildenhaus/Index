@@ -135,7 +135,7 @@ namespace H2AIndex.ViewModels
         modal.Show();
         IsBusy = true;
 
-        await process.Execute();
+        await Task.Factory.StartNew( process.Execute, TaskCreationOptions.LongRunning );
 
         await modal.Hide();
         Modals.Remove( modal );

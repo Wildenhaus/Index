@@ -7,6 +7,7 @@
            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
            xmlns:vm="clr-namespace:H2AIndex.ViewModels"
            xmlns:view="clr-namespace:H2AIndex.Views"
+           xmlns:controls="clr-namespace:H2AIndex.Controls"
            mc:Ignorable="d" 
            d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -71,6 +72,44 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center">
 
+                        <Button x:Name="BtnDropdown"
+                                Padding="0"
+                                Background="Transparent">
+                            <Button.Content>
+                                <Path Data="{Binding Source={StaticResource Icon_Dropdown}, Path=Data}"
+                                      Fill="{DynamicResource Brush.Glyph.Static}"
+                                      Stretch="Uniform"
+                                      Width="10"
+                                      Height="10" />
+                            </Button.Content>
+                            <Button.ContextMenu>
+                                <ContextMenu Loaded="OnContextMenuLoaded">
+                                    <MenuItem Header="Show All" Command="{Binding ShowAllCommand}" />
+                                    <MenuItem Header="Hide All" Command="{Binding HideAllCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="Hide LODs" Command="{Binding HideLODsCommand}" />
+                                    <MenuItem Header="Hide Volumes" Command="{Binding HideVolumesCommand}" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                            <Button.Style>
+                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Style.Triggers>
+                                        <EventTrigger RoutedEvent="Click">
+                                            <EventTrigger.Actions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="ContextMenu.IsOpen">
+                                                            <DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="True"/>
+                                                        </BooleanAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger.Actions>
+                                        </EventTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        
                         <Button x:Name="BtnExpandAll" 
                             Padding="0"
                             Background="Transparent"
@@ -104,15 +143,22 @@
 
             <!--#endregion-->
 
-            <TreeView Grid.Row="2" ItemsSource="{Binding Model.GroupNode.Items}" >
+            <controls:SearchBox Grid.Row="1"
+                                TextChangedCommand="{Binding SearchTermChangedCommand}" />
+
+            <TreeView Grid.Row="2" 
+                      ItemsSource="{Binding Nodes}"
+                      VirtualizingPanel.IsContainerVirtualizable="True"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.IsVirtualizingWhenGrouping="True">
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="TreeViewItem">
-                        <Setter Property="IsExpanded" Value="{Binding Tag.IsExpanded, Mode=TwoWay}" />
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                     </Style>
                 </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Items}">
-                        <CheckBox IsChecked="{Binding Tag.IsVisible}" Content="{Binding Name}" />
+                        <CheckBox IsChecked="{Binding IsVisible}" Content="{Binding Name}" />
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>

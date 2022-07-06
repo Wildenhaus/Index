@@ -43,4 +43,10 @@
         </Path.Data>
     </Path>
 
+    <!--<Path x:Key="Icon_Dropdown">
+        <Path.Data>
+            M10.5 15l7.5 7.5 7.5-7.5z
+        </Path.Data>
+    </Path>-->
+
 </ResourceDictionary>

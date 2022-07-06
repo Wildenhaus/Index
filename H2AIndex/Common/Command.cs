@@ -128,7 +128,7 @@ namespace H2AIndex.Common
       {
         _isExecuting = false;
         CanExecuteChanged?.Invoke( this, EventArgs.Empty );
-      } );
+      }, TaskScheduler.FromCurrentSynchronizationContext() );
     }
 
     #endregion

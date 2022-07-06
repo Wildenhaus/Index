@@ -49,7 +49,7 @@ namespace H2AIndex.ViewModels
       OpenFileCommand = new AsyncCommand( OpenFile );
       OpenDirectoryCommand = new AsyncCommand( OpenDirectory );
 
-      _tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( ".tpl" ).First(), out _ );
+      _tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "pelican" ).First(), out _ );
     }
 
     #endregion

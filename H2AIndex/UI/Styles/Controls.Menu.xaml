@@ -709,4 +709,33 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
+    <Style TargetType="{x:Type ContextMenu}">
+        <Setter Property="Background" Value="{DynamicResource Popup.Static.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Popup.Static.Border}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Foreground.Static}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Grid.IsSharedSizeScope" Value="true" />
+        <Setter Property="HasDropShadow" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ContextMenu}">
+                    <aero:SystemDropShadowChrome Name="Shdw" aero:SystemDropShadowChrome.Color="Transparent" aero:SystemDropShadowChrome.CornerRadius="0" SnapsToDevicePixels="True">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2">
+                            <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Hidden">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </Border>
+                    </aero:SystemDropShadowChrome>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasDropShadow" Value="True">
+                            <Setter TargetName="Shdw" Property="Margin" Value="0,0,5,5" />
+                            <Setter TargetName="Shdw" Property="aero:SystemDropShadowChrome.Color" Value="#71000000" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

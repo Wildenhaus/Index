@@ -1,11 +1,12 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Assimp;
+using System.Windows.Input;
 using H2AIndex.Common;
+using H2AIndex.Processes;
 using H2AIndex.Services.Abstract;
-using H2AIndex.Tools;
 using H2AIndex.ViewModels.Abstract;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.SharpDX.Core.Assimp;
@@ -13,10 +14,8 @@ using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using Microsoft.Extensions.DependencyInjection;
 using PropertyChanged;
-using Saber3D.Data;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
-using Saber3D.Serializers;
 
 namespace H2AIndex.ViewModels
 {
@@ -27,12 +26,23 @@ namespace H2AIndex.ViewModels
   {
 
     private IS3DFile _file;
+    private string _searchTerm;
+    private ObservableCollection<ModelNodeModel> _nodes;
 
     #region Properties
 
-    public HelixToolkit.Wpf.SharpDX.Camera Camera { get; set; }
+    public Camera Camera { get; set; }
     public SceneNodeGroupModel3D Model { get; }
     public EffectsManager EffectsManager { get; }
+
+    public ICommand SearchTermChangedCommand { get; }
+
+    public ICommand ShowAllCommand { get; }
+    public ICommand HideAllCommand { get; }
+    public ICommand HideLODsCommand { get; }
+    public ICommand HideVolumesCommand { get; }
+
+    public ICollection<ModelNodeModel> Nodes => _nodes;
 
     #endregion
 
@@ -47,72 +57,27 @@ namespace H2AIndex.ViewModels
         FarPlaneDistance = 30000
       };
       Model = new SceneNodeGroupModel3D();
+
+      _nodes = new ObservableCollection<ModelNodeModel>();
+
+      ShowAllCommand = new Command( ShowAllNodes );
+      HideAllCommand = new Command( HideAllNodes );
+      HideLODsCommand = new Command( HideLODNodes );
+      HideVolumesCommand = new Command( HideVolumeNodes );
     }
 
     protected override async Task OnInitializing()
     {
+      var convertProcess = new ConvertModelToAssimpSceneProcess( _file );
+      await RunProcess( convertProcess );
+
       using ( var prog = ShowProgress() )
       {
-        prog.IsIndeterminate = true;
-
-        prog.Status = "Deserializing Model";
-        S3DGeometryGraph geometryGraph;
-        try
-        {
-          geometryGraph = DeserializeModel( _file );
-        }
-        catch ( Exception ex )
-        {
-          ShowExceptionModal( ex );
-          return;
-        }
-
-        Scene scene;
-        prog.Status = "Converting Model";
-        try
-        {
-          var stream = _file.GetStream();
-          var reader = new BinaryReader( stream );
-          scene = SceneExporter.CreateScene( _file.Name, geometryGraph, reader, prog );
-        }
-        catch ( Exception ex )
-        {
-          ShowExceptionModal( ex );
-          return;
-        }
-
         prog.Status = "Preparing Viewer";
         prog.IsIndeterminate = true;
 
-        await Task.Run( () =>
-        {
-          var importer = new Importer();
-          var result = importer.ToHelixToolkitScene( scene, out var hxScene );
-          return hxScene;
-        } ).ContinueWith( async ( res ) =>
-        {
-          var scene = res.Result;
-
-          foreach ( var node in scene.Root.Traverse() )
-          {
-            node.Tag = new ModelNodeModel( node );
-            if ( node is MeshNode mn )
-            {
-              var matName = mn.Material.Name;
-              var mat = new PBRMaterial()
-              {
-                AlbedoMap = await GetTexture( $"{matName}.pct" ),
-                NormalMap = await GetTexture( $"{matName}_nm.pct" ),
-                EnableTessellation = true,
-                UVTransform = new HelixToolkit.SharpDX.Core.UVTransform( 0, 1, -1, 0, 0 )
-              };
-              mn.Material = mat;
-            }
-          }
-
-          Model.AddNode( scene.Root );
-        }, TaskScheduler.FromCurrentSynchronizationContext() );
-      }
+        await PrepareModelViewer( convertProcess.Result );
+      };
     }
 
     protected override void OnDisposing()
@@ -134,23 +99,98 @@ namespace H2AIndex.ViewModels
       return TextureModel.Create( stream );
     }
 
-    private static S3DGeometryGraph DeserializeModel( IS3DFile file )
+    private async Task PrepareModelViewer( Assimp.Scene assimpScene )
     {
-      var stream = file.GetStream();
-      var reader = new BinaryReader( stream );
+      var importer = new Importer();
+      importer.ToHelixToolkitScene( assimpScene, out var scene );
 
-      if ( file.Extension == ".tpl" )
+      void AddNodeModels( SceneNode node, ModelNodeModel parentNode = null )
       {
-        var tpl = new S3DTemplateSerializer().Deserialize( reader );
-        return tpl.GeometryGraph;
+        var nodeModel = new ModelNodeModel( node );
+        if ( parentNode is null )
+          _nodes.Add( nodeModel );
+        else
+          parentNode.Items.Add( nodeModel );
+
+        foreach ( var childNode in node.Items )
+          AddNodeModels( childNode, nodeModel );
       }
-      else if ( file.Extension == ".lg" )
+      AddNodeModels( scene.Root );
+
+      var matLookup = new Dictionary<string, PBRMaterial>();
+      foreach ( var node in scene.Root.Traverse() )
       {
-        var lg = new S3DSceneSerializer().Deserialize( reader );
-        return lg.GeometryGraph;
+        if ( node is MeshNode mn )
+        {
+          var matName = mn.Material.Name;
+          if ( !matLookup.TryGetValue( matName, out var mat ) )
+          {
+            mat = new PBRMaterial()
+            {
+              AlbedoMap = await GetTexture( $"{matName}.pct" ),
+              NormalMap = await GetTexture( $"{matName}_nm.pct" ),
+              EnableTessellation = true,
+              UVTransform = new UVTransform( 0, 1, -1, 0, 0 )
+            };
+            matLookup.Add( matName, mat );
+          }
+
+          mn.Material = mat;
+        }
       }
-      else
-        return null;
+
+      Model.AddNode( scene.Root );
+    }
+
+    private void ShowAllNodes()
+    {
+      foreach ( var node in Traverse( _nodes ) )
+        node.IsVisible = true;
+    }
+
+    private void HideAllNodes()
+    {
+      foreach ( var node in Traverse( _nodes ) )
+        node.IsVisible = false;
+    }
+
+    private void HideLODNodes()
+    {
+      foreach ( var node in Traverse( _nodes ) )
+      {
+        if ( node.Name.Contains( "LOD1", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "LOD2", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "LOD3", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "lod01", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "lod02", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "lod03", StringComparison.InvariantCultureIgnoreCase ) )
+          node.IsVisible = false;
+      }
+    }
+
+    private void HideVolumeNodes()
+    {
+      foreach ( var node in Traverse( _nodes ) )
+      {
+        if ( node.Name.Contains( "shadow", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "occl", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "oclud", StringComparison.InvariantCultureIgnoreCase )
+          || node.Name.Contains( "refl", StringComparison.InvariantCultureIgnoreCase ) )
+          node.IsVisible = false;
+        else if ( node.Node is MeshNode mn )
+          if ( mn.Material is null )
+            node.IsVisible = false;
+      }
+    }
+
+    private IEnumerable<ModelNodeModel> Traverse( IEnumerable<ModelNodeModel> rootElems )
+    {
+      foreach ( var elem in rootElems )
+      {
+        yield return elem;
+        foreach ( var child in Traverse( elem.Items ) )
+          yield return child;
+      }
     }
 
   }
@@ -160,9 +200,12 @@ namespace H2AIndex.ViewModels
 
     private SceneNode _node;
 
+    public SceneNode Node => _node;
     public bool IsExpanded { get; set; }
 
     public string Name => _node.Name;
+
+    public ICollection<ModelNodeModel> Items { get; }
 
     [OnChangedMethod( nameof( OnNodeVisibilityChanged ) )]
     public bool IsVisible { get; set; }
@@ -171,6 +214,7 @@ namespace H2AIndex.ViewModels
     {
       _node = node;
       node.Tag = this;
+      Items = new ObservableCollection<ModelNodeModel>();
 
       IsExpanded = true;
       IsVisible = true;

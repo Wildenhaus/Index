@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using H2AIndex.ViewModels;
 using HelixToolkit.Wpf.SharpDX;
 
@@ -21,6 +22,10 @@ namespace H2AIndex.Views
       } ) );
     }
 
+    private void OnContextMenuLoaded( object sender, RoutedEventArgs e )
+    {
+      ( sender as ContextMenu ).DataContext = this.DataContext;
+    }
   }
 
 }

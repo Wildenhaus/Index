@@ -28,7 +28,7 @@ namespace Saber3D.Data
     _WEIGHT3          = 1ul << 0x06,
     _WEIGHT4          = 1ul << 0x07,
     _INDEX            = 1ul << 0x08,
-    _NORM             = 1ul << 0x09,
+    _BONE             = 1ul << 0x09,
     _COMPRESSED_NORM  = 1ul << 0x0A,
     _NORM_IN_VERT4    = 1ul << 0x0B,
 
