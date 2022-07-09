@@ -34,11 +34,16 @@
                                      IsValidPath="{Binding IsValidPath, Mode=OneWayToSource}" />
         </GroupBox>
 
-        <GroupBox Header="File Filters"
-                  Grid.Row="1"
+        <GroupBox Grid.Row="1"
                   Grid.ColumnSpan="2"
                   Margin="5,5,5,0"
                   Visibility="{Binding IsForBatch, Converter={StaticResource BoolVisibilityConverter}}">
+            <GroupBox.Header>
+                <TextBlock>
+                    <Run>File Filters</Run>
+                    <Hyperlink Command="{Binding ExplainFileFiltersCommand}">?</Hyperlink>
+                </TextBlock>
+            </GroupBox.Header>
             <TextBox x:Name="FilterBox" Text="{Binding Options.Filters}" />
         </GroupBox>
 

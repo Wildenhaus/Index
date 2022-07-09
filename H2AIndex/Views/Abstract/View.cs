@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using H2AIndex.ViewModels;
 using H2AIndex.ViewModels.Abstract;
@@ -23,7 +24,8 @@ namespace H2AIndex.Views
     {
       get
       {
-        return GetType().Name.Replace( "View", "" );
+        var name = GetType().Name.Replace( "View", "" );
+        return Regex.Replace( name, "(\\B[A-Z])", " $1" );
       }
     }
 

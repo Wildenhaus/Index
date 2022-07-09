@@ -46,16 +46,16 @@ namespace H2AIndex.Common
     #region Public Methods
 
     public void AddMessage( string name, string message )
-        => _messages.Add( new Entry( EntryType.Message, name, message ) );
+        => _messages.Add( new Entry( StatusListEntryType.Message, name, message ) );
 
     public void AddWarning( string name, string message )
-        => _warnings.Add( new Entry( EntryType.Warning, name, message ) );
+        => _warnings.Add( new Entry( StatusListEntryType.Warning, name, message ) );
 
     public void AddError( string name, string message, Exception exception = null )
-        => _errors.Add( new Entry( EntryType.Error, name, message, exception ) );
+        => _errors.Add( new Entry( StatusListEntryType.Error, name, message, exception ) );
 
     public void AddError( string name, Exception exception )
-      => _errors.Add( new Entry( EntryType.Error, name, exception.Message, exception ) );
+      => _errors.Add( new Entry( StatusListEntryType.Error, name, exception.Message, exception ) );
 
     public void Merge( StatusList statusList )
     {
@@ -71,7 +71,7 @@ namespace H2AIndex.Common
     public IEnumerator<Entry> GetEnumerator()
     {
       var entries = _messages.Concat( _warnings ).Concat( _errors );
-      foreach ( var entry in entries )
+      foreach ( var entry in entries.OrderBy( x => x.Time ) )
         yield return entry;
     }
 
@@ -82,19 +82,13 @@ namespace H2AIndex.Common
 
     #region Embedded Types
 
-    public enum EntryType
-    {
-      Message = 1,
-      Warning = 2,
-      Error = 3
-    }
-
     public struct Entry
     {
 
       #region Data Members
 
-      public readonly EntryType Type;
+      public DateTime Time;
+      public readonly StatusListEntryType Type;
       public readonly string Name;
       public readonly string Message;
       public readonly Exception Exception;
@@ -103,8 +97,9 @@ namespace H2AIndex.Common
 
       #region Constructor
 
-      public Entry( EntryType type, string name, string message = null, Exception exception = null )
+      public Entry( StatusListEntryType type, string name, string message = null, Exception exception = null )
       {
+        Time = DateTime.Now;
         Type = type;
         Name = name;
         Message = message;
@@ -117,6 +112,13 @@ namespace H2AIndex.Common
 
     #endregion
 
+  }
+
+  public enum StatusListEntryType
+  {
+    Message = 1,
+    Warning = 2,
+    Error = 3
   }
 
 }

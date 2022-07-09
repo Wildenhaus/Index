@@ -59,6 +59,7 @@ namespace H2AIndex.Processes
     {
       UnitName = _filePaths.Length > 1 ? "files opened" : "file opened";
       TotalUnits = _filePaths.Length;
+      IsIndeterminate = _filePaths.Length == 1;
 
       foreach ( var filePath in _filePaths )
       {

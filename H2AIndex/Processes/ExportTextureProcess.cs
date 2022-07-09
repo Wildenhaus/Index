@@ -249,6 +249,8 @@ namespace H2AIndex.Processes
           return MagickFormat.Jpeg;
         case TextureFileFormat.PNG:
           return MagickFormat.Png;
+        case TextureFileFormat.QOI:
+          return MagickFormat.Qoi;
         default:
           throw new Exception( $"Unsupported format: {format}" );
       }

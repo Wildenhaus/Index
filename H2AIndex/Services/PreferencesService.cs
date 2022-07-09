@@ -37,6 +37,8 @@ namespace H2AIndex.Services
         Preferences = PreferencesModel.Default;
         await SavePreferences();
       }
+      else
+        EnsurePreferencesAreSet();
     }
 
     public async Task<PreferencesModel> LoadPreferences()
@@ -85,6 +87,14 @@ namespace H2AIndex.Services
     {
       var executableDir = AppDomain.CurrentDomain.BaseDirectory;
       return Path.Combine( executableDir, "H2AIndex.prefs" );
+    }
+
+    private void EnsurePreferencesAreSet()
+    {
+      if ( Preferences.ModelExportOptions is null )
+        Preferences.ModelExportOptions = ModelExportOptionsModel.Default;
+      if ( Preferences.TextureExportOptions is null )
+        Preferences.TextureExportOptions = TextureExportOptionsModel.Default;
     }
 
     #endregion

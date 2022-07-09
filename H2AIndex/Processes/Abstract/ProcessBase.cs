@@ -105,6 +105,10 @@ namespace H2AIndex.Processes
         _isCompleted = true;
         RaiseErrorEvent( ex );
       }
+      finally
+      {
+        _tcs.TrySetResult();
+      }
     }
 
     #endregion
@@ -137,13 +141,11 @@ namespace H2AIndex.Processes
 
     private void RaiseCompletedEvent()
     {
-      _tcs.TrySetResult();
       Completed?.Invoke( this, EventArgs.Empty );
     }
 
     private void RaiseErrorEvent( Exception ex )
     {
-      _tcs.TrySetException( ex );
       Error?.Invoke( this, EventArgs.Empty );
     }
 

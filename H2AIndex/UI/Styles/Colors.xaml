@@ -74,6 +74,10 @@
     <Color x:Key="Color.Primary.3.Border.Disabled"               R="110"  G="110" B="110" A="255"/>
     <Color x:Key="Color.Primary.4.Border.Disabled"               R="120"  G="120" B="120" A="255"/>
 
+    <Color x:Key="Color.Message"                                 R="15"   G="140" B="175" A="255"/>
+    <Color x:Key="Color.Warning"                                 R="230"  G="200" B="25"  A="255"/>
+    <Color x:Key="Color.Error"                                   R="255"  G="0"   B="0"   A="255"/>
+
     <!--#endregion-->
     
     <!--#region Brushes -->
@@ -147,6 +151,10 @@
     <SolidColorBrush x:Key="Brush.Primary.2.Border.Disabled"                  Color="{StaticResource Color.Primary.2.Border.Disabled}"/>
     <SolidColorBrush x:Key="Brush.Primary.3.Border.Disabled"                  Color="{StaticResource Color.Primary.3.Border.Disabled}"/>
     <SolidColorBrush x:Key="Brush.Primary.4.Border.Disabled"                  Color="{StaticResource Color.Primary.4.Border.Disabled}"/>
+
+    <SolidColorBrush x:Key="Brush.Message"                                    Color="{StaticResource Color.Message}" />
+    <SolidColorBrush x:Key="Brush.Warning"                                    Color="{StaticResource Color.Warning}" />
+    <SolidColorBrush x:Key="Brush.Error"                                      Color="{StaticResource Color.Error}" />
 
     <!--#endregion -->
 

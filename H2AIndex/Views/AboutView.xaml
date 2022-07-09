@@ -53,7 +53,8 @@
                                    Cursor="Hand">
                             <Hyperlink Command="{Binding OpenLinkCommand}"
                                        CommandParameter="https://ko-fi.com/hausdev"
-                                       TextDecorations="None">
+                                       TextDecorations="None"
+                                       Background="Transparent">
                                 <Path Fill="White" 
                                       Height="32"
                                       Width="32"

@@ -11,25 +11,27 @@ namespace H2AIndex.Models
 
     #region Data Members
 
-    public static readonly TextureExportOptionsModel Default = new TextureExportOptionsModel
+    public static TextureExportOptionsModel Default
     {
-      OutputFileFormat = TextureFileFormat.DDS,
-      OutputNormalMapFormat = NormalMapFormat.OpenGL,
-      RecalculateNormalMapZChannel = true,
-      ExportAllMips = false,
-      OverwriteExisting = false
-    };
+      get
+      {
+        return new TextureExportOptionsModel
+        {
+          OutputFileFormat = TextureFileFormat.DDS,
+          OutputNormalMapFormat = NormalMapFormat.OpenGL,
+          RecalculateNormalMapZChannel = true,
+          ExportAllMips = false,
+          OverwriteExisting = false
+        };
+      }
+    }
 
     #endregion
 
     #region Properties
 
     [JsonIgnore]
-    public string OutputPath
-    {
-      get;
-      set;
-    }
+    public string OutputPath { get; set; }
 
     [JsonIgnore]
     public string Filters { get; set; }

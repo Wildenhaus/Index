@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Windows;
 using H2AIndex.Processes;
 using H2AIndex.Services;
@@ -50,8 +49,6 @@ namespace H2AIndex
 
       ConfigureProcesses( services );
       ConfigureServices( services );
-
-      //ConfigureUnmanaged();
     }
 
     private void ConfigureModals( IServiceCollection services )
@@ -66,6 +63,7 @@ namespace H2AIndex
 
       services.AddTransient<AboutView>();
       services.AddTransient<ModelView>();
+      services.AddTransient<StatusListView>();
       services.AddTransient<TextureView>();
       services.AddTransient<TextureExportOptionsView>();
     }
@@ -78,6 +76,7 @@ namespace H2AIndex
       services.AddTransient<AboutViewModel>();
       services.AddTransient<ModelViewModel>();
       services.AddTransient<ProgressViewModel>();
+      services.AddTransient<StatusListViewModel>();
       services.AddTransient<TextureViewModel>();
       services.AddTransient<TextureExportOptionsViewModel>();
     }
@@ -100,13 +99,6 @@ namespace H2AIndex
       services.AddTransient<ITextureConversionService, TextureConversionService>();
       services.AddTransient<ITabService, TabService>();
       services.AddTransient<IViewService, ViewService>();
-    }
-
-    private void ConfigureUnmanaged()
-    {
-      var basePath = AppDomain.CurrentDomain.BaseDirectory;
-      var dxTexPath = Path.Combine( basePath, "DirectXTexNetImpl.dll" );
-      DirectXTexNet.TexHelper.LoadInstanceFrom( dxTexPath );
     }
 
     #endregion

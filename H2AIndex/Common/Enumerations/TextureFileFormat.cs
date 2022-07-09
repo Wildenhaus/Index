@@ -8,7 +8,8 @@
     TGA,
     JPEG,
     PNG,
-    EXR
+    EXR,
+    QOI
 
   }
 

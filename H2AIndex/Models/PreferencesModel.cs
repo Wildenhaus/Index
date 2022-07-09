@@ -14,6 +14,7 @@ namespace H2AIndex.Models
       {
         return new PreferencesModel
         {
+          ModelExportOptions = ModelExportOptionsModel.Default,
           TextureExportOptions = TextureExportOptionsModel.Default
         };
       }
@@ -22,6 +23,7 @@ namespace H2AIndex.Models
     public string H2ADirectoryPath { get; set; }
     public string DefaultExportPath { get; set; }
 
+    public ModelExportOptionsModel ModelExportOptions { get; set; }
     public TextureExportOptionsModel TextureExportOptions { get; set; }
 
     #endregion

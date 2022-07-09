@@ -51,6 +51,7 @@ namespace H2AIndex.ViewModels
       get => _serviceProvider;
     }
 
+    public ICommand ShowExceptionModalCommand { get; }
     public ICommand ShowModalCommand { get; }
     public ICommand ShowViewModalCommand { get; }
     public ICommand ShowWebPageCommand { get; }
@@ -64,6 +65,7 @@ namespace H2AIndex.ViewModels
       _serviceProvider = serviceProvider;
       _modalElements = new ObservableCollection<IModal>();
 
+      ShowExceptionModalCommand = new Command<Exception>( exception => ShowExceptionModal( exception ) );
       ShowModalCommand = new Command<Type>( modalType => ShowModal( modalType ) );
       ShowViewModalCommand = new Command<Type>( viewType => ShowViewModal( viewType ) );
       ShowWebPageCommand = new Command<string>( OpenWebPage );
@@ -144,8 +146,9 @@ namespace H2AIndex.ViewModels
         IsBusy = false;
       }
 
-      if ( process.StatusList.HasErrors )
-        await ShowExceptionModal( process.StatusList.Errors[ 0 ].Exception ); // TODO
+      var statusList = process.StatusList;
+      if ( statusList.HasErrors || statusList.HasWarnings )
+        await ShowStatusListModal( statusList );
     }
 
     protected async Task<object> ShowModal( IModal modal )
@@ -187,6 +190,18 @@ namespace H2AIndex.ViewModels
         Title = title,
         Message = message
       };
+
+      return ShowModal( modal );
+    }
+
+    protected Task<object> ShowStatusListModal( StatusList statusList )
+    {
+      var viewService = ServiceProvider.GetService<IViewService>();
+      var view = viewService.GetViewWithDefaultViewModel( typeof( StatusListView ) );
+      ( ( StatusListViewModel ) view.DataContext ).StatusList = statusList;
+
+      var modal = new ViewHostWindowModal( view );
+      modal.DataContext = view.DataContext;
 
       return ShowModal( modal );
     }

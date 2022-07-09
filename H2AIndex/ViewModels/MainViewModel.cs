@@ -57,6 +57,18 @@ namespace H2AIndex.ViewModels
       App.Current.DispatcherUnhandledException += OnUnhandledExceptionRaised;
     }
 
+    protected override Task OnInitializing()
+    {
+      var sl = new StatusList();
+      sl.AddMessage( "message name", "this is a message" );
+      sl.AddWarning( "warning name", "this is a warning" );
+      sl.AddError( "error name", "this is an error", new Exception( "Exception message" ) );
+      sl.AddError( "error name 2", new Exception( "Exception message 2" ) );
+
+      ShowStatusListModal( sl );
+      return Task.CompletedTask;
+    }
+
     #endregion
 
     #region Private Methods
