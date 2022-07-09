@@ -9,10 +9,15 @@
     <AssemblyVersion>0.1.*</AssemblyVersion>
     <Deterministic>False</Deterministic>
     <Platforms>AnyCPU;x64</Platforms>
+    <ApplicationIcon>Index.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Index.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Index.ico" />
   </ItemGroup>
 
   <ItemGroup>
