@@ -11,23 +11,39 @@
            mc:Ignorable="d" 
            d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="2" />
             <ColumnDefinition Width="1*" MaxWidth="400" />
         </Grid.ColumnDefinitions>
 
+        <Menu Grid.ColumnSpan="3"
+              Grid.Row="0">
+            <MenuItem Header="View">
+                <MenuItem Header="Show Wireframe" IsCheckable="True" IsChecked="{Binding ShowWireframe}" />
+            </MenuItem>
+        </Menu>
+
         <hx:Viewport3DX x:Name="Viewport"
                         Grid.Column="0"
+                        Grid.Row="1"
                         Camera="{Binding Camera}"
                         Background="{DynamicResource Brush.Deep.2.Background.Static}"
                         BackgroundColor="{DynamicResource Color.Deep.2.Background.Static}"
+                        TextBrush="Wheat"
+                        Foreground="White"
                         CameraMode="Inspect"
                         CameraRotationMode="Turntable"
                         EnableSwapChainRendering="False"
                         FXAALevel="Low"
                         EffectsManager="{Binding EffectsManager}"
-                        IsHitTestVisible="True">
+                        IsHitTestVisible="True"
+                        ShowFrameRate="True"
+                        EnableRenderFrustum="False">
 
             <hx:Viewport3DX.InputBindings>
                 <MouseBinding Command="hx:ViewportCommands.Rotate" Gesture="RightClick" />
@@ -37,13 +53,14 @@
 
 
             <hx:DirectionalLight3D Direction="{Binding Camera.LookDirection}" Color="#FFF" />
-            <hx:Element3DPresenter Content="{Binding Model}" />
 
+            <hx:Element3DPresenter Content="{Binding Model}" >
+            </hx:Element3DPresenter>
         </hx:Viewport3DX>
 
-        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" />
+        <GridSplitter Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" />
 
-        <Grid Grid.Column="2">
+        <Grid Grid.Column="2" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="20" />
@@ -79,8 +96,8 @@
                                 <Path Data="{Binding Source={StaticResource Icon_Dropdown}, Path=Data}"
                                       Fill="{DynamicResource Brush.Glyph.Static}"
                                       Stretch="Uniform"
-                                      Width="10"
-                                      Height="10" />
+                                      Width="8"
+                                      Height="8" />
                             </Button.Content>
                             <Button.ContextMenu>
                                 <ContextMenu Loaded="OnContextMenuLoaded">
@@ -111,28 +128,30 @@
                         </Button>
                         
                         <Button x:Name="BtnExpandAll" 
-                            Padding="0"
-                            Background="Transparent"
-                            ToolTip="Expand All Groups">
+                                Padding="0"
+                                Background="Transparent"
+                                ToolTip="Expand All Nodes"
+                                Command="{Binding ExpandAllCommand}">
                             <Button.Content>
                                 <Path Data="{Binding Source={StaticResource Icon_Expand}, Path=Data}"
-                                  Fill="{DynamicResource Brush.Glyph.Static}" 
-                                  Stretch="Uniform"
-                                  Width="14"
-                                  Height="14" />
+                                      Fill="{DynamicResource Brush.Glyph.Static}" 
+                                      Stretch="Uniform"
+                                      Width="14"
+                                      Height="14" />
                             </Button.Content>
                         </Button>
 
                         <Button x:Name="BtnCollapseAll" 
-                            Padding="0"
-                            Background="Transparent"
-                            ToolTip="Collapse All Groups">
+                                Padding="0"
+                                Background="Transparent"
+                                ToolTip="Collapse All Nodes"
+                                Command="{Binding CollapseAllCommand}">
                             <Button.Content>
                                 <Path Data="{Binding Source={StaticResource Icon_Collapse}, Path=Data}"
-                                  Fill="{DynamicResource Brush.Glyph.Static}" 
-                                  Stretch="Uniform"
-                                  Width="14"
-                                  Height="14" />
+                                      Fill="{DynamicResource Brush.Glyph.Static}" 
+                                      Stretch="Uniform"
+                                      Width="14"
+                                      Height="14" />
                             </Button.Content>
                         </Button>
 
@@ -158,7 +177,7 @@
                 </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Items}">
-                        <CheckBox IsChecked="{Binding IsVisible}" Content="{Binding Name}" />
+                        <CheckBox IsChecked="{Binding IsVisible}" Content="{Binding Name}" Focusable="False" FocusVisualStyle="{x:Null}" />
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>

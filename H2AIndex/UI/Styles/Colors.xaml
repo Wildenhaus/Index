@@ -12,11 +12,11 @@
     <Color x:Key="Color.Glyph.MouseDown"                         R="235"  G="235" B="235" A="255"/>
     <Color x:Key="Color.Glyph.Selected"                          R="228"  G="228" B="228" A="255"/>
     <Color x:Key="Color.Glyph.Selected.Inactive"                 R="218"  G="218" B="218" A="255"/>
-    <Color x:Key="Color.ColourfulGlyph.Static"                   R="55"   G="195" B="230" A="255"/>
-    <Color x:Key="Color.ColourfulGlyph.Static.Opaque"            R="55"   G="195" B="230" A="128"/>
-    <Color x:Key="Color.ColourfulGlyph.Disabled"                 R="50"   G="30"  B="180" A="255"/>
-    <Color x:Key="Color.ColourfulGlyph.MouseOver"                R="40"   G="20"  B="220" A="255"/>
-    <Color x:Key="Color.ColourfulGlyph.MouseDown"                R="50"   G="30"  B="210" A="255"/>
+    <Color x:Key="Color.ColourfulGlyph.Static"                   R="20"   G="115" B="140" A="255"/>
+    <Color x:Key="Color.ColourfulGlyph.Static.Opaque"            R="20"   G="115" B="140" A="128"/>
+    <Color x:Key="Color.ColourfulGlyph.Disabled"                 R="50"   G="85"  B="95"  A="255"/>
+    <Color x:Key="Color.ColourfulGlyph.MouseOver"                R="25"   G="140" B="165" A="255"/>
+    <Color x:Key="Color.ColourfulGlyph.MouseDown"                R="15"   G="140" B="175" A="255"/>
     <Color x:Key="Color.ColourfulGlyph.Selected"                 R="30"   G="40"  B="215" A="255"/>
     <Color x:Key="Color.ColourfulGlyph.Selected.Inactive"        R="30"   G="30"  B="210" A="255"/>
     <Color x:Key="Color.Deep.1.Background.Static"                R="20"   G="20"  B="20"  A="255"/>

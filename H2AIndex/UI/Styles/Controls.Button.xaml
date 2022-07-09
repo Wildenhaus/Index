@@ -73,6 +73,49 @@
         </Setter>
     </Style>
 
+    <Style x:Key="ColorfulButton" 
+           TargetType="{x:Type Button}" 
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource Brush.ColourfulGlyph.Static}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="PART_Border" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            Background="{TemplateBinding Background}" 
+                            SnapsToDevicePixels="true">
+                        <ContentPresenter x:Name="PART_ContentPresenter" 
+                                          Focusable="False" 
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          Margin="{TemplateBinding Padding}" 
+                                          RecognizesAccessKey="True" 
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsDefaulted" Value="true">
+                            <Setter Property="BorderBrush" TargetName="PART_Border" Value="{DynamicResource Button.Defaulted.Border}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" TargetName="PART_Border" Value="{DynamicResource Brush.ColourfulGlyph.MouseOver}" />
+                            <Setter Property="BorderBrush" TargetName="PART_Border" Value="{DynamicResource Button.MouseOver.Border}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Background" TargetName="PART_Border" Value="{DynamicResource Brush.ColourfulGlyph.MouseDown}" />
+                            <Setter Property="BorderBrush" TargetName="PART_Border" Value="{DynamicResource Button.Pressed.Border}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Background" TargetName="PART_Border" Value="{DynamicResource Brush.ColourfulGlyph.Disabled}" />
+                            <Setter Property="BorderBrush" TargetName="PART_Border" Value="{DynamicResource Button.Disabled.Border}" />
+                            <Setter Property="TextElement.Foreground" TargetName="PART_ContentPresenter" Value="{DynamicResource Button.Disabled.Foreground}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="{x:Type ToggleButton}">
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}" />
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />

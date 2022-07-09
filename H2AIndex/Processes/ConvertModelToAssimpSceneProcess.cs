@@ -453,6 +453,9 @@ namespace H2AIndex.Processes
           Debug.Assert( skinVertex.Z == targetVertex.Z );
 
           AddBoneWeight( boneId, 1, translatedVertOffset );
+
+          var skinNorm = skinCompound.Mesh.Normals[ weight.VertexID ];
+          Mesh.Normals[ translatedVertOffset ] = skinNorm;
         }
       }
     }

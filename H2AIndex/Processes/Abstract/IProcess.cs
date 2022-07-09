@@ -13,6 +13,8 @@ namespace H2AIndex.Processes
 
     StatusList StatusList { get; }
 
+    Task CompletionTask { get; }
+
     #endregion
 
     #region Public Methods

@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using H2AIndex.Common;
+using H2AIndex.Models;
 using H2AIndex.Processes;
-using H2AIndex.Services.Abstract;
+using H2AIndex.Services;
 using H2AIndex.UI.Modals;
 using H2AIndex.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -136,6 +137,7 @@ namespace H2AIndex.ViewModels
         IsBusy = true;
 
         await Task.Factory.StartNew( process.Execute, TaskCreationOptions.LongRunning );
+        await process.CompletionTask;
 
         await modal.Hide();
         Modals.Remove( modal );
@@ -189,18 +191,23 @@ namespace H2AIndex.ViewModels
       return ShowModal( modal );
     }
 
-    protected Task<object> ShowViewModal( Type viewType )
+    protected Task<object> ShowViewModal( Type viewType, Action<object> configureViewModel = null )
     {
       var viewService = ServiceProvider.GetService<IViewService>();
       var view = viewService.GetViewWithDefaultViewModel( viewType );
+
       var modal = new ViewHostWindowModal( view );
+      modal.DataContext = view.DataContext;
+
+      if ( configureViewModel != null )
+        configureViewModel( view.DataContext );
 
       return ShowModal( modal );
     }
 
-    protected Task ShowViewModal<TView>()
+    protected Task<object> ShowViewModal<TView>( Action<object> configureViewModel = null )
       where TView : IView
-      => ShowViewModal( typeof( TView ) );
+      => ShowViewModal( typeof( TView ), configureViewModel );
 
     protected ProgressViewModel ShowProgress()
     {
@@ -223,6 +230,22 @@ namespace H2AIndex.ViewModels
       IsBusy = true;
 
       return progress;
+    }
+
+    #endregion
+
+    #region Preferences Methods
+
+    protected PreferencesModel GetPreferences()
+    {
+      var prefService = ServiceProvider.GetRequiredService<IPreferencesService>();
+      return prefService.Preferences;
+    }
+
+    protected Task SavePreferences()
+    {
+      var prefService = ServiceProvider.GetRequiredService<IPreferencesService>();
+      return prefService.SavePreferences();
     }
 
     #endregion

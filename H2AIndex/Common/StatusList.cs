@@ -57,6 +57,13 @@ namespace H2AIndex.Common
     public void AddError( string name, Exception exception )
       => _errors.Add( new Entry( EntryType.Error, name, exception.Message, exception ) );
 
+    public void Merge( StatusList statusList )
+    {
+      _messages.AddRange( statusList.Messages );
+      _warnings.AddRange( statusList.Warnings );
+      _errors.AddRange( statusList.Errors );
+    }
+
     #endregion
 
     #region IEnumerable Methods

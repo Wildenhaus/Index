@@ -57,31 +57,28 @@ namespace H2AIndex.Processes
 
     protected override async Task OnExecuting()
     {
-      await Task.Factory.StartNew( () =>
+      UnitName = _filePaths.Length > 1 ? "files opened" : "file opened";
+      TotalUnits = _filePaths.Length;
+
+      foreach ( var filePath in _filePaths )
       {
-        UnitName = _filePaths.Length > 1 ? "files opened" : "file opened";
-        TotalUnits = _filePaths.Length;
+        var fileName = Path.GetFileName( filePath );
+        Status = $"Opening {fileName}";
 
-        foreach ( var filePath in _filePaths )
+        try
         {
-          var fileName = Path.GetFileName( filePath );
-          Status = $"Opening {fileName}";
+          if ( !_fileContext.OpenFile( filePath ) )
+            StatusList.AddWarning( fileName, "Failed to open file." );
+          else
+            _filesLoaded.Add( fileName );
 
-          try
-          {
-            if ( !_fileContext.OpenFile( filePath ) )
-              StatusList.AddWarning( fileName, "Failed to open file." );
-            else
-              _filesLoaded.Add( fileName );
-
-            CompletedUnits++;
-          }
-          catch ( Exception ex )
-          {
-            StatusList.AddError( fileName, ex );
-          }
+          CompletedUnits++;
         }
-      }, TaskCreationOptions.LongRunning );
+        catch ( Exception ex )
+        {
+          StatusList.AddError( fileName, ex );
+        }
+      }
     }
 
     #endregion

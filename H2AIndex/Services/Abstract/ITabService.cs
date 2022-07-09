@@ -1,7 +1,7 @@
 ﻿using H2AIndex.Models;
 using Saber3D.Files;
 
-namespace H2AIndex.Services.Abstract
+namespace H2AIndex.Services
 {
 
   public interface ITabService

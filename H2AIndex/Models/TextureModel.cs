@@ -21,6 +21,7 @@ namespace H2AIndex.Models
     #region Properties
 
     public string Name { get; }
+    public ScratchImage DdsImage => _ddsImage;
 
     public int Width => _metadata.Width;
     public int Height => _metadata.Height;

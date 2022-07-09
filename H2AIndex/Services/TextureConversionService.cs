@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using DirectXTexNet;
 using H2AIndex.Models;
-using H2AIndex.Services.Abstract;
+using ImageMagick;
+using ImageMagick.Formats;
 using Saber3D.Data.Textures;
 using Saber3D.Files;
 using Saber3D.Serializers;
@@ -17,14 +18,26 @@ namespace H2AIndex.Services
   public class TextureConversionService : ITextureConversionService
   {
 
-    public async Task<TextureModel> LoadTexture( IS3DFile file )
+    public S3DPicture DeserializeFile( IS3DFile file )
+    {
+      var stream = file.GetStream();
+      var reader = new BinaryReader( stream );
+
+      return new S3DPictureSerializer().Deserialize( reader );
+    }
+
+    public Task<TextureModel> LoadTexture( IS3DFile file )
     {
       var pict = DeserializeFile( file );
+      return LoadTexture( file.Name, pict );
+    }
 
-      var ddsImage = CreateDDS( pict );
+    public async Task<TextureModel> LoadTexture( string fileName, S3DPicture file )
+    {
+      var ddsImage = CreateDDS( file );
       var metadata = ddsImage.GetMetadata();
 
-      var name = Path.GetFileNameWithoutExtension( file.Name );
+      var name = Path.GetFileNameWithoutExtension( fileName );
       var model = TextureModel.Create( name, ddsImage, metadata );
 
       await CreateImagePreviews( ddsImage, model );
@@ -46,16 +59,66 @@ namespace H2AIndex.Services
       }
     }
 
+    public async Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage )
+    {
+      var m = ddsImage.GetMetadata();
+      var mipCount = ddsImage.GetMetadata().MipLevels;
+      var decompressedImage = PrepareNonDDSImage( ddsImage );
+
+      new DdsReadDefines { SkipMipmaps = false };
+
+      var readSettings = new MagickReadSettings();
+      readSettings.SetDefines( new DdsReadDefines { SkipMipmaps = false } );
+
+      var ddsStream = decompressedImage.SaveToDDSMemory( 0 );
+      return new MagickImageCollection( ddsStream, readSettings );
+    }
+
+    public async Task InvertGreenChannel( IMagickImage<float> image )
+    {
+      var channelCount = image.ChannelCount;
+      var height = image.Height;
+      var width = image.Width;
+
+      using var pixels = image.GetPixels();
+      for ( var h = 0; h < height; h++ )
+      {
+        var row = pixels.GetArea( 0, h, width, 1 );
+        for ( var w = 0; w < row.Length; w += channelCount )
+        {
+          var y = row[ w + 1 ] / 65535.0f;
+          y = 1.0f - y;
+          row[ w + 1 ] = y * 65535.0f;
+        }
+        pixels.SetArea( 0, h, width, 1, row );
+      }
+    }
+
+    public async Task RecalculateZChannel( IMagickImage<float> image )
+    {
+      //image.ColorSpace = ColorSpace.sRGB;
+      var channelCount = image.ChannelCount;
+      var height = image.Height;
+      var width = image.Width;
+
+      using var pixels = image.GetPixels();
+      for ( var h = 0; h < height; h++ )
+      {
+        var row = pixels.GetArea( 0, h, width, 1 );
+        for ( var w = 0; w < row.Length; w += channelCount )
+        {
+          var x = row[ w + 0 ] / 65535.0f;
+          var y = row[ w + 1 ] / 65535.0f;
+          var z = MathF.Sqrt( 1 - ( x * x ) + ( y * y ) );
+          z = MathF.Max( 0, MathF.Min( 1, z ) ) * 65535.0f;
+
+          row[ w + 2 ] = z;
+        }
+        pixels.SetArea( 0, h, width, 1, row );
+      }
+    }
 
     #region Private Methods
-
-    private S3DPicture DeserializeFile( IS3DFile file )
-    {
-      var stream = file.GetStream();
-      var reader = new BinaryReader( stream );
-
-      return new S3DPictureSerializer().Deserialize( reader );
-    }
 
     private ScratchImage CreateDDS( S3DPicture pict )
     {
@@ -114,9 +177,9 @@ namespace H2AIndex.Services
       var format = ddsImage.GetMetadata().Format;
 
       if ( format.ToString().StartsWith( "BC" ) )
-        return ddsImage.Decompress( DXGI_FORMAT.R16G16B16A16_UNORM );
+        return ddsImage.Decompress( DXGI_FORMAT.R8G8B8A8_UNORM );
       else
-        return ddsImage.Convert( DXGI_FORMAT.R16G16B16A16_UNORM, TEX_FILTER_FLAGS.DEFAULT, 0 );
+        return ddsImage.Convert( DXGI_FORMAT.R8G8B8A8_UNORM, TEX_FILTER_FLAGS.DEFAULT, 0 );
     }
 
     private DXGI_FORMAT GetDxgiFormat( S3DPictureFormat format )
@@ -147,6 +210,38 @@ namespace H2AIndex.Services
         default:
           throw new NotImplementedException();
       }
+    }
+
+    private string GetMagickCompressionDefine( DXGI_FORMAT format )
+    {
+      switch ( format )
+      {
+        case DXGI_FORMAT.BC1_UNORM:
+          return "dxt1";
+
+        case DXGI_FORMAT.BC2_UNORM:
+        case DXGI_FORMAT.BC3_UNORM:
+        case DXGI_FORMAT.BC4_UNORM:
+        case DXGI_FORMAT.BC5_UNORM:
+          return "dxt5";
+
+        default:
+          return "none";
+      }
+    }
+
+    private bool IsCompressed( ScratchImage ddsImage )
+    {
+      var format = ddsImage.GetMetadata().Format;
+      return format.ToString().StartsWith( "BC" );
+    }
+
+    private async Task<ScratchImage> DecompressImage( ScratchImage ddsImage )
+    {
+      var decompressedImage = ddsImage.Decompress( DXGI_FORMAT.R8G8B8A8_UNORM );
+      ddsImage.Dispose();
+
+      return decompressedImage;
     }
 
     #endregion

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace H2AIndex.Services.Abstract
+namespace H2AIndex.Services
 {
 
   public interface IFileDialogService

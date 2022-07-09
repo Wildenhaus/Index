@@ -26,12 +26,9 @@
               BorderBrush="{DynamicResource Brush.Primary.3.Border.Static}"
               Background="{DynamicResource Brush.Primary.3.Background.Static}">
             <MenuItem Header="File">
-                <MenuItem Header="Open Texture Definition" />
-            </MenuItem>
-            <MenuItem Header="Export">
-                <MenuItem Header="Export To DDS"  />
-                <MenuItem Header="Export To TGA"  />
-                <MenuItem Header="Export To JPG"  />
+                <MenuItem Header="Open Texture Definition" Command="{Binding OpenTextureDefinitionCommand}" />
+                <Separator />
+                <MenuItem Header="Export" Command="{Binding ExportTextureCommand}" />
             </MenuItem>
         </Menu>
 

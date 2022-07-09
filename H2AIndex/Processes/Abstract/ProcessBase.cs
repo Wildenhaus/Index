@@ -23,6 +23,7 @@ namespace H2AIndex.Processes
 
     private bool _isInitialized;
     private bool _isCompleted;
+    private TaskCompletionSource _tcs;
 
     #endregion
 
@@ -54,6 +55,16 @@ namespace H2AIndex.Processes
     public ProcessState State { get; private set; }
     public StatusList StatusList { get; }
 
+    public Task CompletionTask
+    {
+      get => _tcs.Task;
+    }
+
+    protected IServiceProvider ServiceProvider
+    {
+      get => ( ( App ) App.Current ).ServiceProvider;
+    }
+
     #endregion
 
     #region Constructor
@@ -64,6 +75,7 @@ namespace H2AIndex.Processes
       StatusList = new StatusList();
 
       _isInitialized = false;
+      _tcs = new TaskCompletionSource();
     }
 
     #endregion
@@ -124,10 +136,16 @@ namespace H2AIndex.Processes
     }
 
     private void RaiseCompletedEvent()
-      => Completed?.Invoke( this, EventArgs.Empty );
+    {
+      _tcs.TrySetResult();
+      Completed?.Invoke( this, EventArgs.Empty );
+    }
 
     private void RaiseErrorEvent( Exception ex )
-      => Error?.Invoke( this, EventArgs.Empty );
+    {
+      _tcs.TrySetException( ex );
+      Error?.Invoke( this, EventArgs.Empty );
+    }
 
     #endregion
 

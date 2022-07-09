@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Windows.Data;
 using System.Windows.Input;
 using H2AIndex.Common;
@@ -68,15 +67,6 @@ namespace H2AIndex.Models
 
       // Initialize Commands
       SearchTermChangedCommand = new Command<string>( OnSearchTermUpdated );
-
-      _context.OpenFile( @"G:\h2a\d\shared\_textures_\01_m20_rock_lrg_crepuscular_a.pct" );
-      _context.OpenFile( @"G:\h2a\d\shared\_textures_\01b_spacestation_cube.pct" );
-      _context.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
-      _context.OpenFile( @"G:\h2a\re files\pelican__h.tpl" );
-
-      foreach ( var file in Directory.GetFiles( @"G:\h2a\d\shared\_textures_\", "*.pct" ) )
-        if ( file.Contains( "masterchief" ) )
-          _context.OpenFile( file );
     }
 
     #endregion

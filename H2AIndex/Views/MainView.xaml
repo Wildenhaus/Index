@@ -24,7 +24,7 @@
             </MenuItem>
             <MenuItem Header="Tools">
                 <MenuItem Header="Bulk Export Models" />
-                <MenuItem Header="Bulk Export Textures" />
+                <MenuItem Header="Bulk Export Textures" Command="{Binding BulkExportTexturesCommand}" />
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="GitHub" />

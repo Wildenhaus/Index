@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using H2AIndex.Services.Abstract;
 using H2AIndex.ViewModels;
 using H2AIndex.Views;
 

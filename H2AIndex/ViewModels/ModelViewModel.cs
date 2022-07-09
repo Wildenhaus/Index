@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using H2AIndex.Common;
 using H2AIndex.Processes;
-using H2AIndex.Services.Abstract;
+using H2AIndex.Services;
 using H2AIndex.ViewModels.Abstract;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.SharpDX.Core.Assimp;
@@ -35,12 +35,17 @@ namespace H2AIndex.ViewModels
     public SceneNodeGroupModel3D Model { get; }
     public EffectsManager EffectsManager { get; }
 
+    [OnChangedMethod( nameof( ToggleShowWireframe ) )]
+    public bool ShowWireframe { get; set; }
+
     public ICommand SearchTermChangedCommand { get; }
 
     public ICommand ShowAllCommand { get; }
     public ICommand HideAllCommand { get; }
     public ICommand HideLODsCommand { get; }
     public ICommand HideVolumesCommand { get; }
+    public ICommand ExpandAllCommand { get; }
+    public ICommand CollapseAllCommand { get; }
 
     public ICollection<ModelNodeModel> Nodes => _nodes;
 
@@ -64,6 +69,8 @@ namespace H2AIndex.ViewModels
       HideAllCommand = new Command( HideAllNodes );
       HideLODsCommand = new Command( HideLODNodes );
       HideVolumesCommand = new Command( HideVolumeNodes );
+      ExpandAllCommand = new Command( ExpandAllNodes );
+      CollapseAllCommand = new Command( CollapseAllNodes );
     }
 
     protected override async Task OnInitializing()
@@ -117,7 +124,7 @@ namespace H2AIndex.ViewModels
       }
       AddNodeModels( scene.Root );
 
-      var matLookup = new Dictionary<string, PBRMaterial>();
+      var matLookup = new Dictionary<string, Material>();
       foreach ( var node in scene.Root.Traverse() )
       {
         if ( node is MeshNode mn )
@@ -125,9 +132,10 @@ namespace H2AIndex.ViewModels
           var matName = mn.Material.Name;
           if ( !matLookup.TryGetValue( matName, out var mat ) )
           {
-            mat = new PBRMaterial()
+            mat = new PhongMaterial
             {
-              AlbedoMap = await GetTexture( $"{matName}.pct" ),
+              DiffuseMap = await GetTexture( $"{matName}.pct" ),
+              SpecularColorMap = await GetTexture( $"{matName}_spec.pct" ),
               NormalMap = await GetTexture( $"{matName}_nm.pct" ),
               EnableTessellation = true,
               UVTransform = new UVTransform( 0, 1, -1, 0, 0 )
@@ -181,6 +189,28 @@ namespace H2AIndex.ViewModels
           if ( mn.Material is null )
             node.IsVisible = false;
       }
+    }
+
+    private void ExpandAllNodes()
+    {
+      foreach ( var node in Traverse( _nodes ) )
+        node.IsExpanded = true;
+    }
+
+    private void CollapseAllNodes()
+    {
+      foreach ( var node in Traverse( _nodes ) )
+        node.IsExpanded = false;
+    }
+
+    private void ToggleShowWireframe()
+    {
+      var show = ShowWireframe;
+      foreach ( var node in Traverse( _nodes ) )
+        if ( node.Node is MeshNode meshNode )
+        {
+          meshNode.RenderWireframe = show;
+        }
     }
 
     private IEnumerable<ModelNodeModel> Traverse( IEnumerable<ModelNodeModel> rootElems )

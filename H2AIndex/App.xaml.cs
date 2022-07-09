@@ -1,8 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using H2AIndex.Processes;
 using H2AIndex.Services;
-using H2AIndex.Services.Abstract;
 using H2AIndex.UI.Modals;
 using H2AIndex.ViewModels;
 using H2AIndex.Views;
@@ -50,6 +50,8 @@ namespace H2AIndex
 
       ConfigureProcesses( services );
       ConfigureServices( services );
+
+      //ConfigureUnmanaged();
     }
 
     private void ConfigureModals( IServiceCollection services )
@@ -65,17 +67,19 @@ namespace H2AIndex
       services.AddTransient<AboutView>();
       services.AddTransient<ModelView>();
       services.AddTransient<TextureView>();
+      services.AddTransient<TextureExportOptionsView>();
     }
 
     private void ConfigureViewModels( IServiceCollection services )
     {
       services.AddSingleton<MainViewModel>();
-      services.AddTransient<DefaultViewModel>();
 
+      services.AddTransient<DefaultViewModel>();
       services.AddTransient<AboutViewModel>();
       services.AddTransient<ModelViewModel>();
       services.AddTransient<ProgressViewModel>();
       services.AddTransient<TextureViewModel>();
+      services.AddTransient<TextureExportOptionsViewModel>();
     }
 
     private void ConfigureWindows( IServiceCollection services )
@@ -90,21 +94,32 @@ namespace H2AIndex
 
     private void ConfigureServices( IServiceCollection services )
     {
+      services.AddSingleton<IPreferencesService, PreferencesService>();
+
       services.AddTransient<IFileDialogService, FileDialogService>();
       services.AddTransient<ITextureConversionService, TextureConversionService>();
       services.AddTransient<ITabService, TabService>();
       services.AddTransient<IViewService, ViewService>();
     }
 
+    private void ConfigureUnmanaged()
+    {
+      var basePath = AppDomain.CurrentDomain.BaseDirectory;
+      var dxTexPath = Path.Combine( basePath, "DirectXTexNetImpl.dll" );
+      DirectXTexNet.TexHelper.LoadInstanceFrom( dxTexPath );
+    }
+
     #endregion
 
     #region Event Handlers
 
-    private void OnAppStartup( object sender, StartupEventArgs e )
+    private async void OnAppStartup( object sender, StartupEventArgs e )
     {
       var services = new ServiceCollection();
       ConfigureDependencies( services );
       _serviceProvider = services.BuildServiceProvider();
+
+      await _serviceProvider.GetRequiredService<IPreferencesService>().Initialize();
 
       var window = _serviceProvider.GetService<MainWindow>();
       MainViewModel = ( MainViewModel ) window.DataContext;

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Threading;
 using H2AIndex.Common;
 using H2AIndex.Models;
 using H2AIndex.Processes;
-using H2AIndex.Services.Abstract;
+using H2AIndex.Services;
+using H2AIndex.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Files;
 
@@ -33,6 +34,8 @@ namespace H2AIndex.ViewModels
     public ICommand OpenDirectoryCommand { get; }
     public ICommand ExitCommand { get; }
 
+    public ICommand BulkExportTexturesCommand { get; }
+
     #endregion
 
     #region Constructor
@@ -49,7 +52,9 @@ namespace H2AIndex.ViewModels
       OpenFileCommand = new AsyncCommand( OpenFile );
       OpenDirectoryCommand = new AsyncCommand( OpenDirectory );
 
-      _tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "pelican" ).First(), out _ );
+      BulkExportTexturesCommand = new AsyncCommand( BulkExportTextures );
+
+      App.Current.DispatcherUnhandledException += OnUnhandledExceptionRaised;
     }
 
     #endregion
@@ -71,7 +76,8 @@ namespace H2AIndex.ViewModels
     private async Task OpenDirectory()
     {
       var directoryPath = await ShowFolderBrowserDialog(
-        title: "Open Directory" ); // TODO: Add default path
+        title: "Open Directory",
+        defaultPath: GetPreferences().H2ADirectoryPath );
 
       if ( directoryPath == null )
         return;
@@ -92,6 +98,30 @@ namespace H2AIndex.ViewModels
 
         return;
       }
+    }
+
+    private async Task BulkExportTextures()
+    {
+      var result = await ShowViewModal<TextureExportOptionsView>( vm =>
+      {
+        var viewModel = vm as TextureExportOptionsViewModel;
+        viewModel.IsForBatch = true;
+      } );
+
+      if ( !( result is TextureExportOptionsModel options ) )
+        return;
+
+      var exportProcess = new BulkExportTexturesProcess( options );
+      await RunProcess( exportProcess );
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    private async void OnUnhandledExceptionRaised( object sender, DispatcherUnhandledExceptionEventArgs e )
+    {
+      await ShowExceptionModal( e.Exception );
     }
 
     #endregion

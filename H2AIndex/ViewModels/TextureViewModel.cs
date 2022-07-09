@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using H2AIndex.Common;
 using H2AIndex.Models;
-using H2AIndex.Services.Abstract;
+using H2AIndex.Processes;
+using H2AIndex.Services;
 using H2AIndex.ViewModels.Abstract;
+using H2AIndex.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
@@ -27,6 +30,9 @@ namespace H2AIndex.ViewModels
 
     public TextureModel Texture { get; set; }
 
+    public ICommand OpenTextureDefinitionCommand { get; }
+    public ICommand ExportTextureCommand { get; }
+
     #endregion
 
     #region Constructor
@@ -34,9 +40,11 @@ namespace H2AIndex.ViewModels
     public TextureViewModel( IServiceProvider serviceProvider, IS3DFile file )
       : base( serviceProvider )
     {
+      _file = file;
       _textureService = ServiceProvider.GetService<ITextureConversionService>();
 
-      _file = file;
+      OpenTextureDefinitionCommand = new AsyncCommand( OpenTextureDefinitionFile );
+      ExportTextureCommand = new AsyncCommand( ExportTexture );
     }
 
     #endregion
@@ -60,6 +68,24 @@ namespace H2AIndex.ViewModels
       base.OnDisposing();
 
       GCHelper.ForceCollect();
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private async Task OpenTextureDefinitionFile()
+    {
+    }
+
+    private async Task ExportTexture()
+    {
+      var result = await ShowViewModal<TextureExportOptionsView>();
+      if ( !( result is TextureExportOptionsModel options ) )
+        return;
+
+      var exportProcess = new ExportTextureProcess( _file, options );
+      await RunProcess( exportProcess );
     }
 
     #endregion

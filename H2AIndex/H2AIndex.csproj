@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
+    <PackageReference Include="DeepCopy.Fody" Version="1.0.16" />
     <PackageReference Include="DirectXTexNet" Version="1.0.3" />
     <PackageReference Include="Fody" Version="6.6.3">
       <PrivateAssets>all</PrivateAssets>
@@ -24,6 +25,7 @@
     </PackageReference>
     <PackageReference Include="HelixToolkit.SharpDX.Assimp" Version="2.21.1" />
     <PackageReference Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.21.1" />
+    <PackageReference Include="Magick.NET-Q16-HDRI-AnyCPU" Version="11.2.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.4.1" />

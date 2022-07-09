@@ -75,6 +75,7 @@ namespace H2AIndex.UI.Modals
 
       FooterButtons = new ObservableCollection<Button>();
       FooterButtons.CollectionChanged += OnFooterButtonCollectionChange;
+      DataContextChanged += OnDataContextChanged;
     }
 
     #endregion
@@ -85,13 +86,19 @@ namespace H2AIndex.UI.Modals
     {
       // Add a close button if no buttons are present on the modal.
       if ( FooterButtons.Count == 0 )
-        FooterButtons.Add( new Button { Content = "Close" } );
+        OnAddDefaultFooterButtons();
 
       base.OnVisualParentChanged( oldParent );
     }
 
+    protected virtual void OnAddDefaultFooterButtons()
+    {
+      FooterButtons.Add( new Button { Content = "Close" } );
+    }
+
     protected override void OnDisposing()
     {
+      DataContextChanged -= OnDataContextChanged;
       FooterButtons.CollectionChanged -= OnFooterButtonCollectionChange;
       FooterButtons.Clear();
 
@@ -102,14 +109,30 @@ namespace H2AIndex.UI.Modals
 
     #region Event Handlers
 
+    private void OnDataContextChanged( object sender, DependencyPropertyChangedEventArgs e )
+    {
+      if ( e.NewValue is IModalFooterButtons buttonProvider )
+      {
+        FooterButtons.Clear();
+        foreach ( var button in buttonProvider.GetFooterButtons() )
+          FooterButtons.Add( button );
+      }
+    }
+
     protected virtual void OnFooterButtonCollectionChange( object sender, NotifyCollectionChangedEventArgs e )
     {
+      if ( e.NewItems is null )
+        return;
+
       foreach ( Button newButton in e.NewItems )
       {
         if ( newButton.Command != null )
           continue;
 
-        newButton.Command = new Command( () => CloseModal( newButton.Content ) );
+        if ( newButton.CommandParameter != null )
+          newButton.Command = new Command<object>( obj => CloseModal( obj ) );
+        else
+          newButton.Command = new Command( () => CloseModal( newButton.Content ) );
       }
     }
 

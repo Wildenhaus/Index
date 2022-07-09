@@ -2,7 +2,7 @@
 using H2AIndex.ViewModels;
 using H2AIndex.Views;
 
-namespace H2AIndex.Services.Abstract
+namespace H2AIndex.Services
 {
 
   public interface IViewService
