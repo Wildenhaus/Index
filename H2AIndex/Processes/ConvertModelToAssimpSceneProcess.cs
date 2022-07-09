@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Assimp;
+using H2AIndex.Common.Extensions;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
 using Saber3D.Files;

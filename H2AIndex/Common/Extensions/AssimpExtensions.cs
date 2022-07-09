@@ -1,4 +1,4 @@
-﻿namespace H2AIndex
+﻿namespace H2AIndex.Common.Extensions
 {
 
   public static class AssimpExtensions

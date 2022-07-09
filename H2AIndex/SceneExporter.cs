@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using Assimp;
+using H2AIndex.Common.Extensions;
 using H2AIndex.ViewModels;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
