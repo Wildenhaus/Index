@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "H2AIndex": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

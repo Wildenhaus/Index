@@ -469,6 +469,9 @@ namespace H2AIndex.Processes
         return;
 
       var materialName = submeshMaterial.ShadingMaterialTexture;
+      if ( string.IsNullOrWhiteSpace( materialName ) )
+        return;
+
       if ( _context.MaterialIndices.TryGetValue( materialName, out var materialIndex ) )
       {
         Mesh.MaterialIndex = materialIndex;
@@ -477,8 +480,8 @@ namespace H2AIndex.Processes
 
       var material = new Material { Name = materialName };
       material.TextureDiffuse = new TextureSlot( materialName, TextureType.Diffuse, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 ); ;
-      material.TextureNormal = new TextureSlot( $"{materialName}nm", TextureType.Normals, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
-      material.TextureSpecular = new TextureSlot( $"{materialName}_spec", TextureType.Specular, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
+      material.TextureNormal = new TextureSlot( $"{materialName}nm", TextureType.Normals, 1, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
+      material.TextureSpecular = new TextureSlot( $"{materialName}_spec", TextureType.Specular, 2, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
 
       materialIndex = _context.Scene.Materials.Count;
 

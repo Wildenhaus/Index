@@ -87,6 +87,8 @@ namespace H2AIndex.Processes
 
       await process.Execute();
       StatusList.Merge( process.StatusList );
+
+      _scene = process.Result;
     }
 
     private async Task WriteAssimpSceneToFile()
