@@ -7,8 +7,10 @@ using Assimp;
 using H2AIndex.Common;
 using H2AIndex.Common.Enumerations;
 using H2AIndex.Models;
+using Saber3D.Data.Textures;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
+using Saber3D.Serializers.Configurations;
 
 namespace H2AIndex.Processes
 {
@@ -128,6 +130,7 @@ namespace H2AIndex.Processes
     {
       var textures = new Dictionary<string, IS3DFile>();
 
+      // Get base textures
       foreach ( var material in _scene.Materials )
       {
         if ( material.Name == "DefaultMaterial" )
@@ -141,7 +144,33 @@ namespace H2AIndex.Processes
           textures.TryAdd( file.Name, file );
       }
 
+      // Get Detail Maps and addl textures from TextureDefinition
+      var textureNames = textures.Keys.ToArray();
+      foreach ( var textureName in textureNames )
+        GatherDetailMaps( textureName, textures );
+
       return textures.Values;
+    }
+
+    private void GatherDetailMaps( string parentTextureName, Dictionary<string, IS3DFile> textures )
+    {
+      var tdFile = H2AFileContext.Global.GetFile( Path.ChangeExtension( parentTextureName, ".td" ) );
+      if ( tdFile is null )
+        return;
+
+      var texDef = new FileScriptingSerializer<TextureDefinition>().Deserialize( tdFile.GetStream() );
+      foreach ( var textureName in texDef.GetTextureNames() )
+      {
+        var nameWithExt = Path.ChangeExtension( textureName, "pct" );
+        if ( textures.ContainsKey( nameWithExt ) )
+          continue;
+
+        var textureFile = H2AFileContext.Global.GetFile( nameWithExt );
+        if ( textureFile is null )
+          continue;
+
+        textures.Add( textureFile.Name, textureFile );
+      }
     }
 
     private void FixupTextureSlotFileExtensions()
