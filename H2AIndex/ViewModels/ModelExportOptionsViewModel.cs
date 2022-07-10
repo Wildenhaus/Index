@@ -75,7 +75,7 @@ namespace H2AIndex.ViewModels
       var exportBtn = new Button
       {
         Content = "Export",
-        Style = ( Style ) App.Current.FindResource( "ColorfulButton" ),
+        Style = ( Style ) App.Current.FindResource( "ColorfulFooterButtonStyle" ),
         CommandParameter = Options
       };
 

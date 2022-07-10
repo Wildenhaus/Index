@@ -24,6 +24,14 @@
            TargetType="{x:Type Button}" 
            BasedOn="{StaticResource {x:Type Button}}" />
 
+    <Style x:Key="FooterButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Padding" Value="20,0" />
+    </Style>
+
+    <Style x:Key="ColorfulFooterButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ColorfulButton}">
+        <Setter Property="Padding" Value="20,0" />
+    </Style>
+
     <Style TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}" />
         <Setter Property="Background" Value="{DynamicResource Button.Static.Background}" />
