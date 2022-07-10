@@ -37,6 +37,8 @@ namespace H2AIndex.Views
     {
       SetResourceReference( TemplateProperty, "Template.ViewShell" );
       ServiceProvider = ( ( App ) App.Current ).ServiceProvider;
+
+      App.Current.Exit += OnAppExit;
     }
 
     ~ViewBase()
@@ -69,6 +71,16 @@ namespace H2AIndex.Views
 
     protected virtual void OnDisposing()
     {
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    private void OnAppExit( object sender, System.Windows.ExitEventArgs e )
+    {
+      App.Current.Exit -= OnAppExit;
+      Dispose();
     }
 
     #endregion

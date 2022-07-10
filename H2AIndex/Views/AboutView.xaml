@@ -45,22 +45,26 @@
                             HorizontalAlignment="Center">
 
                     <StackPanel Orientation="Horizontal" Margin="0,30">
+                        <Border Background="Transparent"
+                                IsHitTestVisible="True"
+                                Cursor="Hand">
+                            <Border.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" 
+                                              Command="{Binding OpenLinkCommand}"
+                                              CommandParameter="https://ko-fi.com/hausdev" />
+                            </Border.InputBindings>
+                            <Path Fill="White" 
+                                      Height="32"
+                                      Width="32"
+                                      Stretch="Uniform"
+                                      Data="{Binding Source={StaticResource Icon_Haus}, Path=Data}" />
+                        </Border>
                         <TextBlock Background="Transparent"
                                    IsHitTestVisible="True"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Margin="0,0,10,0"
                                    Cursor="Hand">
-                            <Hyperlink Command="{Binding OpenLinkCommand}"
-                                       CommandParameter="https://ko-fi.com/hausdev"
-                                       TextDecorations="None"
-                                       Background="Transparent">
-                                <Path Fill="White" 
-                                      Height="32"
-                                      Width="32"
-                                      Stretch="Uniform"
-                                      Data="{Binding Source={StaticResource Icon_Haus}, Path=Data}" />
-                            </Hyperlink>
                         </TextBlock>
                         <Label Content="Developed by Haus" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </StackPanel>

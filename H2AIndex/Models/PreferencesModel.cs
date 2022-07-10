@@ -1,4 +1,5 @@
 ﻿using H2AIndex.Common;
+using PropertyChanged;
 
 namespace H2AIndex.Models
 {
@@ -21,9 +22,14 @@ namespace H2AIndex.Models
     }
 
     public string H2ADirectoryPath { get; set; }
+
+    [OnChangedMethod( nameof( SetGlobalDefaults ) )]
     public string DefaultExportPath { get; set; }
 
+    [OnChangedMethod( nameof( SetGlobalDefaults ) )]
     public ModelExportOptionsModel ModelExportOptions { get; set; }
+
+    [OnChangedMethod( nameof( SetGlobalDefaults ) )]
     public TextureExportOptionsModel TextureExportOptions { get; set; }
 
     #endregion
@@ -32,6 +38,18 @@ namespace H2AIndex.Models
 
     public PreferencesModel()
     {
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private void SetGlobalDefaults()
+    {
+      if ( ModelExportOptions != null )
+        ModelExportOptions.OutputPath = DefaultExportPath;
+      if ( TextureExportOptions != null )
+        TextureExportOptions.OutputPath = DefaultExportPath;
     }
 
     #endregion

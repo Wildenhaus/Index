@@ -120,6 +120,43 @@ namespace H2AIndex.Processes
 
     protected abstract Task OnExecuting();
 
+    protected void BindStatusToSubProcess( IProcess subProcess )
+    {
+      void OnSubProcessChanged( object sender, PropertyChangedEventArgs e )
+      {
+        var process = sender as IProcess;
+        switch ( e.PropertyName )
+        {
+          case nameof( Status ):
+            Status = process.Status;
+            break;
+          case nameof( UnitName ):
+            UnitName = process.UnitName;
+            break;
+          case nameof( CompletedUnits ):
+            CompletedUnits = process.CompletedUnits;
+            break;
+          case nameof( TotalUnits ):
+            TotalUnits = process.TotalUnits;
+            break;
+          case nameof( IsIndeterminate ):
+            IsIndeterminate = process.IsIndeterminate;
+            break;
+        }
+      }
+
+      void OnSubProcessFinished( object sender, EventArgs e )
+      {
+        subProcess.PropertyChanged -= OnSubProcessChanged;
+        subProcess.Completed -= OnSubProcessFinished;
+        subProcess.Error -= OnSubProcessFinished;
+      }
+
+      subProcess.PropertyChanged += OnSubProcessChanged;
+      subProcess.Completed += OnSubProcessFinished;
+      subProcess.Error += OnSubProcessFinished;
+    }
+
     private async Task Initialize()
     {
       if ( _isInitialized )

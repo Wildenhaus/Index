@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Assimp;
 
 namespace H2AIndex.Common.Enumerations
 {
@@ -19,11 +21,6 @@ namespace H2AIndex.Common.Enumerations
 
     public static string ToAssimpFormatId( this ModelFileFormat format )
     {
-      using ( var ctx = new Assimp.AssimpContext() )
-      {
-        var f = ctx.GetSupportedExportFormats();
-      }
-
       switch ( format )
       {
         case ModelFileFormat.DAE:
@@ -42,6 +39,19 @@ namespace H2AIndex.Common.Enumerations
           return "assxml";
         default:
           throw new Exception( $"Unsupported format: {format}" );
+      }
+    }
+
+    public static string GetFileExtension( this ModelFileFormat format )
+    {
+      var formatId = format.ToAssimpFormatId();
+
+      using ( var context = new AssimpContext() )
+      {
+        var formats = context.GetSupportedExportFormats();
+        var match = formats.First( c => c.FormatId == formatId );
+
+        return match.FileExtension;
       }
     }
 

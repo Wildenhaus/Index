@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using H2AIndex.Common;
 
 namespace H2AIndex.Processes
@@ -6,6 +7,13 @@ namespace H2AIndex.Processes
 
   public interface IProcess : IProgressData
   {
+
+    #region Events
+
+    public event EventHandler Completed;
+    public event EventHandler Error;
+
+    #endregion
 
     #region Properties
 

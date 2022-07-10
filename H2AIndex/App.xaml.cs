@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows;
-using H2AIndex.Processes;
 using H2AIndex.Services;
 using H2AIndex.UI.Modals;
 using H2AIndex.ViewModels;
@@ -47,7 +46,6 @@ namespace H2AIndex
       ConfigureViewModels( services );
       ConfigureWindows( services );
 
-      ConfigureProcesses( services );
       ConfigureServices( services );
     }
 
@@ -62,7 +60,9 @@ namespace H2AIndex
       services.AddTransient<MainView>();
 
       services.AddTransient<AboutView>();
+      services.AddTransient<ModelExportOptionsView>();
       services.AddTransient<ModelView>();
+      services.AddTransient<PreferencesView>();
       services.AddTransient<StatusListView>();
       services.AddTransient<TextureView>();
       services.AddTransient<TextureExportOptionsView>();
@@ -74,7 +74,9 @@ namespace H2AIndex
 
       services.AddTransient<DefaultViewModel>();
       services.AddTransient<AboutViewModel>();
+      services.AddTransient<ModelExportOptionsViewModel>();
       services.AddTransient<ModelViewModel>();
+      services.AddTransient<PreferencesViewModel>();
       services.AddTransient<ProgressViewModel>();
       services.AddTransient<StatusListViewModel>();
       services.AddTransient<TextureViewModel>();
@@ -84,11 +86,6 @@ namespace H2AIndex
     private void ConfigureWindows( IServiceCollection services )
     {
       services.AddTransient<MainWindow>();
-    }
-
-    private void ConfigureProcesses( IServiceCollection services )
-    {
-      services.AddTransient<OpenFilesProcess>();
     }
 
     private void ConfigureServices( IServiceCollection services )

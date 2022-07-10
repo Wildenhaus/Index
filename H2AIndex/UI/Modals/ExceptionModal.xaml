@@ -8,8 +8,8 @@
                    d:DesignHeight="450" d:DesignWidth="800"
                    
                    Title="Error"
-                   ModalHeight="450"
-                   ModalWidth="800">
+                   ModalMinHeight="450"
+                   ModalMinWidth="800">
     
     <modal:WindowModal.FooterButtons>
         <Button Content="Close" />

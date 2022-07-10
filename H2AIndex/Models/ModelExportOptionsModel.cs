@@ -19,14 +19,9 @@ namespace H2AIndex.Models
         {
           OutputFileFormat = ModelFileFormat.FBX,
           ExportTextures = true,
-          ExportTextureDefinitions = true,
           RemoveLODs = false,
           RemoveVolumes = false,
-          OverwriteExisting = false,
-
-          OutputTextureFormat = TextureFileFormat.DDS,
-          OutputNormalMapFormat = NormalMapFormat.OpenGL,
-          RecalculateZChannel = true
+          OverwriteExisting = false
         };
       }
     }
@@ -43,14 +38,9 @@ namespace H2AIndex.Models
 
     public ModelFileFormat OutputFileFormat { get; set; }
     public bool ExportTextures { get; set; }
-    public bool ExportTextureDefinitions { get; set; }
     public bool RemoveLODs { get; set; }
     public bool RemoveVolumes { get; set; }
     public bool OverwriteExisting { get; set; }
-
-    public TextureFileFormat OutputTextureFormat { get; set; }
-    public NormalMapFormat OutputNormalMapFormat { get; set; }
-    public bool RecalculateZChannel { get; set; }
 
     #endregion
 

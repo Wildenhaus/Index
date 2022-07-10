@@ -68,7 +68,7 @@ namespace H2AIndex.Processes
       if ( _file is TplFile )
       {
         var tpl = new S3DTemplateSerializer().Deserialize( _reader );
-        var context = new SceneContext( _file.Name, tpl.GeometryGraph, _reader );
+        var context = new SceneContext( tpl.GeometryGraph, _reader );
         context.AddLodDefinitions( tpl.LodDefinitions );
 
         return context;
@@ -76,7 +76,7 @@ namespace H2AIndex.Processes
       else if ( _file is LgFile )
       {
         var lg = new S3DSceneSerializer().Deserialize( _reader );
-        var context = new SceneContext( _file.Name, lg.GeometryGraph, _reader );
+        var context = new SceneContext( lg.GeometryGraph, _reader );
 
         return context;
       }
@@ -109,20 +109,22 @@ namespace H2AIndex.Processes
       TotalUnits = _context.GeometryGraph.Objects.Count;
       IsIndeterminate = false;
 
-      AddObject( _context.GeometryGraph.RootObject );
+      var rootNode = AddObject( _context.GeometryGraph.RootObject );
+      rootNode.Name = Path.GetFileNameWithoutExtension( _file.Name );
+
+      _context.Scene.RootNode = rootNode;
     }
 
-    private void AddObject( S3DObject obj, Node parentNode = null )
+    private Node AddObject( S3DObject obj, Node parentNode = null )
     {
-      if ( parentNode is null )
-        parentNode = _context.Scene.RootNode;
-
       if ( _context.SkinCompounds.ContainsKey( obj.Id ) )
-        return;
+        return null;
 
       var objectNode = new Node( obj.GetName(), parentNode );
-      parentNode.Children.Add( objectNode );
       _context.Nodes.Add( obj.Id, objectNode );
+
+      if ( parentNode != null )
+        parentNode.Children.Add( objectNode );
 
       objectNode.Transform = obj.MatrixModel.ToAssimp();
 
@@ -137,6 +139,8 @@ namespace H2AIndex.Processes
         foreach ( var childObject in obj.EnumerateChildren() )
           AddObject( childObject, objectNode );
       }
+
+      return objectNode;
     }
 
     private void AddMeshData( S3DObject obj, Node objectNode )
@@ -169,10 +173,9 @@ namespace H2AIndex.Processes
     public Dictionary<short, MeshBuilder> SkinCompounds { get; }
     public Dictionary<short, short> LodIndices { get; }
 
-    public SceneContext( string name, S3DGeometryGraph graph, BinaryReader reader )
+    public SceneContext( S3DGeometryGraph graph, BinaryReader reader )
     {
       Scene = new Scene();
-      Scene.RootNode = new Node( name );
 
       Reader = reader;
       GeometryGraph = graph;
@@ -300,8 +303,6 @@ namespace H2AIndex.Processes
 
         if ( vertex is S3DVertexSkinned skinnedVertex )
           AddVertexSkinningData( skinnedVertex );
-        else
-          AddBoneWeight( _object.ParentId, 1 );
 
         VertexLookup.Add( offset++, VertexLookup.Count );
       }
@@ -314,11 +315,11 @@ namespace H2AIndex.Processes
 
       if ( skinnedVertex.Weight1.HasValue && set.Add( skinnedVertex.Index1 ) )
         AddBoneWeight( boneIds[ skinnedVertex.Index1 ], skinnedVertex.Weight1.Value );
-      if ( skinnedVertex.Weight2.HasValue && set.Add( skinnedVertex.Index1 ) )
+      if ( skinnedVertex.Weight2.HasValue && set.Add( skinnedVertex.Index2 ) )
         AddBoneWeight( boneIds[ skinnedVertex.Index2 ], skinnedVertex.Weight2.Value );
-      if ( skinnedVertex.Weight3.HasValue && set.Add( skinnedVertex.Index1 ) )
+      if ( skinnedVertex.Weight3.HasValue && set.Add( skinnedVertex.Index3 ) )
         AddBoneWeight( boneIds[ skinnedVertex.Index3 ], skinnedVertex.Weight3.Value );
-      if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index1 ) )
+      if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index4 ) )
         AddBoneWeight( boneIds[ skinnedVertex.Index4 ], skinnedVertex.Weight4.Value );
     }
 
@@ -338,7 +339,7 @@ namespace H2AIndex.Processes
 
         bone = new Bone
         {
-          Name = $"{boneObject.GetName()}.{boneObject.Id}",
+          Name = $"{boneObject.GetName()}",
           OffsetMatrix = invMatrix.ToAssimp()
         };
 
@@ -454,9 +455,6 @@ namespace H2AIndex.Processes
           Debug.Assert( skinVertex.Z == targetVertex.Z );
 
           AddBoneWeight( boneId, 1, translatedVertOffset );
-
-          var skinNorm = skinCompound.Mesh.Normals[ weight.VertexID ];
-          Mesh.Normals[ translatedVertOffset ] = skinNorm;
         }
       }
     }

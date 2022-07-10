@@ -21,7 +21,8 @@ namespace H2AIndex.Models
           OutputNormalMapFormat = NormalMapFormat.OpenGL,
           RecalculateNormalMapZChannel = true,
           ExportAllMips = false,
-          OverwriteExisting = false
+          OverwriteExisting = false,
+          ExportTextureDefinition = true
         };
       }
     }
@@ -41,6 +42,7 @@ namespace H2AIndex.Models
     public bool RecalculateNormalMapZChannel { get; set; }
     public bool ExportAllMips { get; set; }
     public bool OverwriteExisting { get; set; }
+    public bool ExportTextureDefinition { get; set; }
 
     #endregion
 

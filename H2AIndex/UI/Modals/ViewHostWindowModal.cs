@@ -18,8 +18,8 @@ namespace H2AIndex.UI.Modals
       {
         // TODO: We shouldn't have to auto-adjust this and/or have hard-coded padding
         const double WINDOW_HEADER_FOOTER_PADDING = 60;
-        ModalHeight = viewControl.Height + WINDOW_HEADER_FOOTER_PADDING;
-        ModalWidth = viewControl.Width;
+        ModalMinHeight = viewControl.Height + WINDOW_HEADER_FOOTER_PADDING;
+        ModalMinWidth = viewControl.Width;
       }
     }
 

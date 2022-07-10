@@ -3,16 +3,21 @@
                     xmlns:modal="clr-namespace:H2AIndex.UI.Modals">
 
     <ControlTemplate x:Key="Template.WindowModal" TargetType="{x:Type modal:WindowModal}">
-        <Grid>
+        <Grid MinHeight="{Binding ModalMinHeight, RelativeSource={RelativeSource TemplatedParent}}"
+              MaxHeight="{Binding ModalMaxHeight, RelativeSource={RelativeSource TemplatedParent}}"
+              MinWidth="{Binding ModalMinWidth, RelativeSource={RelativeSource TemplatedParent}}"
+              MaxWidth="{Binding ModalMaxWidth, RelativeSource={RelativeSource TemplatedParent}}">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*" />
-                <RowDefinition Height="{Binding ModalHeight, RelativeSource={RelativeSource TemplatedParent}}" />
+                <RowDefinition MinHeight="{Binding ModalMinHeight, RelativeSource={RelativeSource TemplatedParent}}" 
+                               MaxHeight="{Binding ModalMaxHeight, RelativeSource={RelativeSource TemplatedParent}}" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="{Binding ModalWidth, RelativeSource={RelativeSource TemplatedParent}}" />
+                <ColumnDefinition MinWidth="{Binding ModalMinWidth, RelativeSource={RelativeSource TemplatedParent}}" 
+                                  MaxWidth="{Binding ModalMaxWidth, RelativeSource={RelativeSource TemplatedParent}}" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
             

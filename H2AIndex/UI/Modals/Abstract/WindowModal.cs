@@ -19,14 +19,26 @@ namespace H2AIndex.UI.Modals
       typeof( WindowModal ),
       new PropertyMetadata() );
 
-    public static readonly DependencyProperty ModalHeightProperty = DependencyProperty.Register(
-      nameof( ModalHeight ),
+    public static readonly DependencyProperty ModalMaxHeightProperty = DependencyProperty.Register(
+      nameof( ModalMaxHeight ),
+      typeof( double ),
+      typeof( WindowModal ),
+      new PropertyMetadata( 500.0 ) );
+
+    public static readonly DependencyProperty ModalMaxWidthProperty = DependencyProperty.Register(
+      nameof( ModalMaxWidth ),
+      typeof( double ),
+      typeof( WindowModal ),
+      new PropertyMetadata( 800.0 ) );
+
+    public static readonly DependencyProperty ModalMinHeightProperty = DependencyProperty.Register(
+      nameof( ModalMinHeight ),
       typeof( double ),
       typeof( WindowModal ),
       new PropertyMetadata( 300.0 ) );
 
-    public static readonly DependencyProperty ModalWidthProperty = DependencyProperty.Register(
-      nameof( ModalWidth ),
+    public static readonly DependencyProperty ModalMinWidthProperty = DependencyProperty.Register(
+      nameof( ModalMinWidth ),
       typeof( double ),
       typeof( WindowModal ),
       new PropertyMetadata( 600.0 ) );
@@ -47,16 +59,28 @@ namespace H2AIndex.UI.Modals
       set => SetValue( FooterButtonsProperty, value );
     }
 
-    public double ModalHeight
+    public double ModalMinHeight
     {
-      get => ( double ) GetValue( ModalHeightProperty );
-      set => SetValue( ModalHeightProperty, value );
+      get => ( double ) GetValue( ModalMinHeightProperty );
+      set => SetValue( ModalMinHeightProperty, value );
     }
 
-    public double ModalWidth
+    public double ModalMinWidth
     {
-      get => ( double ) GetValue( ModalWidthProperty );
-      set => SetValue( ModalWidthProperty, value );
+      get => ( double ) GetValue( ModalMinWidthProperty );
+      set => SetValue( ModalMinWidthProperty, value );
+    }
+
+    public double ModalMaxHeight
+    {
+      get => ( double ) GetValue( ModalMaxHeightProperty );
+      set => SetValue( ModalMaxHeightProperty, value );
+    }
+
+    public double ModalMaxWidth
+    {
+      get => ( double ) GetValue( ModalMaxWidthProperty );
+      set => SetValue( ModalMaxWidthProperty, value );
     }
 
     public string Title

@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using H2AIndex.Common;
 using H2AIndex.Common.Enumerations;
 using H2AIndex.Models;
+using H2AIndex.UI.Modals;
 
 namespace H2AIndex.ViewModels
 {
 
-  public class ModelExportOptionsViewModel : ViewModel
+  public class ModelExportOptionsViewModel : ViewModel, IModalFooterButtons
   {
 
     #region Properties
@@ -19,7 +23,12 @@ namespace H2AIndex.ViewModels
     public IReadOnlyList<NormalMapFormat> NormalMapFormats { get; set; }
 
     public bool IsForBatch { get; set; }
-    public ModelExportOptionsModel Options { get; set; }
+    public ModelExportOptionsModel ModelOptions { get; set; }
+    public TextureExportOptionsModel TextureOptions { get; set; }
+    public Tuple<ModelExportOptionsModel, TextureExportOptionsModel> Options
+    {
+      get => Tuple.Create( ModelOptions, TextureOptions );
+    }
 
     public bool IsValidPath { get; set; }
 
@@ -51,7 +60,30 @@ namespace H2AIndex.ViewModels
       TextureFileFormats = Enum.GetValues<TextureFileFormat>();
       NormalMapFormats = Enum.GetValues<NormalMapFormat>();
 
-      Options = GetPreferences().ModelExportOptions;
+      ModelOptions = GetPreferences().ModelExportOptions;
+      TextureOptions = GetPreferences().TextureExportOptions;
+    }
+
+    #endregion
+
+    #region IModalFooterButtons Members
+
+    public IEnumerable<Button> GetFooterButtons()
+    {
+      yield return new Button { Content = "Cancel" };
+
+      var exportBtn = new Button
+      {
+        Content = "Export",
+        Style = ( Style ) App.Current.FindResource( "ColorfulButton" ),
+        CommandParameter = Options
+      };
+
+      var exportBtnEnabledBinding = new Binding( nameof( IsValidPath ) );
+      exportBtnEnabledBinding.Source = this;
+      BindingOperations.SetBinding( exportBtn, Button.IsEnabledProperty, exportBtnEnabledBinding );
+
+      yield return exportBtn;
     }
 
     #endregion
@@ -60,58 +92,57 @@ namespace H2AIndex.ViewModels
 
     private async Task ExplainFileFilters()
     {
-      var message = @"
-This textbox allows you to filter your batch export down to files that match certain criteria.
-Filters are delimited by a semicolon (;) and are case-insensitive. Wildcard (*) is not supported.\n
-\n
-Example Usage: masterchief;dervish\n
-This will only export files with 'masterchief' and 'dervish' in their names.
-";
+      var message = "This textbox allows you to filter your batch export down to files that match certain criteria. " +
+        "Filters are delimited by a semicolon (;) and are case-insensitive. Wildcard (*) is not supported.\n" +
+        "\n" +
+        "Example Usage: masterchief;dervish\n" +
+        "This will only export files with 'masterchief' and 'dervish' in their names.";
 
       await ShowMessageModal(
         title: "File Filters",
-        message: message );
+        message: message,
+        showOnMainView: true );
     }
 
     private async Task ExplainTextureDefinitions()
     {
-      var message = @"
-Texture Definitions are text files that describe how materials use a particular texture.\n
-Little is known about how these work in the engine, but they provide important information 
-for setting up game-accurate shaders.";
+      var message = "Texture Definitions are text files that describe how materials use a particular texture.\n" +
+        "Little is known about how these work in the engine, but they provide important information " +
+        "when setting up game-accurate shaders.";
 
       await ShowMessageModal(
         title: "Export Texture Definitions",
-        message: message );
+        message: message,
+        showOnMainView: true );
     }
 
     private async Task ExplainLODs()
     {
-      var message = @"
-This setting attempts to remove LOD (Level of Detail) meshes from the exported file. 
-LOD Meshes are low-poly and are only used by the game engine when objects are far away.\n
-\n
-Due to meshes and nodes not following any specific naming convention, this option may not
-always successfully remove LOD meshes from the exported file. This is expecially the case
-for level geometry (maps).";
+      var message = "This setting attempts to remove LOD (Level of Detail) meshes from the exported file. " +
+        "LOD Meshes are low-poly and are only used by the game engine when objects are far away.\n" +
+        "\n" +
+        "Due to meshes and nodes not following any specific naming convention, this option may not " +
+        "always successfully remove LOD meshes from the exported file. This is expecially the case " +
+        "for level geometry (maps).";
 
       await ShowMessageModal(
         title: "Remove LODs",
-        message: message );
+        message: message,
+        showOnMainView: true );
     }
 
     private async Task ExplainVolumes()
     {
-      var message = @"
-This setting attempts to remove trigger volumes and other invisible meshes from the exported file.
-These are typically only present in level geometry (maps).\n
-\n
-Due to meshes and nodes not following any specific naming convention, this option may not
-always successfully remove volume meshes from the exported file.";
+      var message = "This setting attempts to remove trigger volumes and other invisible " +
+        "meshes from the exported file. These are typically only present in level geometry (maps).\n" +
+        "\n" +
+        "Due to meshes and nodes not following any specific naming convention, this option may not " +
+        "always successfully remove volume meshes from the exported file.";
 
       await ShowMessageModal(
         title: "Remove Volumes",
-        message: message );
+        message: message,
+        showOnMainView: true );
     }
 
     #endregion

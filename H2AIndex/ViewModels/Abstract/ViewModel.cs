@@ -183,7 +183,7 @@ namespace H2AIndex.ViewModels
       return ShowModal( modal );
     }
 
-    protected Task<object> ShowMessageModal( string title, string message )
+    protected Task<object> ShowMessageModal( string title, string message, bool showOnMainView = false )
     {
       var modal = new MessageModal()
       {
@@ -191,7 +191,13 @@ namespace H2AIndex.ViewModels
         Message = message
       };
 
-      return ShowModal( modal );
+      if ( showOnMainView )
+      {
+        var mainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
+        return mainViewModel.ShowModal( modal );
+      }
+      else
+        return ShowModal( modal );
     }
 
     protected Task<object> ShowStatusListModal( StatusList statusList )

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -34,6 +35,8 @@ namespace H2AIndex.ViewModels
     public ICommand OpenDirectoryCommand { get; }
     public ICommand ExitCommand { get; }
 
+    public ICommand EditPreferencesCommand { get; }
+
     public ICommand BulkExportTexturesCommand { get; }
 
     #endregion
@@ -51,22 +54,13 @@ namespace H2AIndex.ViewModels
 
       OpenFileCommand = new AsyncCommand( OpenFile );
       OpenDirectoryCommand = new AsyncCommand( OpenDirectory );
+      EditPreferencesCommand = new AsyncCommand( EditPreferences );
 
       BulkExportTexturesCommand = new AsyncCommand( BulkExportTextures );
 
       App.Current.DispatcherUnhandledException += OnUnhandledExceptionRaised;
-    }
 
-    protected override Task OnInitializing()
-    {
-      var sl = new StatusList();
-      sl.AddMessage( "message name", "this is a message" );
-      sl.AddWarning( "warning name", "this is a warning" );
-      sl.AddError( "error name", "this is an error", new Exception( "Exception message" ) );
-      sl.AddError( "error name 2", new Exception( "Exception message 2" ) );
-
-      ShowStatusListModal( sl );
-      return Task.CompletedTask;
+      _tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "masterchief__h.tpl" ).First(), out _ );
     }
 
     #endregion
@@ -110,6 +104,12 @@ namespace H2AIndex.ViewModels
 
         return;
       }
+    }
+
+    private async Task EditPreferences()
+    {
+      await ShowViewModal<PreferencesView>();
+      await SavePreferences();
     }
 
     private async Task BulkExportTextures()

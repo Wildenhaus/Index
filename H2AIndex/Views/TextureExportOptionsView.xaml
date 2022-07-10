@@ -9,7 +9,7 @@
            xmlns:view="clr-namespace:H2AIndex.Views"
            xmlns:vm="clr-namespace:H2AIndex.ViewModels"
            mc:Ignorable="d" 
-           d:DesignHeight="300" d:DesignWidth="500"
+           d:DesignHeight="500" d:DesignWidth="500"
            Height="300"
            Width="500">
     <Grid>
@@ -65,6 +65,8 @@
                     <RowDefinition Height="3" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Grid.Column="0" Content="File Format" />
@@ -76,12 +78,22 @@
                 <Label Grid.Row="2" Grid.Column="0" Content="Overwrite Existing" />
                 <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Options.OverwriteExisting}" />
 
-                <Label Grid.Row="4" Grid.Column="0" 
+                <Label Grid.Row="4" Grid.Column="0"
+                       IsEnabled="{Binding Options.ExportTextures}">
+                    <TextBlock>
+                        <Run>Export Texture Definitions</Run>
+                        <Hyperlink Command="{Binding ExplainTextureDefinitionsCommand}">?</Hyperlink>
+                    </TextBlock>
+                </Label>
+                <CheckBox Grid.Row="4" Grid.Column="1"
+                          IsChecked="{Binding Options.ExportTextureDefinitions}" />
+                
+                <Label Grid.Row="6" Grid.Column="0" 
                        Content="Export All Mips"
                        IsEnabled="{Binding Options.OutputFileFormat, 
                                            Converter={StaticResource InequalityBoolConverter}, 
                                            ConverterParameter={x:Static enums:TextureFileFormat.DDS}}"/>
-                <CheckBox Grid.Row="4" Grid.Column="1"
+                <CheckBox Grid.Row="6" Grid.Column="1"
                           IsChecked="{Binding Options.ExportAllMips}"
                           IsEnabled="{Binding Options.OutputFileFormat, 
                                               Converter={StaticResource InequalityBoolConverter}, 

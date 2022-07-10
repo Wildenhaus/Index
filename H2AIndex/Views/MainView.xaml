@@ -29,6 +29,8 @@
             <MenuItem Header="Tools">
                 <MenuItem Header="Bulk Export Models" />
                 <MenuItem Header="Bulk Export Textures" Command="{Binding BulkExportTexturesCommand}" />
+                <Separator />
+                <MenuItem Header="Preferences" Command="{Binding EditPreferencesCommand}" />
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="GitHub" />
@@ -61,17 +63,13 @@
 
                 <TabControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type m:ITab}">
-                        <Grid HorizontalAlignment="Stretch" Background="Transparent" IsHitTestVisible="True">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition />
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.InputBindings>
+                        <DockPanel Background="Transparent" IsHitTestVisible="True" HorizontalAlignment="Stretch">
+                            <DockPanel.InputBindings>
                                 <MouseBinding Command="{Binding CloseCommand}" Gesture="MiddleClick" />
-                            </Grid.InputBindings>
+                            </DockPanel.InputBindings>
                             
-                            <TextBlock Grid.Column="0" Text="{Binding Name}" />
-                            <Button Grid.Column="1" 
+                            <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" />
+                            <Button DockPanel.Dock="Right"
                                     HorizontalAlignment="Right"
                                     HorizontalContentAlignment="Right"
                                     VerticalAlignment="Center"
@@ -93,7 +91,7 @@
                                     </ControlTemplate>
                                 </Button.Template>
                             </Button>
-                        </Grid>
+                        </DockPanel>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>

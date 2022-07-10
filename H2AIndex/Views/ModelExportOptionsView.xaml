@@ -1,15 +1,17 @@
-﻿<UserControl x:Class="H2AIndex.Views.ModelExportOptionsView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:controls="clr-namespace:H2AIndex.Controls"
+﻿<view:View x:Class="H2AIndex.Views.ModelExportOptionsView"
+           x:TypeArguments="vm:ModelExportOptionsViewModel"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+           xmlns:controls="clr-namespace:H2AIndex.Controls"
            xmlns:enums="clr-namespace:H2AIndex.Common.Enumerations"
-             xmlns:view="clr-namespace:H2AIndex.Views"
-             mc:Ignorable="d" 
-             d:DesignHeight="500" d:DesignWidth="550"
-             Height="300"
-             Width="550">
+           xmlns:view="clr-namespace:H2AIndex.Views"
+           xmlns:vm="clr-namespace:H2AIndex.ViewModels"
+           mc:Ignorable="d" 
+           d:DesignHeight="500" d:DesignWidth="550"
+           Height="300"
+           Width="550">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -27,7 +29,7 @@
                   Grid.ColumnSpan="2"
                   Margin="5,5,5,0">
             <controls:FileBrowserBox x:Name="OutputPath" 
-                                     Path="{Binding Options.OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Path="{Binding ModelOptions.OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DialogPathType="Directory"
                                      IsValidPath="{Binding IsValidPath, Mode=OneWayToSource}" />
         </GroupBox>
@@ -42,7 +44,7 @@
                     <Hyperlink Command="{Binding ExplainFileFiltersCommand}">?</Hyperlink>
                 </TextBlock>
             </GroupBox.Header>
-            <TextBox x:Name="FilterBox" Text="{Binding Options.Filters}" />
+            <TextBox x:Name="FilterBox" Text="{Binding ModelOptions.Filters}" />
         </GroupBox>
 
         <GroupBox Header="Conversion Options" 
@@ -68,10 +70,12 @@
                 <ComboBox Grid.Row="0" Grid.Column="1"
                           SelectedIndex="0"
                           ItemsSource="{Binding ModelFileFormats}"
-                          SelectedItem="{Binding Options.OutputFileFormat}"/>
+                          SelectedItem="{Binding ModelOptions.OutputFileFormat}"/>
 
-                <Label Grid.Row="2" Grid.Column="0" Content="Overwrite Existing" />
-                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Options.OverwriteExisting}" />
+                <Label Grid.Row="2" Grid.Column="0" 
+                       Content="Overwrite Existing" />
+                <CheckBox Grid.Row="2" Grid.Column="1" 
+                          IsChecked="{Binding ModelOptions.OverwriteExisting}" />
 
                 <Label Grid.Row="4" Grid.Column="0">
                     <TextBlock>
@@ -80,7 +84,7 @@
                     </TextBlock>
                 </Label>
                 <CheckBox Grid.Row="4" Grid.Column="1"
-                          IsChecked="{Binding Options.RemoveLODs}" />
+                          IsChecked="{Binding ModelOptions.RemoveLODs}" />
 
                 <Label Grid.Row="6" Grid.Column="0">
                     <TextBlock>
@@ -89,7 +93,7 @@
                     </TextBlock>
                 </Label>
                 <CheckBox Grid.Row="6" Grid.Column="1"
-                          IsChecked="{Binding Options.RemoveVolumes}" />
+                          IsChecked="{Binding ModelOptions.RemoveVolumes}" />
 
             </Grid>
         </GroupBox>
@@ -114,52 +118,61 @@
                     <RowDefinition Height="3" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Grid.Column="0" 
                        Content="Export Textures" />
                 <CheckBox Grid.Row="0" Grid.Column="1"
-                          IsChecked="{Binding Options.ExportTextures}" />
+                          IsChecked="{Binding ModelOptions.ExportTextures}" />
 
                 <Label Grid.Row="2" Grid.Column="0" 
-                       IsEnabled="{Binding Options.ExportTextures}"
-                       Content="Texture Format" />
-                <ComboBox Grid.Row="2" Grid.Column="1"
-                          SelectedIndex="0"
-                          ItemsSource="{Binding TextureFileFormats}"
-                          SelectedItem="{Binding Options.OutputTextureFormat}"
-                          IsEnabled="{Binding Options.ExportTextures}"/>
-
+                       Content="Overwrite Existing"
+                       IsEnabled="{Binding ModelOptions.ExportTextures}" />
+                <CheckBox Grid.Row="2" Grid.Column="1" 
+                          IsChecked="{Binding TextureOptions.OverwriteExisting}"
+                          IsEnabled="{Binding ModelOptions.ExportTextures}" />
+                
                 <Label Grid.Row="4" Grid.Column="0" 
-                       IsEnabled="{Binding Options.ExportTextures}"
-                       Content="Normal Map Format" />
+                       IsEnabled="{Binding ModelOptions.ExportTextures}"
+                       Content="Texture Format" />
                 <ComboBox Grid.Row="4" Grid.Column="1"
                           SelectedIndex="0"
-                          ItemsSource="{Binding NormalMapFormats}"
-                          SelectedItem="{Binding Options.OutputNormalMapFormat}"
-                          IsEnabled="{Binding Options.ExportTextures}"/>
+                          ItemsSource="{Binding TextureFileFormats}"
+                          SelectedItem="{Binding TextureOptions.OutputFileFormat}"
+                          IsEnabled="{Binding ModelOptions.ExportTextures}"/>
 
                 <Label Grid.Row="6" Grid.Column="0" 
+                       IsEnabled="{Binding ModelOptions.ExportTextures}"
+                       Content="Normal Map Format" />
+                <ComboBox Grid.Row="6" Grid.Column="1"
+                          SelectedIndex="0"
+                          ItemsSource="{Binding NormalMapFormats}"
+                          SelectedItem="{Binding TextureOptions.OutputNormalMapFormat}"
+                          IsEnabled="{Binding ModelOptions.ExportTextures}"/>
+
+                <Label Grid.Row="8" Grid.Column="0" 
                        Content="Recalculate Z Channel"
-                       IsEnabled="{Binding Options.ExportTextures}" />
-                <CheckBox Grid.Row="6" Grid.Column="1"
-                          IsChecked="{Binding Options.RecalculateZChannel}"
-                          IsEnabled="{Binding Options.ExportTextures}"/>
+                       IsEnabled="{Binding ModelOptions.ExportTextures}" />
+                <CheckBox Grid.Row="8" Grid.Column="1"
+                          IsChecked="{Binding TextureOptions.RecalculateNormalMapZChannel}"
+                          IsEnabled="{Binding ModelOptions.ExportTextures}"/>
                 
-                <Label Grid.Row="8" Grid.Column="0"
-                       IsEnabled="{Binding Options.ExportTextures}">
+                <Label Grid.Row="10" Grid.Column="0"
+                       IsEnabled="{Binding ModelOptions.ExportTextures}">
                     <TextBlock>
                         <Run>Export Texture Definitions</Run>
                         <Hyperlink Command="{Binding ExplainTextureDefinitionsCommand}">?</Hyperlink>
                     </TextBlock>
                 </Label>
-                <CheckBox Grid.Row="8" Grid.Column="1"
-                          IsChecked="{Binding Options.ExportTextureDefinitions}"
-                          IsEnabled="{Binding Options.ExportTextures}" />
+                <CheckBox Grid.Row="10" Grid.Column="1"
+                          IsChecked="{Binding TextureOptions.ExportTextureDefinition}"
+                          IsEnabled="{Binding ModelOptions.ExportTextures}" />
 
             </Grid>
 
         </GroupBox>
 
     </Grid>
-</UserControl>
+</view:View>

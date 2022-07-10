@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using H2AIndex.Common;
+using H2AIndex.Models;
 using H2AIndex.Processes;
 using H2AIndex.Services;
 using H2AIndex.ViewModels.Abstract;
+using H2AIndex.Views;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.SharpDX.Core.Assimp;
 using HelixToolkit.SharpDX.Core.Model.Scene;
@@ -16,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PropertyChanged;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
+using TextureModel = HelixToolkit.SharpDX.Core.TextureModel;
 
 namespace H2AIndex.ViewModels
 {
@@ -25,18 +28,27 @@ namespace H2AIndex.ViewModels
   public class ModelViewModel : ViewModel, IDisposeWithView
   {
 
+    #region Data Members
+
     private IS3DFile _file;
     private string _searchTerm;
+
+    private Assimp.Scene _assimpScene;
     private ObservableCollection<ModelNodeModel> _nodes;
+
+    #endregion
 
     #region Properties
 
     public Camera Camera { get; set; }
     public SceneNodeGroupModel3D Model { get; }
     public EffectsManager EffectsManager { get; }
+    public Viewport3DX Viewport { get; set; }
 
     [OnChangedMethod( nameof( ToggleShowWireframe ) )]
     public bool ShowWireframe { get; set; }
+
+    public ICollection<ModelNodeModel> Nodes => _nodes;
 
     public ICommand SearchTermChangedCommand { get; }
 
@@ -47,9 +59,11 @@ namespace H2AIndex.ViewModels
     public ICommand ExpandAllCommand { get; }
     public ICommand CollapseAllCommand { get; }
 
-    public ICollection<ModelNodeModel> Nodes => _nodes;
+    public ICommand ExportModelCommand { get; }
 
     #endregion
+
+    #region Constructor
 
     public ModelViewModel( IServiceProvider serviceProvider, IS3DFile file )
       : base( serviceProvider )
@@ -57,11 +71,13 @@ namespace H2AIndex.ViewModels
       _file = file;
 
       EffectsManager = new DefaultEffectsManager();
-      Camera = new PerspectiveCamera()
-      {
-        FarPlaneDistance = 30000
-      };
+      Camera = new PerspectiveCamera() { FarPlaneDistance = 30000 };
       Model = new SceneNodeGroupModel3D();
+
+      var transform = new System.Windows.Media.Media3D.RotateTransform3D();
+      transform.Rotation = new System.Windows.Media.Media3D.AxisAngleRotation3D(
+        new System.Windows.Media.Media3D.Vector3D( 0, 1, 0 ), -90 );
+      Model.Transform = transform;
 
       _nodes = new ObservableCollection<ModelNodeModel>();
 
@@ -71,12 +87,20 @@ namespace H2AIndex.ViewModels
       HideVolumesCommand = new Command( HideVolumeNodes );
       ExpandAllCommand = new Command( ExpandAllNodes );
       CollapseAllCommand = new Command( CollapseAllNodes );
+
+      ExportModelCommand = new AsyncCommand( ExportModel );
     }
+
+    #endregion
+
+    #region Overrides
 
     protected override async Task OnInitializing()
     {
       var convertProcess = new ConvertModelToAssimpSceneProcess( _file );
       await RunProcess( convertProcess );
+
+      _assimpScene = convertProcess.Result;
 
       using ( var prog = ShowProgress() )
       {
@@ -93,6 +117,10 @@ namespace H2AIndex.ViewModels
       EffectsManager?.DisposeAllResources();
       GCHelper.ForceCollect();
     }
+
+    #endregion
+
+    #region Private Methods
 
     private async Task<TextureModel> GetTexture( string name )
     {
@@ -148,6 +176,7 @@ namespace H2AIndex.ViewModels
       }
 
       Model.AddNode( scene.Root );
+      Camera.ZoomExtents( Viewport );
     }
 
     private void ShowAllNodes()
@@ -222,6 +251,18 @@ namespace H2AIndex.ViewModels
           yield return child;
       }
     }
+
+    private async Task ExportModel()
+    {
+      var result = await ShowViewModal<ModelExportOptionsView>();
+      if ( !( result is Tuple<ModelExportOptionsModel, TextureExportOptionsModel> options ) )
+        return;
+
+      var exportProcess = new ExportModelProcess( _file, _assimpScene, options );
+      await RunProcess( exportProcess );
+    }
+
+    #endregion
 
   }
 

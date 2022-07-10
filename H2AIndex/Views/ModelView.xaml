@@ -23,8 +23,12 @@
 
         <Menu Grid.ColumnSpan="3"
               Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Export" Command="{Binding ExportModelCommand}" />
+            </MenuItem>
             <MenuItem Header="View">
                 <MenuItem Header="Show Wireframe" IsCheckable="True" IsChecked="{Binding ShowWireframe}" />
+                <MenuItem Header="Zoom To Extents" Command="hx:ViewportCommands.ZoomExtents" />
             </MenuItem>
         </Menu>
 
@@ -42,7 +46,7 @@
                         FXAALevel="Low"
                         EffectsManager="{Binding EffectsManager}"
                         IsHitTestVisible="True"
-                        ShowFrameRate="True"
+                        IsMoveEnabled="True"
                         EnableRenderFrustum="False">
 
             <hx:Viewport3DX.InputBindings>

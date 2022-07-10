@@ -8,15 +8,16 @@
                    d:DesignHeight="450" d:DesignWidth="800"
                    
                    Title="{Binding Title}"
-                   ModalHeight="200"
-                   ModalWidth="450">
+                   ModalMaxHeight="500" ModalMaxWidth="500" >
     
     <modal:WindowModal.FooterButtons>
         <Button Content="Close" />
     </modal:WindowModal.FooterButtons>
     
     <Grid>
-        <Label Content="{Binding Message}"
-               FontSize="14"/>
+        <TextBlock Text="{Binding Message}"
+                   Margin="10"
+                   TextWrapping="Wrap"
+                   FontSize="14"/>
     </Grid>
 </modal:WindowModal>

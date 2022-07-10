@@ -28,6 +28,7 @@ namespace H2AIndex.ViewModels
     public bool IsValidPath { get; set; }
 
     public ICommand ExplainFileFiltersCommand { get; }
+    public ICommand ExplainTextureDefinitionsCommand { get; }
 
     #endregion
 
@@ -37,6 +38,7 @@ namespace H2AIndex.ViewModels
       : base( serviceProvider )
     {
       ExplainFileFiltersCommand = new AsyncCommand( ExplainFileFilters );
+      ExplainTextureDefinitionsCommand = new AsyncCommand( ExplainTextureDefinitions );
     }
 
     #endregion
@@ -83,17 +85,28 @@ namespace H2AIndex.ViewModels
 
     private async Task ExplainFileFilters()
     {
-      var message = @"
-This textbox allows you to filter your batch export down to files that match certain criteria.
-Filters are delimited by a semicolon (;) and are case-insensitive. Wildcard (*) is not supported.\n
-\n
-Example Usage: masterchief;dervish\n
-This will only export files with 'masterchief' and 'dervish' in their names.
-";
+      var message = "This textbox allows you to filter your batch export down to files that match certain criteria. " +
+        "Filters are delimited by a semicolon (;) and are case-insensitive. Wildcard (*) is not supported.\n" +
+        "\n" +
+        "Example Usage: masterchief;dervish\n" +
+        "This will only export files with 'masterchief' and 'dervish' in their names.";
 
       await ShowMessageModal(
         title: "File Filters",
-        message: message );
+        message: message,
+        showOnMainView: true );
+    }
+
+    private async Task ExplainTextureDefinitions()
+    {
+      var message = "Texture Definitions are text files that describe how materials use a particular texture.\n" +
+        "Little is known about how these work in the engine, but they provide important information " +
+        "when setting up game-accurate shaders.";
+
+      await ShowMessageModal(
+        title: "Export Texture Definitions",
+        message: message,
+        showOnMainView: true );
     }
 
     #endregion
