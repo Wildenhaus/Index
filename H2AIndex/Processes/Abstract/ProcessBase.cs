@@ -170,9 +170,11 @@ namespace H2AIndex.Processes
       }
       catch ( Exception ex )
       {
+        StatusList.AddError( "Initialization", ex );
         State = ProcessState.Faulted;
         _isCompleted = true;
         RaiseErrorEvent( ex );
+        _tcs.TrySetResult();
       }
     }
 
