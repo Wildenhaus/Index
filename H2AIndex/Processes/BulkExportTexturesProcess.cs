@@ -10,6 +10,7 @@ namespace H2AIndex.Processes
   public class BulkExportTexturesProcess : ProcessBase
   {
 
+    private IEnumerable<IS3DFile> _targetFiles;
     private IList<ExportTextureProcess> _processes;
     private readonly TextureExportOptionsModel _options;
 
@@ -18,12 +19,21 @@ namespace H2AIndex.Processes
       _options = options;
     }
 
+    public BulkExportTexturesProcess( IEnumerable<IS3DFile> files, TextureExportOptionsModel options )
+      : this( options )
+    {
+      _targetFiles = files;
+    }
+
     protected override async Task OnInitializing()
     {
       IsIndeterminate = true;
       Status = "Preparing Bulk Export";
-      var targetFiles = GatherFiles();
-      _processes = CreateProcesses( targetFiles );
+
+      if ( _targetFiles == null )
+        _targetFiles = GatherFiles();
+
+      _processes = CreateProcesses( _targetFiles );
     }
 
     protected override async Task OnExecuting()

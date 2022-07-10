@@ -139,17 +139,18 @@ namespace H2AIndex.ViewModels
       var importer = new Importer();
       importer.ToHelixToolkitScene( assimpScene, out var scene );
 
-      void AddNodeModels( SceneNode node, ModelNodeModel parentNode = null )
+      void AddNodeModels( SceneNode node )
       {
-        var nodeModel = new ModelNodeModel( node );
-        if ( parentNode is null )
+        if ( node is MeshNode )
+        {
+          var nodeModel = new ModelNodeModel( node );
           _nodes.Add( nodeModel );
-        else
-          parentNode.Items.Add( nodeModel );
+        }
 
         foreach ( var childNode in node.Items )
-          AddNodeModels( childNode, nodeModel );
+          AddNodeModels( childNode );
       }
+
       AddNodeModels( scene.Root );
 
       var matLookup = new Dictionary<string, Material>();

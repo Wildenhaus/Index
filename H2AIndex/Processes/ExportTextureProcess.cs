@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using H2AIndex.Common;
 using H2AIndex.Common.Enumerations;
@@ -11,6 +13,7 @@ using ImageMagick;
 using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Data.Textures;
 using Saber3D.Files;
+using Saber3D.Serializers.Configurations;
 
 namespace H2AIndex.Processes
 {
@@ -72,26 +75,29 @@ namespace H2AIndex.Processes
         return;
       }
 
-      if ( _options.OutputFileFormat == TextureFileFormat.DDS )
+      if ( _options.OutputFileFormat != TextureFileFormat.DDS )
       {
+
+        try
+        {
+          await LoadTexture();
+
+          if ( IsTextureNormalMap() )
+            await ProcessNormalMaps();
+
+          await WriteOutputFiles();
+        }
+        finally
+        {
+          _texture?.Dispose();
+          _imageCollection?.Dispose();
+        }
+      }
+      else
         await ExportRawDds();
-        return;
-      }
 
-      try
-      {
-        await LoadTexture();
-
-        if ( IsTextureNormalMap() )
-          await ProcessNormalMaps();
-
-        await WriteOutputFiles();
-      }
-      finally
-      {
-        _texture?.Dispose();
-        _imageCollection?.Dispose();
-      }
+      if ( _options.ExportTextureDefinition )
+        await ExportTextureDefinition();
     }
 
     #endregion
@@ -234,6 +240,43 @@ namespace H2AIndex.Processes
           await ddsStream.CopyToAsync( outFile );
           await outFile.FlushAsync();
         }
+      }
+    }
+
+    private async Task ExportTextureDefinition()
+    {
+      var tdFileName = Path.ChangeExtension( _file.Name, ".td" );
+      var tdFile = H2AFileContext.Global.GetFiles( tdFileName ).FirstOrDefault();
+      if ( tdFile is null )
+      {
+        StatusList.AddWarning( tdFileName, "Could not find Texture Definition. It isn't loaded or doesn't exist." );
+        return;
+      }
+
+      try
+      {
+        var stream = tdFile.GetStream();
+        var serializer = new FileScriptingSerializer<TextureDefinition>();
+        var textureDef = serializer.Deserialize( stream );
+
+        var outputFileName = Path.ChangeExtension( tdFile.Name, "json" );
+        var outputPath = Path.Combine( _options.OutputPath, outputFileName );
+
+        using var fs = File.Create( outputPath );
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+          WriteIndented = true,
+          DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        await JsonSerializer.SerializeAsync( fs, textureDef, jsonOptions );
+
+        await fs.FlushAsync();
+      }
+      catch ( Exception ex )
+      {
+        StatusList.AddError( tdFileName, "Encountered an error attempting to read the texture definition.", ex );
+        throw;
       }
     }
 

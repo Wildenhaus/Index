@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -60,7 +59,7 @@ namespace H2AIndex.ViewModels
 
       App.Current.DispatcherUnhandledException += OnUnhandledExceptionRaised;
 
-      _tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "masterchief__h.tpl" ).First(), out _ );
+      //_tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "masterchief__h.tpl" ).First(), out _ );
     }
 
     #endregion

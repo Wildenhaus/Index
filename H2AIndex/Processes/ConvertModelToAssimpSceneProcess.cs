@@ -145,6 +145,9 @@ namespace H2AIndex.Processes
 
     private void AddMeshData( S3DObject obj, Node objectNode )
     {
+      if ( obj.GetName() == ".body_holo.g" )
+        System.Diagnostics.Debugger.Break();
+
       foreach ( var submesh in obj.SubMeshes )
       {
         var builder = new MeshBuilder( _context, obj, submesh );
@@ -473,9 +476,9 @@ namespace H2AIndex.Processes
       }
 
       var material = new Material { Name = materialName };
-      material.TextureDiffuse = new TextureSlot { FilePath = $"{materialName}" };
-      material.TextureNormal = new TextureSlot { FilePath = $"{materialName}nm" };
-      material.TextureSpecular = new TextureSlot { FilePath = $"{materialName}_spec" };
+      material.TextureDiffuse = new TextureSlot( materialName, TextureType.Diffuse, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 ); ;
+      material.TextureNormal = new TextureSlot( $"{materialName}nm", TextureType.Normals, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
+      material.TextureSpecular = new TextureSlot( $"{materialName}_spec", TextureType.Specular, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
 
       materialIndex = _context.Scene.Materials.Count;
 
