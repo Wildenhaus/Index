@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using H2AIndex.Models;
+using HelixToolkit.SharpDX.Core;
 
 namespace H2AIndex.ViewModels
 {
@@ -11,6 +13,8 @@ namespace H2AIndex.ViewModels
     #region Properties
 
     public PreferencesModel Preferences { get; set; }
+
+    public IReadOnlyList<FXAALevel> RenderFxaaLevels { get; set; }
 
     #endregion
 
@@ -28,6 +32,8 @@ namespace H2AIndex.ViewModels
     protected override async Task OnInitializing()
     {
       Preferences = GetPreferences();
+
+      RenderFxaaLevels = Enum.GetValues<FXAALevel>();
     }
 
     #endregion

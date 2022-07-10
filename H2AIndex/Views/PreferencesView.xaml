@@ -9,29 +9,81 @@
            xmlns:vm="clr-namespace:H2AIndex.ViewModels"
            mc:Ignorable="d" 
            d:DesignHeight="300" d:DesignWidth="500"
-           Height="300"
-           Width="500">
-    
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+           
+           Height="300" Width="500">
 
-        <GroupBox Header="Default H2A Directory"
+    <TabControl>
+
+        <TabItem Header="General">
+            <StackPanel>
+                <GroupBox Header="Default H2A Directory"
                   Grid.Row="0"
                   Margin="5,5,5,0">
-            <controls:FileBrowserBox Path="{Binding Preferences.H2ADirectoryPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    <controls:FileBrowserBox Path="{Binding Preferences.H2ADirectoryPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DialogPathType="Directory"  />
-        </GroupBox>
+                </GroupBox>
 
-        <GroupBox Header="Default Export Path"
+                <GroupBox Header="Default Export Path"
                   Grid.Row="1"
                   Margin="5,5,5,0">
-            <controls:FileBrowserBox Path="{Binding Preferences.DefaultExportPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    <controls:FileBrowserBox Path="{Binding Preferences.DefaultExportPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DialogPathType="Directory"  />
-        </GroupBox>
+                </GroupBox>
+            </StackPanel>
+        </TabItem>
 
-    </Grid>
-    
+        <TabItem Header="Tools">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <GroupBox Header="Model Viewer" Grid.Column="0" Margin="5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Show FPS" />
+                        <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowFps}" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Content="Show Model Info" />
+                        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowModelInfo}" />
+                        
+                        <Label Grid.Row="2" Grid.Column="0" Content="FXAA Quality" />
+                        <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding RenderFxaaLevels}" SelectedItem="{Binding Preferences.ModelViewerOptions.RenderFxaaQuality}" />
+                        
+                    </Grid>
+                    
+                </GroupBox>
+                <GroupBox Header="Texture Viewer" Grid.Column="1" Margin="5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" 
+                               Content="{Binding Preferences.TextureViewerOptions.PreviewQuality}"
+                               ContentStringFormat="Preview Quality ({0:0%})"/>
+                        <Slider Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" 
+                                Minimum="0" Maximum="1" TickFrequency="0.01"
+                                Value="{Binding Preferences.TextureViewerOptions.PreviewQuality}" />
+
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </TabItem>
+        
+    </TabControl>
+
 </view:View>

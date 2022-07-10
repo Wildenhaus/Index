@@ -93,8 +93,12 @@ namespace H2AIndex.Services
     {
       if ( Preferences.ModelExportOptions is null )
         Preferences.ModelExportOptions = ModelExportOptionsModel.Default;
+      if ( Preferences.ModelViewerOptions is null )
+        Preferences.ModelViewerOptions = ModelViewerOptionsModel.Default;
       if ( Preferences.TextureExportOptions is null )
         Preferences.TextureExportOptions = TextureExportOptionsModel.Default;
+      if ( Preferences.TextureViewerOptions is null )
+        Preferences.TextureViewerOptions = TextureViewerOptionsModel.Default;
     }
 
     #endregion

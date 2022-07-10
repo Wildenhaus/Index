@@ -16,6 +16,7 @@ namespace H2AIndex.Models
         return new PreferencesModel
         {
           ModelExportOptions = ModelExportOptionsModel.Default,
+          ModelViewerOptions = ModelViewerOptionsModel.Default,
           TextureExportOptions = TextureExportOptionsModel.Default
         };
       }
@@ -31,6 +32,9 @@ namespace H2AIndex.Models
 
     [OnChangedMethod( nameof( SetGlobalDefaults ) )]
     public TextureExportOptionsModel TextureExportOptions { get; set; }
+
+    public ModelViewerOptionsModel ModelViewerOptions { get; set; }
+    public TextureViewerOptionsModel TextureViewerOptions { get; set; }
 
     #endregion
 

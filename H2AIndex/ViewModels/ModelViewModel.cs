@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Input;
 using H2AIndex.Common;
 using H2AIndex.Models;
@@ -31,14 +33,18 @@ namespace H2AIndex.ViewModels
     #region Data Members
 
     private IS3DFile _file;
+
     private string _searchTerm;
+    private ObservableCollection<ModelNodeModel> _nodes;
+    private ICollectionView _nodeCollectionView;
 
     private Assimp.Scene _assimpScene;
-    private ObservableCollection<ModelNodeModel> _nodes;
 
     #endregion
 
     #region Properties
+
+    public ModelViewerOptionsModel Options { get; set; }
 
     public Camera Camera { get; set; }
     public SceneNodeGroupModel3D Model { get; }
@@ -48,7 +54,10 @@ namespace H2AIndex.ViewModels
     [OnChangedMethod( nameof( ToggleShowWireframe ) )]
     public bool ShowWireframe { get; set; }
 
-    public ICollection<ModelNodeModel> Nodes => _nodes;
+    public ICollectionView Nodes => _nodeCollectionView;
+    public int MeshCount { get; set; }
+    public int VertexCount { get; set; }
+    public int FaceCount { get; set; }
 
     public ICommand SearchTermChangedCommand { get; }
 
@@ -80,6 +89,7 @@ namespace H2AIndex.ViewModels
       Model.Transform = transform;
 
       _nodes = new ObservableCollection<ModelNodeModel>();
+      _nodeCollectionView = InitializeNodeCollectionView( _nodes );
 
       ShowAllCommand = new Command( ShowAllNodes );
       HideAllCommand = new Command( HideAllNodes );
@@ -87,6 +97,7 @@ namespace H2AIndex.ViewModels
       HideVolumesCommand = new Command( HideVolumeNodes );
       ExpandAllCommand = new Command( ExpandAllNodes );
       CollapseAllCommand = new Command( CollapseAllNodes );
+      SearchTermChangedCommand = new Command<string>( SearchTermChanged );
 
       ExportModelCommand = new AsyncCommand( ExportModel );
     }
@@ -97,6 +108,8 @@ namespace H2AIndex.ViewModels
 
     protected override async Task OnInitializing()
     {
+      Options = GetPreferences().ModelViewerOptions;
+
       var convertProcess = new ConvertModelToAssimpSceneProcess( _file );
       await RunProcess( convertProcess );
 
@@ -121,6 +134,21 @@ namespace H2AIndex.ViewModels
     #endregion
 
     #region Private Methods
+
+    private ICollectionView InitializeNodeCollectionView( ObservableCollection<ModelNodeModel> files )
+    {
+      var collectionView = CollectionViewSource.GetDefaultView( _nodes );
+      collectionView.Filter = ( obj ) =>
+      {
+        if ( string.IsNullOrEmpty( _searchTerm ) )
+          return true;
+
+        var node = obj as ModelNodeModel;
+        return node.Name.Contains( _searchTerm, StringComparison.InvariantCultureIgnoreCase );
+      };
+
+      return collectionView;
+    }
 
     private async Task<TextureModel> GetTexture( string name )
     {
@@ -176,8 +204,10 @@ namespace H2AIndex.ViewModels
         }
       }
 
+
       Model.AddNode( scene.Root );
       Camera.ZoomExtents( Viewport );
+      UpdateMeshInfo();
     }
 
     private void ShowAllNodes()
@@ -233,6 +263,12 @@ namespace H2AIndex.ViewModels
         node.IsExpanded = false;
     }
 
+    private void SearchTermChanged( string searchTerm )
+    {
+      _searchTerm = searchTerm;
+      App.Current.Dispatcher.Invoke( _nodeCollectionView.Refresh );
+    }
+
     private void ToggleShowWireframe()
     {
       var show = ShowWireframe;
@@ -251,6 +287,27 @@ namespace H2AIndex.ViewModels
         foreach ( var child in Traverse( elem.Items ) )
           yield return child;
       }
+    }
+
+    private void UpdateMeshInfo()
+    {
+      var meshCount = 0;
+      var vertCount = 0;
+      var faceCount = 0;
+
+      foreach ( var node in Traverse( _nodes ).Select( x => x.Node ).OfType<MeshNode>() )
+      {
+        if ( !node.Visible )
+          continue;
+
+        meshCount++;
+        vertCount += node.Geometry.Positions.Count;
+        faceCount += node.Geometry.Indices.Count / 3;
+      }
+
+      MeshCount = meshCount;
+      VertexCount = vertCount;
+      FaceCount = faceCount;
     }
 
     private async Task ExportModel()
