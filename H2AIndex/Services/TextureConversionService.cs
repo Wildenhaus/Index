@@ -61,17 +61,18 @@ namespace H2AIndex.Services
 
     public async Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage )
     {
-      var m = ddsImage.GetMetadata();
-      var mipCount = ddsImage.GetMetadata().MipLevels;
-      var decompressedImage = PrepareNonDDSImage( ddsImage );
-
-      new DdsReadDefines { SkipMipmaps = false };
+      var convertWasRequired = PrepareNonDDSImage( ddsImage, out var decompressedImage );
 
       var readSettings = new MagickReadSettings();
       readSettings.SetDefines( new DdsReadDefines { SkipMipmaps = false } );
 
       var ddsStream = decompressedImage.SaveToDDSMemory( 0 );
-      return new MagickImageCollection( ddsStream, readSettings );
+      var result = new MagickImageCollection( ddsStream, readSettings );
+
+      if ( convertWasRequired )
+        decompressedImage?.Dispose();
+
+      return result;
     }
 
     public async Task InvertGreenChannel( IMagickImage<float> image )
@@ -145,7 +146,7 @@ namespace H2AIndex.Services
 
     private async Task CreateImagePreviews( ScratchImage ddsImage, TextureModel model )
     {
-      using var compatImage = PrepareNonDDSImage( ddsImage );
+      var convertWasRequired = PrepareNonDDSImage( ddsImage, out var compatImage );
 
       foreach ( var image in model.Faces )
       {
@@ -170,16 +171,24 @@ namespace H2AIndex.Services
           }
         }
       }
+
+      if ( convertWasRequired )
+        compatImage?.Dispose();
     }
 
-    private ScratchImage PrepareNonDDSImage( ScratchImage ddsImage )
+    private bool PrepareNonDDSImage( ScratchImage ddsImage, out ScratchImage rgbImage )
     {
+      rgbImage = ddsImage;
       var format = ddsImage.GetMetadata().Format;
+      if ( format == DXGI_FORMAT.R8G8B8A8_UNORM )
+        return false;
 
       if ( format.ToString().StartsWith( "BC" ) )
-        return ddsImage.Decompress( DXGI_FORMAT.R8G8B8A8_UNORM );
+        rgbImage = ddsImage.Decompress( DXGI_FORMAT.R8G8B8A8_UNORM );
       else
-        return ddsImage.Convert( DXGI_FORMAT.R8G8B8A8_UNORM, TEX_FILTER_FLAGS.DEFAULT, 0 );
+        rgbImage = ddsImage.Convert( DXGI_FORMAT.R8G8B8A8_UNORM, TEX_FILTER_FLAGS.DEFAULT, 0 );
+
+      return true;
     }
 
     private DXGI_FORMAT GetDxgiFormat( S3DPictureFormat format )
