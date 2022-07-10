@@ -125,6 +125,10 @@ namespace Saber3D.Common
       throw new NotImplementedException();
     }
 
+    public override void Close()
+    {
+    }
+
     #endregion
 
   }

@@ -32,14 +32,20 @@ namespace Saber3D.Files.FileTypes
        * material settings, and a lot more.
        * 
        * Since they are all plaintext files, we can avoid the performance overhead of 
-       * S3DFileFactory by just treating them all as generic text files.
-       * 
-       * If we want to convert material settings when we're exporting models, we'll need to
-       * deserialize the .td files.
+       * S3DFileFactory by just treating them all as generic text files unless defined here.
        */
 
       var stream = new StreamSegment( BaseStream, offset, size );
-      return new GenericTextFile( name, stream, this );
+
+      switch ( Path.GetExtension( name ) )
+      {
+        case ".td":
+          return new TextureDefinitionFile( name, stream, this );
+
+        default:
+          return new GenericTextFile( name, stream, this );
+      }
+
     }
 
     #endregion

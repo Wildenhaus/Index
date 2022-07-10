@@ -258,7 +258,7 @@ namespace H2AIndex.Processes
         }
       }
 
-      ApplySkinCompoundData();
+      //ApplySkinCompoundData();
       AddMaterial();
 
       return Mesh;

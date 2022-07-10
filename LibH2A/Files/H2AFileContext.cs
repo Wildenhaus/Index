@@ -69,6 +69,14 @@ namespace Saber3D.Files
       return filesAdded;
     }
 
+    public IS3DFile GetFile( string fileName )
+    {
+      fileName = fileName.ToLower();
+
+      _files.TryGetValue( fileName, out var file );
+      return file;
+    }
+
     public IEnumerable<IS3DFile> GetFiles( string searchPattern )
     {
       searchPattern = searchPattern.ToLower();

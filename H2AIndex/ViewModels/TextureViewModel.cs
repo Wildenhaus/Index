@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using H2AIndex.Common;
@@ -21,6 +22,7 @@ namespace H2AIndex.ViewModels
     #region Data Members
 
     private readonly ITextureConversionService _textureService;
+    private readonly ITabService _tabService;
 
     private readonly IS3DFile _file;
 
@@ -42,6 +44,7 @@ namespace H2AIndex.ViewModels
     {
       _file = file;
       _textureService = ServiceProvider.GetService<ITextureConversionService>();
+      _tabService = ServiceProvider.GetService<ITabService>();
 
       OpenTextureDefinitionCommand = new AsyncCommand( OpenTextureDefinitionFile );
       ExportTextureCommand = new AsyncCommand( ExportTexture );
@@ -74,8 +77,14 @@ namespace H2AIndex.ViewModels
 
     #region Private Methods
 
-    private async Task OpenTextureDefinitionFile()
+    private Task OpenTextureDefinitionFile()
     {
+      var tdFile = H2AFileContext.Global.GetFile( Path.ChangeExtension( _file.Name, ".td" ) );
+      if ( tdFile is null )
+        return ShowMessageModal( "File Not Found", "Could not find a texture definition for this file." );
+
+      _tabService.CreateTabForFile( tdFile, out _ );
+      return Task.CompletedTask;
     }
 
     private async Task ExportTexture()

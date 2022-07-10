@@ -64,6 +64,7 @@ namespace H2AIndex
       services.AddTransient<ModelView>();
       services.AddTransient<PreferencesView>();
       services.AddTransient<StatusListView>();
+      services.AddTransient<TextEditorView>();
       services.AddTransient<TextureView>();
       services.AddTransient<TextureExportOptionsView>();
     }
@@ -79,6 +80,7 @@ namespace H2AIndex
       services.AddTransient<PreferencesViewModel>();
       services.AddTransient<ProgressViewModel>();
       services.AddTransient<StatusListViewModel>();
+      services.AddTransient<TextEditorViewModel>();
       services.AddTransient<TextureViewModel>();
       services.AddTransient<TextureExportOptionsViewModel>();
     }
@@ -91,10 +93,10 @@ namespace H2AIndex
     private void ConfigureServices( IServiceCollection services )
     {
       services.AddSingleton<IPreferencesService, PreferencesService>();
+      services.AddSingleton<ITabService, TabService>();
 
       services.AddTransient<IFileDialogService, FileDialogService>();
       services.AddTransient<ITextureConversionService, TextureConversionService>();
-      services.AddTransient<ITabService, TabService>();
       services.AddTransient<IViewService, ViewService>();
     }
 
