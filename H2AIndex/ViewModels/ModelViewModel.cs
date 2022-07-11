@@ -80,7 +80,7 @@ namespace H2AIndex.ViewModels
       _file = file;
 
       EffectsManager = new DefaultEffectsManager();
-      Camera = new PerspectiveCamera() { FarPlaneDistance = 30000 };
+      Camera = new PerspectiveCamera() { FarPlaneDistance = 300000 };
       Model = new SceneNodeGroupModel3D();
 
       var transform = new System.Windows.Media.Media3D.RotateTransform3D();
