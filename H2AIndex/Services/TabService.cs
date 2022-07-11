@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using H2AIndex.Common;
 using H2AIndex.Models;
 using H2AIndex.ViewModels;
 using Saber3D.Files;
@@ -15,10 +13,8 @@ namespace H2AIndex.Services
 
     #region Data Members
 
-    // Dictionary<IS3DFileType, ViewModelType>
-    private static readonly Dictionary<Type, Type> _viewModelLookup;
-
     private readonly IServiceProvider _serviceProvider;
+    private readonly IFileTypeService _fileTypeService;
     private readonly IViewService _viewService;
 
     private readonly TabContextModel _tabContext;
@@ -36,16 +32,14 @@ namespace H2AIndex.Services
 
     #region Constructor
 
-    public TabService( IServiceProvider serviceProvider, IViewService viewService )
+    public TabService( IServiceProvider serviceProvider,
+      IFileTypeService fileTypeService,
+      IViewService viewService )
     {
       _serviceProvider = serviceProvider;
+      _fileTypeService = fileTypeService;
       _viewService = viewService;
       _tabContext = new TabContextModel();
-    }
-
-    static TabService()
-    {
-      _viewModelLookup = BuildViewModelLookup();
     }
 
     #endregion
@@ -62,7 +56,8 @@ namespace H2AIndex.Services
         return true;
       }
 
-      if ( !_viewModelLookup.TryGetValue( file.GetType(), out var viewModelType ) )
+      var viewModelType = _fileTypeService.GetViewModelType( file.GetType() );
+      if ( viewModelType is null )
         return false;
 
       var viewModel = ( IViewModel ) Activator.CreateInstance( viewModelType, new object[] { _serviceProvider, file } );
@@ -95,38 +90,6 @@ namespace H2AIndex.Services
     {
       tab = _tabContext.Tabs.FirstOrDefault( x => x.Name == tabName );
       return tab != null;
-    }
-
-    private static Dictionary<Type, Type> BuildViewModelLookup()
-    {
-      var lookup = new Dictionary<Type, Type>();
-
-      var viewModelTypes = GetViewModelTypes();
-      foreach ( var viewModelType in viewModelTypes )
-      {
-        var attributes = viewModelType.GetCustomAttributes( typeof( AcceptsFileTypeAttribute ), true )
-          .Cast<AcceptsFileTypeAttribute>();
-
-        foreach ( var attribute in attributes )
-          lookup.Add( attribute.FileType, viewModelType );
-      }
-
-      return lookup;
-    }
-
-    private static IEnumerable<Type> GetViewModelTypes()
-    {
-      return typeof( TabService ).Assembly.GetTypes()
-        .Where( x =>
-        {
-          if ( !x.IsClass || x.IsAbstract )
-            return false;
-
-          if ( !typeof( IViewModel ).IsAssignableFrom( x ) )
-            return false;
-
-          return true;
-        } );
     }
 
     #endregion

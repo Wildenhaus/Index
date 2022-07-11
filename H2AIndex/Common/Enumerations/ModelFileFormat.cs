@@ -28,7 +28,7 @@ namespace H2AIndex.Common.Enumerations
         case ModelFileFormat.FBX:
           return "fbx";
         case ModelFileFormat.GLTF2:
-          return "gtlf2";
+          return "glb2";
         case ModelFileFormat.JSON:
           return "assjson";
         case ModelFileFormat.STL:

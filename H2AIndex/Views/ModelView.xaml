@@ -41,12 +41,13 @@
                         TextBrush="White"
                         Foreground="White"
                         CameraMode="Inspect"
-                        CameraRotationMode="Trackball"
+                        CameraRotationMode="Turntable"
                         EnableSwapChainRendering="False"
                         FXAALevel="{Binding Options.RenderFxaaQuality}"
                         EffectsManager="{Binding EffectsManager}"
                         IsHitTestVisible="True"
                         IsMoveEnabled="True"
+                        ZoomDistanceLimitNear="0"
                         EnableRenderFrustum="False">
 
             <hx:Viewport3DX.InputBindings>

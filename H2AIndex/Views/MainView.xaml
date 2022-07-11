@@ -29,6 +29,7 @@
             <MenuItem Header="Tools">
                 <MenuItem Header="Bulk Export Models" />
                 <MenuItem Header="Bulk Export Textures" Command="{Binding BulkExportTexturesCommand}" />
+                <MenuItem Header="Dump Files" />
                 <Separator />
                 <MenuItem Header="Preferences" Command="{Binding EditPreferencesCommand}" />
             </MenuItem>

@@ -145,9 +145,6 @@ namespace H2AIndex.Processes
 
     private void AddMeshData( S3DObject obj, Node objectNode )
     {
-      if ( obj.GetName() == ".body_holo.g" )
-        System.Diagnostics.Debugger.Break();
-
       foreach ( var submesh in obj.SubMeshes )
       {
         var builder = new MeshBuilder( _context, obj, submesh );
@@ -258,7 +255,7 @@ namespace H2AIndex.Processes
         }
       }
 
-      //ApplySkinCompoundData();
+      ApplySkinCompoundData();
       AddMaterial();
 
       return Mesh;

@@ -92,6 +92,7 @@ namespace H2AIndex
 
     private void ConfigureServices( IServiceCollection services )
     {
+      services.AddSingleton<IFileTypeService, FileTypeService>();
       services.AddSingleton<IPreferencesService, PreferencesService>();
       services.AddSingleton<ITabService, TabService>();
 

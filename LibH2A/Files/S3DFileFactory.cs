@@ -49,11 +49,13 @@ namespace Saber3D.Files
     {
       stream.Position = 0;
       var ext = Path.GetExtension( name );
-      var signature = ReadSignature( stream );
 
-      if ( !_signatureLookup.TryGetValue( signature, out var fileType ) )
-        if ( !_extensionLookup.TryGetValue( ext, out fileType ) )
+      if ( !_extensionLookup.TryGetValue( ext, out var fileType ) )
+      {
+        var signature = ReadSignature( stream );
+        if ( !_signatureLookup.TryGetValue( signature, out fileType ) )
           return FailReturn<IS3DFile>( $"Could not determine a FileType for '{name}'." );
+      }
 
       if ( !_constructorLookup.TryGetValue( fileType, out var ctorDelegate ) )
         return FailReturn<IS3DFile>( $"FileType '{fileType.Name}' does not have a constructor delegate!" );
@@ -141,12 +143,14 @@ namespace Saber3D.Files
 
       foreach ( var fileType in GetDefinedFileTypes() )
       {
-        var extAttribute = fileType.GetCustomAttributes( typeof( FileExtensionAttribute ), false ).FirstOrDefault() as FileExtensionAttribute;
-        if ( extAttribute is null )
-          continue;
+        var extAttributes = fileType.GetCustomAttributes( typeof( FileExtensionAttribute ), false )
+          .Cast<FileExtensionAttribute>();
 
-        foreach ( var extension in extAttribute.FileExtensions )
+        foreach ( var extAttribute in extAttributes )
+        {
+          var extension = extAttribute.FileExtension;
           extLookup.Add( extension, fileType );
+        }
       }
 
       return extLookup;
