@@ -10,7 +10,7 @@ namespace Saber3D.Files.FileTypes
 
     #region Properties
 
-    public override string FileTypeDisplay => "Model/Template (.tpl)";
+    public override string FileTypeDisplay => "Model (.tpl)";
 
     #endregion
 

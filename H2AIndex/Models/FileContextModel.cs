@@ -1,9 +1,13 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Input;
 using H2AIndex.Common;
+using H2AIndex.Services;
+using Microsoft.Extensions.DependencyInjection;
+using PropertyChanged;
 using Saber3D.Files;
 
 namespace H2AIndex.Models
@@ -16,6 +20,8 @@ namespace H2AIndex.Models
 
     private readonly H2AFileContext _context;
     private readonly ObservableCollection<FileModel> _files;
+
+    private IReadOnlySet<string> _editorFileExtensions;
 
     private readonly object _collectionLock;
     private readonly ICollectionView _collectionViewSource;
@@ -35,6 +41,9 @@ namespace H2AIndex.Models
     {
       get => _collectionViewSource;
     }
+
+    [OnChangedMethod( nameof( RefreshFileTree ) )]
+    public bool ShowUnsupportedFiles { get; set; }
 
     public ICommand SearchTermChangedCommand { get; }
     public ICommand OpenFileCommand { get; }
@@ -56,6 +65,10 @@ namespace H2AIndex.Models
       _fileAddQueue = new ConcurrentQueue<FileModel>();
       _fileRemoveQueue = new ConcurrentQueue<FileModel>();
       _fileLookup = new ConcurrentDictionary<string, FileModel>();
+
+      // Initialize File Extension Lookup
+      var fileTypeService = ( ( App ) App.Current ).ServiceProvider.GetRequiredService<IFileTypeService>();
+      _editorFileExtensions = fileTypeService.ExtensionsWithEditorSupport;
 
       // Initialize the LibH2A Context
       _context = H2AFileContext.Global;
@@ -122,7 +135,7 @@ namespace H2AIndex.Models
           _files.Remove( fileToRemove );
       }
 
-      App.Current.Dispatcher.Invoke( _collectionViewSource.Refresh );
+      RefreshFileTree();
     }
 
     #endregion
@@ -153,11 +166,14 @@ namespace H2AIndex.Models
 
     private bool OnFilterFiles( object obj )
     {
-      if ( string.IsNullOrWhiteSpace( _searchTerm ) )
-        return true;
-
       var file = obj as FileModel;
-      return file.Name.Contains( _searchTerm, System.StringComparison.InvariantCultureIgnoreCase );
+      if ( !ShowUnsupportedFiles && !_editorFileExtensions.Contains( file.Extension ) )
+        return false;
+
+      if ( !string.IsNullOrWhiteSpace( _searchTerm ) )
+        return file.Name.Contains( _searchTerm, System.StringComparison.InvariantCultureIgnoreCase );
+
+      return true;
     }
 
     private void OnSearchTermUpdated( string searchTerm )
@@ -165,6 +181,9 @@ namespace H2AIndex.Models
       _searchTerm = searchTerm;
       _throttler.Execute();
     }
+
+    private void RefreshFileTree()
+      => App.Current.Dispatcher.Invoke( _collectionViewSource.Refresh );
 
     #endregion
 

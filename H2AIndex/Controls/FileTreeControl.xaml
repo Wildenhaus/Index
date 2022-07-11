@@ -37,6 +37,20 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center">
 
+                    <ToggleButton Padding="0"
+                                  Margin="0,0,10,0"
+                                  Background="Transparent"
+                                  ToolTip="Show Unsupported Files"
+                                  IsChecked="{Binding FileContext.ShowUnsupportedFiles}">
+                        <ToggleButton.Content>
+                            <Path Data="{Binding Source={StaticResource Icon_Eye}, Path=Data}"
+                                  Fill="{DynamicResource Brush.Glyph.Static}" 
+                                  Stretch="Uniform"
+                                  Width="14"
+                                  Height="14" />
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    
                     <Button x:Name="BtnExpandAll" 
                             Padding="0"
                             Background="Transparent"
