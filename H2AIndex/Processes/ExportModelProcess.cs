@@ -67,12 +67,7 @@ namespace H2AIndex.Processes
       if ( _modelOptions.ExportTextures )
         FixupTextureSlotFileExtensions();
 
-      if ( _modelOptions.RemoveLODs || _modelOptions.RemoveVolumes )
-      {
-        var lodRemover = new SceneLodRemover( _scene, _modelOptions );
-        _scene = lodRemover.RecreateScene();
-      }
-
+      FilterMeshes();
       await WriteAssimpSceneToFile();
 
       if ( _modelOptions.ExportTextures )
@@ -203,6 +198,18 @@ namespace H2AIndex.Processes
       slot = new TextureSlot( newName, slot.TextureType, slot.TextureIndex, slot.Mapping,
         slot.UVIndex, slot.BlendFactor, slot.Operation, slot.WrapModeU, slot.WrapModeV, slot.Flags );
       return slot;
+    }
+
+    private void FilterMeshes()
+    {
+      if ( !_modelOptions.RemoveLODs && _modelOptions.RemoveVolumes )
+        return;
+
+      IsIndeterminate = true;
+      Status = "Filtering Meshes";
+
+      var lodRemover = new SceneLodRemover( _scene, _modelOptions );
+      _scene = lodRemover.RecreateScene();
     }
 
     private IEnumerable<Node> Traverse( Node node )

@@ -72,9 +72,13 @@ namespace H2AIndex.ViewModels
 
       //_tabService.CreateTabForFile( file, out _ );
 
-      H2AFileContext.Global.OpenFile( @"G:\h2a\re files\dervish__h.tpl" );
-      var file = H2AFileContext.Global.GetFile( "dervish__h.tpl" );
-      _tabService.CreateTabForFile( file, out _ );
+      //H2AFileContext.Global.OpenFile( @"G:\h2a\re files\dervish__h.tpl" );
+      //var file = H2AFileContext.Global.GetFile( "dervish__h.tpl" );
+      //_tabService.CreateTabForFile( file, out _ );
+
+      //H2AFileContext.Global.OpenFile( @"F:\warthog__h.tpl" );
+      //var file = H2AFileContext.Global.GetFile( "warthog__h.tpl" );
+      //_tabService.CreateTabForFile( file, out _ );
 
       //var proc = new ExportModelProcess( file,
       //  Tuple.Create( p.ModelExportOptions, p.TextureExportOptions ) );
@@ -88,7 +92,8 @@ namespace H2AIndex.ViewModels
     private async Task OpenFile()
     {
       var filePaths = await ShowOpenFileDialog(
-        title: "Open File" ); // TODO: Add filter
+        title: "Open File",
+        initialDirectory: GetPreferences().H2ADirectoryPath ); // TODO: Add filter
 
       if ( filePaths == null )
         return;

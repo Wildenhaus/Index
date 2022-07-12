@@ -32,6 +32,7 @@ namespace H2AIndex.Services
     public async Task<string[]> BrowseForOpenFile(
       string title = null,
       string defaultFileName = null,
+      string initialDirectory = null,
       string filter = null,
       bool multiselect = true )
     {
@@ -49,6 +50,9 @@ namespace H2AIndex.Services
         if ( !string.IsNullOrWhiteSpace( filter ) )
           dialog.Filter = filter;
 
+        if ( !string.IsNullOrWhiteSpace( initialDirectory ) )
+          dialog.InitialDirectory = initialDirectory;
+
         if ( dialog.ShowDialog() != DialogResult.OK )
           return null;
 
@@ -59,6 +63,7 @@ namespace H2AIndex.Services
     public async Task<string> BrowseForSaveFile(
       string title = null,
       string defaultFileName = null,
+      string initialDirectory = null,
       string filter = null )
     {
       using ( var dialog = new SaveFileDialog() )
@@ -71,6 +76,9 @@ namespace H2AIndex.Services
 
         if ( !string.IsNullOrWhiteSpace( defaultFileName ) )
           dialog.FileName = defaultFileName;
+
+        if ( !string.IsNullOrWhiteSpace( initialDirectory ) )
+          dialog.InitialDirectory = initialDirectory;
 
         if ( !string.IsNullOrWhiteSpace( filter ) )
           dialog.Filter = filter;

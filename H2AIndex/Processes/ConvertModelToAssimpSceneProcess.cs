@@ -241,6 +241,11 @@ namespace H2AIndex.Processes
 
           node.Transform = transform.ToAssimp();
         }
+        else if ( obj.Parent != null )
+        {
+          if ( obj.Parent.GetName() == obj.Parent.GetBoneName() )
+            node.Transform = obj.MatrixLT.ToAssimp();
+        }
 
         CompletedUnits++;
       }

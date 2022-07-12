@@ -189,12 +189,12 @@ namespace H2AIndex.ViewModels
           var matName = mn.Material.Name;
           if ( !matLookup.TryGetValue( matName, out var mat ) )
           {
-            mat = new PhongMaterial
+            mat = new DiffuseMaterial
             {
               DiffuseMap = await GetTexture( $"{matName}.pct" ),
-              SpecularColorMap = await GetTexture( $"{matName}_spec.pct" ),
-              NormalMap = await GetTexture( $"{matName}_nm.pct" ),
-              EnableTessellation = true,
+              //SpecularColorMap = await GetTexture( $"{matName}_spec.pct" ),
+              //NormalMap = await GetTexture( $"{matName}_nm.pct" ),
+              //EnableTessellation = true,
               UVTransform = new UVTransform( 0, 1, -1, 0, 0 )
             };
             matLookup.Add( matName, mat );

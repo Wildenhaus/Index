@@ -109,6 +109,7 @@
 
                         <Button x:Name="BtnDropdown"
                                 Padding="0"
+                                Margin="0,0,10,0"
                                 Background="Transparent">
                             <Button.Content>
                                 <Path Data="{Binding Source={StaticResource Icon_Dropdown}, Path=Data}"
@@ -145,7 +146,7 @@
                             </Button.Style>
                         </Button>
                         
-                        <Button x:Name="BtnExpandAll" 
+                        <!--<Button x:Name="BtnExpandAll" 
                                 Padding="0"
                                 Background="Transparent"
                                 ToolTip="Expand All Nodes"
@@ -171,7 +172,7 @@
                                       Width="14"
                                       Height="14" />
                             </Button.Content>
-                        </Button>
+                        </Button>-->
 
                     </StackPanel>
 

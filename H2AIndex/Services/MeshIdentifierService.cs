@@ -29,6 +29,7 @@ namespace H2AIndex.Services
       "refl",
       "rays",
       "shadowcaster",
+      "shadow_caster",
     };
 
     #endregion

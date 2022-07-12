@@ -105,19 +105,21 @@ namespace H2AIndex.ViewModels
     protected Task<string[]> ShowOpenFileDialog(
       string title = null,
       string defaultFileName = null,
+      string initialDirectory = null,
       string filter = null )
     {
       var fileDialogService = ServiceProvider.GetRequiredService<IFileDialogService>();
-      return fileDialogService.BrowseForOpenFile( title, defaultFileName, filter );
+      return fileDialogService.BrowseForOpenFile( title, defaultFileName, initialDirectory, filter );
     }
 
     protected Task<string> ShowSaveFileDialog(
       string title = null,
       string defaultFileName = null,
+      string initialDirectory = null,
       string filter = null )
     {
       var fileDialogService = ServiceProvider.GetRequiredService<IFileDialogService>();
-      return fileDialogService.BrowseForSaveFile( title, defaultFileName, filter );
+      return fileDialogService.BrowseForSaveFile( title, defaultFileName, initialDirectory, filter );
     }
 
     #endregion
