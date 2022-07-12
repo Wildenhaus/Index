@@ -74,7 +74,7 @@
                     HorizontalAlignment="Stretch">
                 <DockPanel HorizontalAlignment="Stretch">
 
-                    <Label Content="Node Tree"
+                    <Label Content="Meshes"
                            FontSize="14"
                            FontWeight="SemiBold"
                            Margin="0"
