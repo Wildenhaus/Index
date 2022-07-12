@@ -7,6 +7,8 @@ using Assimp;
 using H2AIndex.Common;
 using H2AIndex.Common.Enumerations;
 using H2AIndex.Models;
+using H2AIndex.Services.Abstract;
+using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Data.Textures;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
@@ -18,32 +20,8 @@ namespace H2AIndex.Processes
   public class ExportModelProcess : ProcessBase
   {
 
-    #region Constants
-
-    private static readonly string[] LOD_NAMES = new string[]
-    {
-      "_lod1",
-      "_lod2",
-      "_lod3",
-      ".lod1",
-      ".lod2",
-      ".lod3",
-    };
-
-    private static readonly string[] VOLUME_NAMES = new string[]
-    {
-      "shadowcaster",
-      "occl",
-      "oclu",
-      "refl",
-      ".rays",
-      ".vis_occ",
-      "_o#",
-    };
-
-    #endregion
-
     #region Data Members
+
 
     private IS3DFile _file;
     private Scene _scene;
@@ -89,14 +67,11 @@ namespace H2AIndex.Processes
       if ( _modelOptions.ExportTextures )
         FixupTextureSlotFileExtensions();
 
-      var toRemoveStrings = Enumerable.Empty<string>();
-      if ( _modelOptions.RemoveLODs )
-        toRemoveStrings = toRemoveStrings.Concat( LOD_NAMES );
-      if ( _modelOptions.RemoveVolumes )
-        toRemoveStrings = toRemoveStrings.Concat( VOLUME_NAMES );
-
-      if ( toRemoveStrings.Any() )
-        RemoveMeshesWithMatchingStrings( toRemoveStrings );
+      if ( _modelOptions.RemoveLODs || _modelOptions.RemoveVolumes )
+      {
+        var lodRemover = new SceneLodRemover( _scene, _modelOptions );
+        _scene = lodRemover.RecreateScene();
+      }
 
       await WriteAssimpSceneToFile();
 
@@ -230,43 +205,6 @@ namespace H2AIndex.Processes
       return slot;
     }
 
-    private void RemoveMeshesWithMatchingStrings( IEnumerable<string> strings )
-    {
-      var newScene = new Scene();
-      newScene.RootNode = new Node( _scene.RootNode.Name );
-      newScene.Materials.AddRange( _scene.Materials );
-
-      var meshLookup = new Dictionary<int, int>();
-
-      void AddNode( Node oldNode, Node newParentNode )
-      {
-        if ( strings.Any( x => oldNode.Name.Contains( x ) ) )
-          return;
-
-        var newNode = new Node( oldNode.Name );
-        foreach ( var oldMeshIdx in oldNode.MeshIndices )
-        {
-          if ( !meshLookup.TryGetValue( oldMeshIdx, out var newMeshIdx ) )
-          {
-            newScene.Meshes.Add( _scene.Meshes[ oldMeshIdx ] );
-            newMeshIdx = newScene.Meshes.Count - 1;
-            meshLookup.Add( oldMeshIdx, newMeshIdx );
-          }
-          newNode.MeshIndices.Add( newMeshIdx );
-        }
-
-        newParentNode.Children.Add( newNode );
-
-        foreach ( var child in oldNode.Children )
-          AddNode( child, newNode );
-      }
-
-      foreach ( var oldNode in _scene.RootNode.Children )
-        AddNode( oldNode, newScene.RootNode );
-
-      _scene = newScene;
-    }
-
     private IEnumerable<Node> Traverse( Node node )
     {
       yield return node;
@@ -276,6 +214,153 @@ namespace H2AIndex.Processes
         foreach ( var childNode in Traverse( child ) )
           yield return childNode;
       }
+    }
+
+    #endregion
+
+  }
+
+  internal class SceneLodRemover
+  {
+
+    #region Data Members
+
+    private readonly IMeshIdentifierService _meshIdentifierService;
+
+    #endregion
+
+    #region Properties
+
+    private Scene OldScene { get; }
+    private Scene NewScene { get; }
+
+    private Func<string, bool> Evaluate { get; }
+    private Dictionary<int, int> MaterialLookup { get; }
+    private Dictionary<int, int> MeshLookup { get; }
+
+    #endregion
+
+    #region Constructor
+
+    public SceneLodRemover( Scene scene, ModelExportOptionsModel options )
+    {
+      var serviceProvider = ( ( App ) App.Current ).ServiceProvider;
+      _meshIdentifierService = serviceProvider.GetRequiredService<IMeshIdentifierService>();
+
+      OldScene = scene;
+      NewScene = new Scene();
+      Evaluate = CreateEvaluator( options.RemoveLODs, options.RemoveVolumes );
+
+      MaterialLookup = new Dictionary<int, int>();
+      MeshLookup = new Dictionary<int, int>();
+    }
+
+    #endregion
+
+    #region Public Methods
+
+    public Scene RecreateScene()
+    {
+      if ( Evaluate is null )
+        return OldScene;
+
+      var oldRoot = OldScene.RootNode;
+      var newRoot = AddNode( oldRoot );
+
+      NewScene.RootNode = newRoot;
+      return NewScene;
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private Func<string, bool> CreateEvaluator( bool removeLods = false, bool removeVolumes = false )
+    {
+      if ( removeLods && removeVolumes )
+        return _meshIdentifierService.IsLodOrVolume;
+      else if ( removeLods )
+        return _meshIdentifierService.IsLod;
+      else if ( removeVolumes )
+        return _meshIdentifierService.IsVolume;
+      else
+        return null;
+    }
+
+    private int AddMaterial( Material material )
+    {
+      NewScene.Materials.Add( material );
+      return NewScene.Materials.Count - 1;
+    }
+
+    private int AddMesh( Mesh oldMesh )
+    {
+      var newMesh = new Mesh( oldMesh.Name, oldMesh.PrimitiveType );
+      newMesh.BiTangents.AddRange( oldMesh.BiTangents );
+      newMesh.Bones.AddRange( oldMesh.Bones );
+      newMesh.BoundingBox = oldMesh.BoundingBox;
+      newMesh.Faces.AddRange( oldMesh.Faces );
+      newMesh.MeshAnimationAttachments.AddRange( oldMesh.MeshAnimationAttachments );
+      newMesh.MorphMethod = oldMesh.MorphMethod;
+      newMesh.Normals.AddRange( oldMesh.Normals );
+      newMesh.Tangents.AddRange( oldMesh.Tangents );
+      newMesh.Vertices.AddRange( oldMesh.Vertices );
+
+      for ( var i = 0; i < oldMesh.TextureCoordinateChannels.Length; i++ )
+        newMesh.TextureCoordinateChannels[ i ].AddRange( oldMesh.TextureCoordinateChannels[ i ] );
+
+      for ( var i = 0; i < oldMesh.UVComponentCount.Length; i++ )
+        newMesh.UVComponentCount[ i ] = oldMesh.UVComponentCount[ i ];
+
+      for ( var i = 0; i < oldMesh.VertexColorChannels.Length; i++ )
+        newMesh.VertexColorChannels[ i ].AddRange( oldMesh.VertexColorChannels[ i ] );
+
+      if ( !MaterialLookup.TryGetValue( oldMesh.MaterialIndex, out var newMaterialIndex ) )
+      {
+        var material = OldScene.Materials[ oldMesh.MaterialIndex ];
+        newMaterialIndex = AddMaterial( material );
+
+        MaterialLookup.Add( oldMesh.MaterialIndex, newMaterialIndex );
+      }
+      newMesh.MaterialIndex = newMaterialIndex;
+
+      NewScene.Meshes.Add( newMesh );
+      return NewScene.Meshes.Count - 1;
+    }
+
+    private void CopyNodeMeshes( Node oldNode, Node newNode )
+    {
+      foreach ( var oldMeshIndex in oldNode.MeshIndices )
+      {
+        if ( !MeshLookup.TryGetValue( oldMeshIndex, out var newMeshIndex ) )
+        {
+          var mesh = OldScene.Meshes[ oldMeshIndex ];
+          newMeshIndex = AddMesh( mesh );
+
+          MeshLookup.Add( oldMeshIndex, newMeshIndex );
+        }
+
+        newNode.MeshIndices.Add( newMeshIndex );
+      }
+    }
+
+    private Node AddNode( Node oldNode, Node newParentNode = null )
+    {
+      if ( Evaluate( oldNode.Name ) )
+        return null;
+
+      var newNode = new Node( oldNode.Name, newParentNode );
+      if ( newParentNode != null )
+        newParentNode.Children.Add( newNode );
+
+      newNode.Transform = oldNode.Transform;
+
+      CopyNodeMeshes( oldNode, newNode );
+
+      foreach ( var child in oldNode.Children )
+        AddNode( child, newNode );
+
+      return newNode;
     }
 
     #endregion

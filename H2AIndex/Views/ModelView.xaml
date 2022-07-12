@@ -188,17 +188,27 @@
                       VirtualizingPanel.IsContainerVirtualizable="True"
                       VirtualizingPanel.IsVirtualizing="True"
                       VirtualizingPanel.IsVirtualizingWhenGrouping="True"
-                      VirtualizingPanel.VirtualizationMode="Recycling">
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                      SizeChanged="OnListViewSizeChanged"
+                      Loaded="OnListViewLoaded">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Width="30">
+                        <GridViewColumn>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type vm:ModelNodeModel}">
-                                    <CheckBox IsChecked="{Binding IsVisible}" Focusable="False" FocusVisualStyle="{x:Null}" />
+                                    <Grid HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsVisible}" Focusable="False" FocusVisualStyle="{x:Null}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" />
+                                    </Grid>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Width="Auto" DisplayMemberBinding="{Binding Name}" />
                     </GridView>
                 </ListView.View>
             </ListView>

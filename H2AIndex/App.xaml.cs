@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using H2AIndex.Services;
+using H2AIndex.Services.Abstract;
 using H2AIndex.UI.Modals;
 using H2AIndex.ViewModels;
 using H2AIndex.Views;
@@ -93,6 +94,7 @@ namespace H2AIndex
     private void ConfigureServices( IServiceCollection services )
     {
       services.AddSingleton<IFileTypeService, FileTypeService>();
+      services.AddSingleton<IMeshIdentifierService, MeshIdentifierService>();
       services.AddSingleton<IPreferencesService, PreferencesService>();
       services.AddSingleton<ITabService, TabService>();
 
