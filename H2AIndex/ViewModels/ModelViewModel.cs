@@ -149,6 +149,7 @@ namespace H2AIndex.ViewModels
     private ICollectionView InitializeNodeCollectionView( ObservableCollection<ModelNodeModel> files )
     {
       var collectionView = CollectionViewSource.GetDefaultView( _nodes );
+      collectionView.SortDescriptions.Add( new SortDescription( nameof( ModelNodeModel.Name ), ListSortDirection.Ascending ) );
       collectionView.Filter = ( obj ) =>
       {
         if ( string.IsNullOrEmpty( _searchTerm ) )
