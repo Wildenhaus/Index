@@ -65,7 +65,7 @@ namespace Testbed
       if ( parentNode is null )
         parentNode = _scene.RootNode;
 
-      var objectNode = new Node( obj.GetName(), parentNode );
+      var objectNode = new Node( obj.GetMeshName(), parentNode );
       parentNode.Children.Add( objectNode );
       _nodes.Add( obj.Id, objectNode );
 
@@ -132,7 +132,7 @@ namespace Testbed
 
       private Mesh Build()
       {
-        _mesh = new Mesh( _obj.GetName(), PrimitiveType.Triangle );
+        _mesh = new Mesh( _obj.GetMeshName(), PrimitiveType.Triangle );
 
         var meshData = _graph.Meshes[ ( int ) _submesh.MeshId ];
         foreach ( var meshBuffer in meshData.Buffers )
@@ -235,7 +235,7 @@ namespace Testbed
 
           bone = new Bone
           {
-            Name = boneObject.GetName(),
+            Name = boneObject.GetMeshName(),
             OffsetMatrix = invMatrix.ToAssimp()
           };
 

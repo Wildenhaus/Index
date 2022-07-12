@@ -78,7 +78,7 @@ namespace H2AIndex.Tools
       if ( parentNode is null )
         parentNode = _scene.RootNode;
 
-      var objectNode = new Node( obj.GetName(), parentNode );
+      var objectNode = new Node( obj.GetMeshName(), parentNode );
       parentNode.Children.Add( objectNode );
       _nodes.Add( obj.Id, objectNode );
 
@@ -86,7 +86,7 @@ namespace H2AIndex.Tools
 
       if ( obj.SubMeshes.Any() )
       {
-        if ( obj.GetName().Contains( "shield" ) )
+        if ( obj.GetMeshName().Contains( "shield" ) )
           return;
 
         AddMeshData( obj, objectNode );
@@ -153,7 +153,7 @@ namespace H2AIndex.Tools
 
       private Mesh Build()
       {
-        _mesh = new Mesh( _obj.GetName(), PrimitiveType.Triangle );
+        _mesh = new Mesh( _obj.GetMeshName(), PrimitiveType.Triangle );
 
         var meshData = _graph.Meshes[ ( int ) _submesh.MeshId ];
         foreach ( var meshBuffer in meshData.Buffers )
@@ -259,7 +259,7 @@ namespace H2AIndex.Tools
 
           bone = new Bone
           {
-            Name = boneObject.GetName(),
+            Name = boneObject.GetMeshName(),
             OffsetMatrix = invMatrix.ToAssimp()
           };
 

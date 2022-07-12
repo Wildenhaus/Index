@@ -183,7 +183,28 @@
             <controls:SearchBox Grid.Row="1"
                                 TextChangedCommand="{Binding SearchTermChangedCommand}" />
 
-            <TreeView Grid.Row="2" 
+            <ListView Grid.Row="2"
+                      ItemsSource="{Binding Nodes}"
+                      VirtualizingPanel.IsContainerVirtualizable="True"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Width="30">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type vm:ModelNodeModel}">
+                                    <CheckBox IsChecked="{Binding IsVisible}" Focusable="False" FocusVisualStyle="{x:Null}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Width="Auto" DisplayMemberBinding="{Binding Name}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+                      
+            
+            <!--<TreeView Grid.Row="2" 
                       ItemsSource="{Binding Nodes}"
                       VirtualizingPanel.IsContainerVirtualizable="True"
                       VirtualizingPanel.IsVirtualizing="True"
@@ -199,7 +220,7 @@
                         <CheckBox IsChecked="{Binding IsVisible}" Content="{Binding Name}" Focusable="False" FocusVisualStyle="{x:Null}" />
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
-            </TreeView>
+            </TreeView>-->
 
         </Grid>
 

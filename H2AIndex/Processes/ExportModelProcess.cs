@@ -18,6 +18,31 @@ namespace H2AIndex.Processes
   public class ExportModelProcess : ProcessBase
   {
 
+    #region Constants
+
+    private static readonly string[] LOD_NAMES = new string[]
+    {
+      "_lod1",
+      "_lod2",
+      "_lod3",
+      ".lod1",
+      ".lod2",
+      ".lod3",
+    };
+
+    private static readonly string[] VOLUME_NAMES = new string[]
+    {
+      "shadowcaster",
+      "occl",
+      "oclu",
+      "refl",
+      ".rays",
+      ".vis_occ",
+      "_o#",
+    };
+
+    #endregion
+
     #region Data Members
 
     private IS3DFile _file;
@@ -63,6 +88,15 @@ namespace H2AIndex.Processes
 
       if ( _modelOptions.ExportTextures )
         FixupTextureSlotFileExtensions();
+
+      var toRemoveStrings = Enumerable.Empty<string>();
+      if ( _modelOptions.RemoveLODs )
+        toRemoveStrings = toRemoveStrings.Concat( LOD_NAMES );
+      if ( _modelOptions.RemoveVolumes )
+        toRemoveStrings = toRemoveStrings.Concat( VOLUME_NAMES );
+
+      if ( toRemoveStrings.Any() )
+        RemoveMeshesWithMatchingStrings( toRemoveStrings );
 
       await WriteAssimpSceneToFile();
 
@@ -194,6 +228,54 @@ namespace H2AIndex.Processes
       slot = new TextureSlot( newName, slot.TextureType, slot.TextureIndex, slot.Mapping,
         slot.UVIndex, slot.BlendFactor, slot.Operation, slot.WrapModeU, slot.WrapModeV, slot.Flags );
       return slot;
+    }
+
+    private void RemoveMeshesWithMatchingStrings( IEnumerable<string> strings )
+    {
+      var newScene = new Scene();
+      newScene.RootNode = new Node( _scene.RootNode.Name );
+      newScene.Materials.AddRange( _scene.Materials );
+
+      var meshLookup = new Dictionary<int, int>();
+
+      void AddNode( Node oldNode, Node newParentNode )
+      {
+        if ( strings.Any( x => oldNode.Name.Contains( x ) ) )
+          return;
+
+        var newNode = new Node( oldNode.Name );
+        foreach ( var oldMeshIdx in oldNode.MeshIndices )
+        {
+          if ( !meshLookup.TryGetValue( oldMeshIdx, out var newMeshIdx ) )
+          {
+            newScene.Meshes.Add( _scene.Meshes[ oldMeshIdx ] );
+            newMeshIdx = newScene.Meshes.Count - 1;
+            meshLookup.Add( oldMeshIdx, newMeshIdx );
+          }
+          newNode.MeshIndices.Add( newMeshIdx );
+        }
+
+        newParentNode.Children.Add( newNode );
+
+        foreach ( var child in oldNode.Children )
+          AddNode( child, newNode );
+      }
+
+      foreach ( var oldNode in _scene.RootNode.Children )
+        AddNode( oldNode, newScene.RootNode );
+
+      _scene = newScene;
+    }
+
+    private IEnumerable<Node> Traverse( Node node )
+    {
+      yield return node;
+      foreach ( var child in node.Children )
+      {
+        yield return child;
+        foreach ( var childNode in Traverse( child ) )
+          yield return childNode;
+      }
     }
 
     #endregion

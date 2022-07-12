@@ -17,17 +17,44 @@ namespace Testbed
     public static void Main( string[] args )
     {
       // Index all game files
-      H2AFileContext.Global.OpenDirectory( GAME_PATH );
+      //H2AFileContext.Global.OpenDirectory( GAME_PATH );
 
-      TestReadTemplateModels();
-      TestReadLevelGeometry();
-      TestReadTextures();
-      TestConvertTexturesToDDS();
-      TestConvertTexturesToTGA();
+      //TestReadTemplateModels();
+      //TestReadLevelGeometry();
+      //TestReadTextures();
+      //TestConvertTexturesToDDS();
+      //TestConvertTexturesToTGA();
 
-      ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
-      ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
+      //ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
+      //ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
 
+      H2AFileContext.Global.OpenFile( @"F:\floodcombat_elite__h.tpl" );
+      var file = H2AFileContext.Global.GetFile( "floodcombat_elite__h.tpl" );
+      var tpl = new S3DTemplateSerializer().Deserialize( new BinaryReader( file.GetStream() ) );
+
+      foreach ( var obj in tpl.GeometryGraph.Objects )
+        Console.WriteLine( obj.UnkName );
+
+      //var file = H2AFileContext.Global.GetFile( "floodcombat_elite__h.tpl" );
+      //using ( var fs = File.Create( @"F:\floodcombat_elite__h.tpl" ) )
+      //{
+      //  var s = file.GetStream();
+      //  s.CopyTo( fs );
+      //  fs.Flush();
+      //}
+
+      //LoadFbx( @"F:\armdeformrigid.fbx" );
+
+    }
+
+
+    private static void LoadFbx( string path )
+    {
+      Scene scene;
+      using ( var ctx = new AssimpContext() )
+        scene = ctx.ImportFile( path );
+
+      var rootNode = scene.RootNode;
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )

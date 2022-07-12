@@ -59,8 +59,16 @@ namespace H2AIndex.ViewModels
 
       App.Current.DispatcherUnhandledException += OnUnhandledExceptionRaised;
 
-      //_tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "masterchief__h.tpl" ).First(), out _ );
+      //_tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "_h.tpl" ).First(), out _ );
       //_tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( ".lg" ).First(), out _ );
+      //var p = GetPreferences();
+      //H2AFileContext.Global.OpenFile( @"F:\floodcombat_elite__h.tpl" );
+      //var file = H2AFileContext.Global.GetFile( "floodcombat_elite__h.tpl" );
+
+      //_tabService.CreateTabForFile( file, out _ );
+      //var proc = new ExportModelProcess( file,
+      //  Tuple.Create( p.ModelExportOptions, p.TextureExportOptions ) );
+      //RunProcess( proc );
     }
 
     #endregion

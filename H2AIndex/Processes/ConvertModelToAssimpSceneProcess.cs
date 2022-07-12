@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -49,8 +50,8 @@ namespace H2AIndex.Processes
     {
       _context = await DeserializeFile();
 
-      await BuildSkinCompounds();
-      await ConvertObjects();
+      ConvertObjects();
+      //FixupModel();
     }
 
     #endregion
@@ -84,12 +85,39 @@ namespace H2AIndex.Processes
         throw new InvalidDataException( "File must be TPL or LG." );
     }
 
-    private async Task BuildSkinCompounds()
+    private void ConvertObjects()
     {
+      AddNodes( _context.GeometryGraph.Objects );
+
+      BuildSkinCompounds();
+
+      AddMeshNodes( _context.GeometryGraph.Objects );
+
+
+      void Print( Node node, int level = 0 )
+      {
+        Debug.WriteLine( "{0}{1}", new string( ' ', level ), node.Name );
+        foreach ( var child in node.Children )
+          Print( child, level + 1 );
+      }
+      Print( _context.Scene.RootNode );
+    }
+
+    private void BuildSkinCompounds()
+    {
+      Status = "Building Skin Compounds";
+      IsIndeterminate = true;
+
       var skinCompoundIds = _context.GeometryGraph.SubMeshes
         .Select( x => x.BufferInfo.SkinCompoundId )
         .Where( x => x >= 0 )
-        .Distinct();
+        .Distinct()
+        .ToArray();
+
+      UnitName = "Skin Compounds Built";
+      CompletedUnits = 0;
+      TotalUnits = skinCompoundIds.Length;
+      IsIndeterminate = false;
 
       foreach ( var skinCompoundId in skinCompoundIds )
       {
@@ -98,61 +126,232 @@ namespace H2AIndex.Processes
         builder.Build();
 
         _context.SkinCompounds[ skinCompoundId ] = builder;
+
+        CompletedUnits++;
       }
     }
 
-    private async Task ConvertObjects()
+    private void AddNodes( List<S3DObject> objects )
     {
-      Status = "Converting Objects";
-      UnitName = "Objects Converted";
+      Status = "Initializing Nodes";
+      UnitName = "Nodes Initialized";
       CompletedUnits = 0;
-      TotalUnits = _context.GeometryGraph.Objects.Count;
+      TotalUnits = objects.Count;
+
+      var rootNode = _context.Scene.RootNode = new Node( Path.GetFileNameWithoutExtension( _file.Name ) );
+      foreach ( var obj in objects )
+      {
+        var path = obj.UnkName;
+        if ( string.IsNullOrEmpty( path ) )
+          continue;
+
+        var pathParts = path.Split( '|', StringSplitOptions.RemoveEmptyEntries );
+        var parentNode = rootNode;
+        foreach ( var part in pathParts )
+        {
+          if ( !_context.NodeNames.TryGetValue( part, out var newNode ) )
+          {
+            newNode = new Node( part, parentNode );
+            parentNode.Children.Add( newNode );
+            _context.NodeNames.Add( part, newNode );
+          }
+
+          parentNode = newNode;
+        }
+
+        var nodeName = pathParts.Last();
+        var node = _context.NodeNames[ nodeName ];
+        _context.Nodes.Add( obj.Id, node );
+
+        if ( !obj.SubMeshes.Any() )
+          node.Transform = obj.MatrixModel.ToAssimp();
+
+        CompletedUnits++;
+      }
+    }
+
+    private void AddBoneNodes( List<S3DObject> objects )
+    {
+      var queue = new Queue<S3DObject>( objects );
+      while ( queue.TryDequeue( out var obj ) )
+      {
+        if ( obj.SubMeshes.Any() )
+          continue;
+
+        var path = obj.UnkName;
+        if ( string.IsNullOrWhiteSpace( obj.UnkName ) )
+          path = obj.GetName();
+
+        var pathParts = path.Split( '|', System.StringSplitOptions.RemoveEmptyEntries );
+        var nodeName = pathParts[ pathParts.Length - 1 ];
+
+        var parentNode = _context.GetNodeParentFromPath( path );
+        if ( parentNode is null && path.Count( x => x == '|' ) > 1 )
+        {
+          queue.Enqueue( obj );
+          continue;
+        }
+
+        var node = new Node( nodeName, parentNode );
+        if ( parentNode != null )
+          parentNode.Children.Add( node );
+
+        node.Transform = obj.MatrixModel.ToAssimp();
+
+        _context.Nodes.Add( obj.Id, node );
+        _context.NodeNames.Add( nodeName, node );
+        CompletedUnits++;
+      }
+    }
+
+    //private void AddMeshNodes( List<S3DObject> objects )
+    //{
+    //  var queue = new Queue<S3DObject>( objects );
+    //  while ( queue.TryDequeue( out var obj ) )
+    //  {
+    //    if ( !obj.SubMeshes.Any() )
+    //      continue;
+
+    //    AddSubMeshes( obj );
+    //    CompletedUnits++;
+    //  }
+    //}
+
+    private void AddMeshNodes( List<S3DObject> objects )
+    {
+      Status = "Building Meshes";
+      IsIndeterminate = true;
+      UnitName = "Meshes Built";
+
+      var objectsWithMeshes = objects.Where( x => x.SubMeshes.Any() ).ToArray();
+      var submeshCount = objectsWithMeshes.Sum( x => x.SubMeshes.Count() );
+
+      CompletedUnits = 0;
+      TotalUnits = submeshCount;
       IsIndeterminate = false;
 
-      var rootNode = AddObject( _context.GeometryGraph.RootObject );
-      rootNode.Name = Path.GetFileNameWithoutExtension( _file.Name );
-
-      _context.Scene.RootNode = rootNode;
-    }
-
-    private Node AddObject( S3DObject obj, Node parentNode = null )
-    {
-      if ( _context.SkinCompounds.ContainsKey( obj.Id ) )
-        return null;
-
-      var objectNode = new Node( obj.GetName(), parentNode );
-      _context.Nodes.Add( obj.Id, objectNode );
-
-      if ( parentNode != null )
-        parentNode.Children.Add( objectNode );
-
-      objectNode.Transform = obj.MatrixModel.ToAssimp();
-
-      if ( obj.SubMeshes.Any() )
+      foreach ( var obj in objectsWithMeshes )
       {
-        AddMeshData( obj, objectNode );
-        CompletedUnits++;
-      }
-      else
-      {
-        CompletedUnits++;
-        foreach ( var childObject in obj.EnumerateChildren() )
-          AddObject( childObject, objectNode );
+        if ( _context.SkinCompounds.ContainsKey( obj.Id ) )
+          continue;
+        AddSubMeshes( obj );
       }
 
-      return objectNode;
+      //var queue = new Queue<S3DObject>();
+      //queue.Enqueue( _context.GeometryGraph.RootObject );
+      //foreach ( var child in _context.GeometryGraph.RootObject.EnumerateChildren() )
+      //  queue.Enqueue( child );
+
+      //while ( queue.TryDequeue( out var obj ) )
+      //{
+      //  if ( !obj.SubMeshes.Any() )
+      //    continue;
+
+      //  AddSubMeshes( obj );
+      //}
     }
 
-    private void AddMeshData( S3DObject obj, Node objectNode )
+    private void AddSubMeshes( S3DObject obj )
     {
+      var node = _context.NodeNames[ obj.GetParentMeshName() ];
+      var parentNode = node.Parent;
+
       foreach ( var submesh in obj.SubMeshes )
       {
         var builder = new MeshBuilder( _context, obj, submesh );
         var mesh = builder.Build();
 
         _context.Scene.Meshes.Add( mesh );
-        objectNode.MeshIndices.Add( _context.Scene.Meshes.Count - 1 );
+        var meshId = _context.Scene.Meshes.Count - 1;
+
+        node.MeshIndices.Add( meshId );
+        if ( builder.SkinCompoundId != -1 )
+        {
+          var parentMeshName = obj.GetParentMeshName();
+          var parentObj = _context.GeometryGraph.Objects.First( x => x.GetName() == parentMeshName );
+          node.Transform = parentObj.MatrixModel.ToAssimp();
+        }
+
+        CompletedUnits++;
       }
+    }
+
+    //private void AddSubMeshes( S3DObject obj )
+    //{
+    //  Node parentNode;
+
+    //  var parentName = obj.GetBoneName();
+    //  if ( parentName != null )
+    //    parentNode = _context.NodeNames[ parentName ];
+    //  else
+    //  {
+    //    parentName = obj.GetParentName();
+    //    parentNode = _context.NodeNames[ parentName ];
+    //  }
+
+    //  foreach ( var submesh in obj.SubMeshes )
+    //  {
+    //    var builder = new MeshBuilder( _context, obj, submesh );
+    //    var mesh = builder.Build();
+
+    //    _context.Scene.Meshes.Add( mesh );
+    //    var meshId = _context.Scene.Meshes.Count - 1;
+
+    //    var meshName = obj.GetMeshName();
+    //    var meshNode = new Node( meshName, parentNode );
+    //    parentNode.Children.Add( meshNode );
+
+    //    meshNode.MeshIndices.Add( meshId );
+
+    //    if ( builder.SkinCompoundId != -1 )
+    //    {
+    //      //var boneId = builder.Bones.Keys.First();
+    //      //var boneObject = _context.GeometryGraph.Objects[ boneId ];
+
+    //      //if ( boneObject.GetMeshName().Contains( "_lod" ) )
+    //      //  boneObject = boneObject.Parent;
+
+    //      var parentMeshName = obj.GetParentMeshName();
+    //      var parentObj = _context.GeometryGraph.Objects.First( x => x.GetName() == parentMeshName );
+
+    //      meshNode.Transform = parentObj.MatrixModel.ToAssimp();
+    //    }
+    //  }
+    //}
+
+    private void FixupModel()
+    {
+      var scene = _context.Scene;
+      var newScene = new Scene();
+      newScene.RootNode = new Node( scene.RootNode.Name );
+      newScene.Materials.AddRange( scene.Materials );
+
+      var meshLookup = new Dictionary<int, int>();
+
+      void AddNode( Node oldNode, Node newParentNode )
+      {
+        var newNode = new Node( oldNode.Name );
+        foreach ( var oldMeshIdx in oldNode.MeshIndices )
+        {
+          if ( !meshLookup.TryGetValue( oldMeshIdx, out var newMeshIdx ) )
+          {
+            newScene.Meshes.Add( scene.Meshes[ oldMeshIdx ] );
+            newMeshIdx = newScene.Meshes.Count - 1;
+            meshLookup.Add( oldMeshIdx, newMeshIdx );
+          }
+          newNode.MeshIndices.Add( newMeshIdx );
+        }
+
+        newParentNode.Children.Add( newNode );
+
+        foreach ( var child in oldNode.Children )
+          AddNode( child, newNode );
+      }
+
+      foreach ( var oldNode in scene.RootNode.Children )
+        AddNode( oldNode, newScene.RootNode );
+
+      _context.Scene = newScene;
     }
 
     #endregion
@@ -163,12 +362,15 @@ namespace H2AIndex.Processes
   internal class SceneContext
   {
 
-    public Scene Scene { get; }
+    public Scene Scene { get; set; }
     public BinaryReader Reader { get; }
     public S3DGeometryGraph GeometryGraph { get; }
 
+    public Node RootNode { get; set; }
+
     public Dictionary<short, Bone> Bones { get; }
     public Dictionary<short, Node> Nodes { get; }
+    public Dictionary<string, Node> NodeNames { get; }
     public Dictionary<string, int> MaterialIndices { get; }
     public Dictionary<short, MeshBuilder> SkinCompounds { get; }
     public Dictionary<short, short> LodIndices { get; }
@@ -182,11 +384,39 @@ namespace H2AIndex.Processes
 
       Bones = new Dictionary<short, Bone>();
       Nodes = new Dictionary<short, Node>();
+      NodeNames = new Dictionary<string, Node>();
       MaterialIndices = new Dictionary<string, int>();
       SkinCompounds = new Dictionary<short, MeshBuilder>();
       LodIndices = new Dictionary<short, short>();
 
       Scene.Materials.Add( new Material() { Name = "DefaultMaterial" } );
+    }
+
+    public Node GetNodeFromPath( string path )
+    {
+      var nodeParts = path.Split( '|', System.StringSplitOptions.RemoveEmptyEntries );
+
+      if ( nodeParts.Length == 0 )
+        return null;
+
+      if ( !NodeNames.TryGetValue( nodeParts[ 0 ], out var currentNode ) )
+        return null;
+
+      foreach ( var part in nodeParts.Skip( 1 ) )
+      {
+        if ( !NodeNames.TryGetValue( part, out currentNode ) )
+          return null;
+      }
+
+      return currentNode;
+    }
+
+    public Node GetNodeParentFromPath( string path )
+    {
+      if ( path.Contains( "|" ) )
+        return GetNodeFromPath( path.Substring( 0, path.LastIndexOf( '|' ) ) );
+      else
+        return null;
     }
 
     public void AddLodDefinitions( IList<S3DLodDefinition> lodDefinitions )
@@ -209,6 +439,7 @@ namespace H2AIndex.Processes
 
     public Mesh Mesh { get; }
     public Dictionary<int, int> VertexLookup { get; }
+    public short SkinCompoundId { get; }
 
     private BinaryReader Reader => _context.Reader;
     private S3DGeometryGraph Graph => _context.GeometryGraph;
@@ -219,8 +450,9 @@ namespace H2AIndex.Processes
       _context = context;
       _object = obj;
       _submesh = submesh;
+      SkinCompoundId = _submesh.BufferInfo.SkinCompoundId;
 
-      var meshName = _object.GetName();
+      var meshName = _object.GetMeshName();
       if ( _context.LodIndices.TryGetValue( _object.Id, out var lodIndex ) && lodIndex > 0 )
         if ( !meshName.Contains( "LOD", System.StringComparison.InvariantCultureIgnoreCase ) )
           meshName = $"{meshName}.LOD{lodIndex}";
@@ -331,22 +563,7 @@ namespace H2AIndex.Processes
       if ( vertIndex == -1 )
         vertIndex = Mesh.VertexCount - 1;
 
-      if ( !Bones.TryGetValue( boneObjectId, out var bone ) )
-      {
-        var boneObject = Graph.Objects[ boneObjectId ];
-
-        System.Numerics.Matrix4x4.Invert( boneObject.MatrixLT, out var invMatrix );
-
-        bone = new Bone
-        {
-          Name = $"{boneObject.GetName()}",
-          OffsetMatrix = invMatrix.ToAssimp()
-        };
-
-        Mesh.Bones.Add( bone );
-        Bones.Add( boneObjectId, bone );
-      }
-
+      var bone = GetOrCreateBone( boneObjectId );
       bone.VertexWeights.Add( new VertexWeight( vertIndex, weight ) );
     }
 
@@ -427,11 +644,10 @@ namespace H2AIndex.Processes
 
     private void ApplySkinCompoundData()
     {
-      var skinCompoundId = _submesh.BufferInfo.SkinCompoundId;
-      if ( skinCompoundId == -1 )
+      if ( SkinCompoundId == -1 )
         return;
 
-      var skinCompound = _context.SkinCompounds[ skinCompoundId ];
+      var skinCompound = _context.SkinCompounds[ SkinCompoundId ];
       var offset = _submesh.BufferInfo.VertexOffset;
       var vertCount = _submesh.BufferInfo.VertexCount;
 
@@ -440,9 +656,9 @@ namespace H2AIndex.Processes
       foreach ( var bonePair in skinCompound.Bones )
       {
         var boneId = bonePair.Key;
-        var bone = bonePair.Value;
+        var sourceBone = bonePair.Value;
 
-        foreach ( var weight in bone.VertexWeights )
+        foreach ( var weight in sourceBone.VertexWeights )
         {
           var trueVertOffset = weight.VertexID + skinCompoundVertOffset;
           if ( !VertexLookup.TryGetValue( trueVertOffset, out var translatedVertOffset ) )
@@ -457,6 +673,35 @@ namespace H2AIndex.Processes
           AddBoneWeight( boneId, 1, translatedVertOffset );
         }
       }
+    }
+
+    private Bone GetOrCreateBone( short boneObjectId )
+    {
+      var boneObject = Graph.Objects[ boneObjectId ];
+
+      var boneName = boneObject.GetBoneName();
+      if ( boneObject.GetName() != boneName )
+      {
+        boneObject = Graph.Objects.First( x => x.GetName() == boneName );
+        boneObjectId = boneObject.Id;
+      }
+
+      if ( !Bones.TryGetValue( boneObjectId, out var bone ) )
+      {
+
+        System.Numerics.Matrix4x4.Invert( boneObject.MatrixLT, out var invMatrix );
+
+        bone = new Bone
+        {
+          Name = boneObject.GetBoneName(),
+          OffsetMatrix = invMatrix.ToAssimp()
+        };
+
+        Mesh.Bones.Add( bone );
+        Bones.Add( boneObjectId, bone );
+      }
+
+      return bone;
     }
 
     private void AddMaterial()

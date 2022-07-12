@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Saber3D.Common;
 
 namespace Saber3D.Data
 {
@@ -79,16 +80,54 @@ namespace Saber3D.Data
 
     public string GetName()
     {
+      if ( !string.IsNullOrWhiteSpace( UnkName ) )
+        return UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries ).Last();
+
       if ( !string.IsNullOrWhiteSpace( Name ) )
         return Name;
 
       if ( !string.IsNullOrWhiteSpace( ReadName ) )
         return ReadName;
 
-      if ( !string.IsNullOrWhiteSpace( UnkName ) )
-        return UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries ).Last();
-
       return null;
+    }
+
+    public string GetParentName()
+      => Parent.GetName();
+
+    public string GetMeshName()
+    {
+
+      if ( string.IsNullOrWhiteSpace( UnkName ) )
+        return null;
+
+      var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
+        .Where( x => x != "h" && !x.StartsWith( "_b_" ) && !x.StartsWith( "_m_" ) );
+
+      return string.Join( "_", nameParts.TakeLast( 2 ) ).Trim();
+    }
+
+    public string GetParentMeshName()
+    {
+
+      if ( string.IsNullOrWhiteSpace( UnkName ) )
+        return null;
+
+      var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
+        .Where( x => x != "h" && !x.StartsWith( "_b_" ) && !x.StartsWith( "_m_" ) );
+
+      return nameParts.FirstOrDefault();
+    }
+
+    public string GetBoneName()
+    {
+      if ( string.IsNullOrWhiteSpace( UnkName ) )
+        return null;
+
+      var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
+        .Where( x => x == "h" || x.StartsWith( "_b_" ) || x.StartsWith( "_m_" ) );
+
+      return nameParts.LastOrDefault();
     }
 
     #endregion

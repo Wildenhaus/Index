@@ -81,7 +81,7 @@ namespace H2AIndex.Models
       // Initialize Commands
       SearchTermChangedCommand = new Command<string>( OnSearchTermUpdated );
 
-      //_context.OpenFile( @"G:\h2a\re files\masterchief__h.tpl" );
+      //_context.OpenFile( @"G:\h2a\re files\dervish__h.tpl" );
       //foreach ( var file in Directory.GetFiles( @"G:\h2a\d\", "*.pct", SearchOption.AllDirectories ) )
       //  if ( file.Contains( "masterchief" ) )
       //    _context.OpenFile( file );
