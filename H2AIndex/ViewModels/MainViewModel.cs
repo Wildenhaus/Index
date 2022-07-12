@@ -62,8 +62,8 @@ namespace H2AIndex.ViewModels
       //_tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( "_h.tpl" ).First(), out _ );
       //_tabService.CreateTabForFile( H2AFileContext.Global.GetFiles( ".lg" ).First(), out _ );
       //var p = GetPreferences();
-      //H2AFileContext.Global.OpenFile( @"F:\floodcombat_elite__h.tpl" );
-      //var file = H2AFileContext.Global.GetFile( "floodcombat_elite__h.tpl" );
+      //H2AFileContext.Global.OpenFile( @"F:\brute__h.tpl" );
+      //var file = H2AFileContext.Global.GetFile( "brute__h.tpl" );
 
       //_tabService.CreateTabForFile( file, out _ );
       //var proc = new ExportModelProcess( file,

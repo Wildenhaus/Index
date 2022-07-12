@@ -17,7 +17,7 @@ namespace Testbed
     public static void Main( string[] args )
     {
       // Index all game files
-      //H2AFileContext.Global.OpenDirectory( GAME_PATH );
+      H2AFileContext.Global.OpenDirectory( GAME_PATH );
 
       //TestReadTemplateModels();
       //TestReadLevelGeometry();
@@ -28,20 +28,20 @@ namespace Testbed
       //ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
       //ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
 
-      H2AFileContext.Global.OpenFile( @"F:\floodcombat_elite__h.tpl" );
-      var file = H2AFileContext.Global.GetFile( "floodcombat_elite__h.tpl" );
-      var tpl = new S3DTemplateSerializer().Deserialize( new BinaryReader( file.GetStream() ) );
-
-      foreach ( var obj in tpl.GeometryGraph.Objects )
-        Console.WriteLine( obj.UnkName );
-
+      //H2AFileContext.Global.OpenFile( @"F:\floodcombat_elite__h.tpl" );
       //var file = H2AFileContext.Global.GetFile( "floodcombat_elite__h.tpl" );
-      //using ( var fs = File.Create( @"F:\floodcombat_elite__h.tpl" ) )
-      //{
-      //  var s = file.GetStream();
-      //  s.CopyTo( fs );
-      //  fs.Flush();
-      //}
+      //var tpl = new S3DTemplateSerializer().Deserialize( new BinaryReader( file.GetStream() ) );
+
+      //foreach ( var obj in tpl.GeometryGraph.Objects )
+      //  Console.WriteLine( obj.UnkName );
+
+      var file = H2AFileContext.Global.GetFile( "brute__h.tpl" );
+      using ( var fs = File.Create( @"F:\brute__h.tpl" ) )
+      {
+        var s = file.GetStream();
+        s.CopyTo( fs );
+        fs.Flush();
+      }
 
       //LoadFbx( @"F:\armdeformrigid.fbx" );
 

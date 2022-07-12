@@ -138,7 +138,9 @@ namespace H2AIndex.Processes
       CompletedUnits = 0;
       TotalUnits = objects.Count;
 
-      var rootNode = _context.Scene.RootNode = new Node( Path.GetFileNameWithoutExtension( _file.Name ) );
+      var rootNode = new Node( Path.GetFileNameWithoutExtension( _file.Name ) );
+      _context.Scene.RootNode = _context.RootNode = rootNode;
+
       foreach ( var obj in objects )
       {
         var path = obj.UnkName;
@@ -175,8 +177,8 @@ namespace H2AIndex.Processes
       var queue = new Queue<S3DObject>( objects );
       while ( queue.TryDequeue( out var obj ) )
       {
-        if ( obj.SubMeshes.Any() )
-          continue;
+        //if ( obj.SubMeshes.Any() )
+        //  continue;
 
         var path = obj.UnkName;
         if ( string.IsNullOrWhiteSpace( obj.UnkName ) )
@@ -253,7 +255,9 @@ namespace H2AIndex.Processes
 
     private void AddSubMeshes( S3DObject obj )
     {
-      var node = _context.NodeNames[ obj.GetParentMeshName() ];
+      //var node = _context.NodeNames[ obj.GetParentMeshName() ];
+      var node = new Node( obj.GetMeshName(), _context.RootNode );
+      _context.RootNode.Children.Add( node );
       var parentNode = node.Parent;
 
       foreach ( var submesh in obj.SubMeshes )
@@ -268,8 +272,26 @@ namespace H2AIndex.Processes
         if ( builder.SkinCompoundId != -1 )
         {
           var parentMeshName = obj.GetParentMeshName();
-          var parentObj = _context.GeometryGraph.Objects.First( x => x.GetName() == parentMeshName );
-          node.Transform = parentObj.MatrixModel.ToAssimp();
+          if ( parentMeshName != obj.GetMeshName() )
+          {
+            //var parentObj = _context.GeometryGraph.Objects.First( x => x.GetName() == parentMeshName );
+            //node.Transform = parentObj.MatrixModel.ToAssimp();
+
+            //var bone = mesh.Bones.First();
+            //var boneObj = _context.GeometryGraph.Objects.First( x => x.GetName() == bone.Name );
+            //node.Transform = boneObj.MatrixModel.ToAssimp();
+            node.Transform = Assimp.Matrix4x4.Identity;
+          }
+        }
+        else
+        {
+          node.Transform = obj.MatrixModel.ToAssimp();
+          var parentMeshName = obj.GetParentMeshName();
+          if ( parentMeshName != obj.GetMeshName() )
+          {
+            var parentObj = _context.GeometryGraph.Objects.First( x => x.GetName() == parentMeshName );
+            node.Transform = parentObj.MatrixModel.ToAssimp();
+          }
         }
 
         CompletedUnits++;
