@@ -48,6 +48,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <Label Grid.Row="0" Grid.Column="0" Content="Show FPS" />
@@ -55,9 +56,12 @@
 
                         <Label Grid.Row="1" Grid.Column="0" Content="Show Model Info" />
                         <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowModelInfo}" />
-                        
-                        <Label Grid.Row="2" Grid.Column="0" Content="FXAA Quality" />
-                        <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding RenderFxaaLevels}" SelectedItem="{Binding Preferences.ModelViewerOptions.RenderFxaaQuality}" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Content="Default to Flycam" />
+                        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding DefaultToFlycam}" />
+
+                        <Label Grid.Row="3" Grid.Column="0" Content="FXAA Quality" />
+                        <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding RenderFxaaLevels}" SelectedItem="{Binding Preferences.ModelViewerOptions.RenderFxaaQuality}" />
                         
                     </Grid>
                     

@@ -4,6 +4,7 @@
 
     <converters:EqualityBoolConverter x:Key="EqualityBoolConverter" />
     <converters:InequalityBoolConverter x:Key="InequalityBoolConverter" />
+    <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
     
     <converters:BoolVisibilityConverter x:Key="BoolVisibilityConverter" />
     <converters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />

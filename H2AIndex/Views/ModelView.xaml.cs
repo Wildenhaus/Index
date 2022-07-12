@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using H2AIndex.ViewModels;
 
 namespace H2AIndex.Views
@@ -15,8 +13,6 @@ namespace H2AIndex.Views
     public ModelView()
     {
       InitializeComponent();
-      RemoveDirectionalViewKeyBindings();
-      DataContextChanged += OnDataContextChanged;
     }
 
     #endregion
@@ -25,24 +21,13 @@ namespace H2AIndex.Views
 
     protected override void OnDisposing()
     {
-      DataContextChanged -= OnDataContextChanged;
+      ModelViewer?.Dispose();
       base.OnDisposing();
     }
 
     #endregion
 
     #region Private Methods
-
-    private void RemoveDirectionalViewKeyBindings()
-    {
-      var toRemove = new List<KeyBinding>();
-      foreach ( var binding in Viewport.InputBindings )
-        if ( binding is KeyBinding keyBinding )
-          toRemove.Add( keyBinding );
-
-      foreach ( var binding in toRemove )
-        Viewport.InputBindings.Remove( binding );
-    }
 
     private void UpdateColumnsWidth( ListView listView )
     {
@@ -72,12 +57,6 @@ namespace H2AIndex.Views
     private void OnContextMenuLoaded( object sender, RoutedEventArgs e )
     {
       ( sender as ContextMenu ).DataContext = this.DataContext;
-    }
-
-    private void OnDataContextChanged( object sender, DependencyPropertyChangedEventArgs e )
-    {
-      if ( DataContext is ModelViewModel viewModel )
-        viewModel.Viewport = Viewport;
     }
 
     private void OnListViewSizeChanged( object sender, SizeChangedEventArgs e )

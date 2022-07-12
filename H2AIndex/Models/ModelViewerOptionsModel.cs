@@ -17,6 +17,7 @@ namespace H2AIndex.Models
         {
           ShowFps = true,
           ShowModelInfo = true,
+          DefaultToFlycam = false,
           RenderFxaaQuality = FXAALevel.Low
         };
       }
@@ -24,6 +25,7 @@ namespace H2AIndex.Models
 
     public bool ShowFps { get; set; }
     public bool ShowModelInfo { get; set; }
+    public bool DefaultToFlycam { get; set; }
     public FXAALevel RenderFxaaQuality { get; set; }
 
     #endregion

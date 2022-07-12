@@ -10,6 +10,7 @@ using H2AIndex.Common;
 using H2AIndex.Models;
 using H2AIndex.Processes;
 using H2AIndex.Services;
+using H2AIndex.Services.Abstract;
 using H2AIndex.ViewModels.Abstract;
 using H2AIndex.Views;
 using HelixToolkit.SharpDX.Core;
@@ -32,6 +33,8 @@ namespace H2AIndex.ViewModels
 
     #region Data Members
 
+    private readonly IMeshIdentifierService _meshIdentifierService;
+
     private IS3DFile _file;
 
     private string _searchTerm;
@@ -51,8 +54,14 @@ namespace H2AIndex.ViewModels
     public EffectsManager EffectsManager { get; }
     public Viewport3DX Viewport { get; set; }
 
+    public double MinMoveSpeed { get; set; }
+    public double MoveSpeed { get; set; }
+    public double MaxMoveSpeed { get; set; }
+
     [OnChangedMethod( nameof( ToggleShowWireframe ) )]
     public bool ShowWireframe { get; set; }
+
+    public bool UseFlycam { get; set; }
 
     public ICollectionView Nodes => _nodeCollectionView;
     public int MeshCount { get; set; }
@@ -78,6 +87,7 @@ namespace H2AIndex.ViewModels
       : base( serviceProvider )
     {
       _file = file;
+      _meshIdentifierService = ServiceProvider.GetRequiredService<IMeshIdentifierService>();
 
       EffectsManager = new DefaultEffectsManager();
       Camera = new PerspectiveCamera() { FarPlaneDistance = 300000 };
@@ -109,6 +119,7 @@ namespace H2AIndex.ViewModels
     protected override async Task OnInitializing()
     {
       Options = GetPreferences().ModelViewerOptions;
+      UseFlycam = Options.DefaultToFlycam;
 
       var convertProcess = new ConvertModelToAssimpSceneProcess( _file );
       await RunProcess( convertProcess );
@@ -189,12 +200,12 @@ namespace H2AIndex.ViewModels
           var matName = mn.Material.Name;
           if ( !matLookup.TryGetValue( matName, out var mat ) )
           {
-            mat = new DiffuseMaterial
+            mat = new PhongMaterial
             {
               DiffuseMap = await GetTexture( $"{matName}.pct" ),
-              //SpecularColorMap = await GetTexture( $"{matName}_spec.pct" ),
-              //NormalMap = await GetTexture( $"{matName}_nm.pct" ),
-              //EnableTessellation = true,
+              SpecularColorMap = await GetTexture( $"{matName}_spec.pct" ),
+              NormalMap = await GetTexture( $"{matName}_nm.pct" ),
+              EnableTessellation = true,
               UVTransform = new UVTransform( 0, 1, -1, 0, 0 )
             };
             matLookup.Add( matName, mat );
@@ -204,8 +215,8 @@ namespace H2AIndex.ViewModels
         }
       }
 
-
       Model.AddNode( scene.Root );
+      CalculateMoveSpeed( scene );
       Camera.ZoomExtents( Viewport );
       UpdateMeshInfo();
     }
@@ -226,12 +237,7 @@ namespace H2AIndex.ViewModels
     {
       foreach ( var node in Traverse( _nodes ) )
       {
-        if ( node.Name.Contains( "LOD1", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "LOD2", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "LOD3", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "lod01", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "lod02", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "lod03", StringComparison.InvariantCultureIgnoreCase ) )
+        if ( _meshIdentifierService.IsLod( node.Name ) )
           node.IsVisible = false;
       }
     }
@@ -240,14 +246,8 @@ namespace H2AIndex.ViewModels
     {
       foreach ( var node in Traverse( _nodes ) )
       {
-        if ( node.Name.Contains( "shadow", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "occl", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "oclud", StringComparison.InvariantCultureIgnoreCase )
-          || node.Name.Contains( "refl", StringComparison.InvariantCultureIgnoreCase ) )
+        if ( _meshIdentifierService.IsVolume( node.Name ) )
           node.IsVisible = false;
-        else if ( node.Node is MeshNode mn )
-          if ( mn.Material is null )
-            node.IsVisible = false;
       }
     }
 
@@ -308,6 +308,33 @@ namespace H2AIndex.ViewModels
       MeshCount = meshCount;
       VertexCount = vertCount;
       FaceCount = faceCount;
+    }
+
+    private void CalculateMoveSpeed( HelixToolkitScene scene )
+    {
+      double maxW = 0, maxH = 0, maxD = 0;
+      foreach ( var node in scene.Root.Traverse() )
+      {
+        var mn = node as MeshNode;
+        if ( mn is null )
+          continue;
+
+        maxW = Math.Max( maxW, mn.Bounds.Width );
+        maxH = Math.Max( maxH, mn.Bounds.Height );
+        maxD = Math.Max( maxD, mn.Bounds.Depth );
+      }
+
+      const double BASELINE_MAX_DIM = 2.31;
+      const double BASELINE_MIN_SPEED = 0.0001;
+      const double BASELINE_DEFAULT_SPEED = 0.001;
+      const double BASELINE_MAX_SPEED = 1;
+
+      var maxDim = Math.Max( maxW, Math.Max( maxH, maxD ) );
+      var coef = maxDim / BASELINE_MAX_DIM;
+
+      MinMoveSpeed = BASELINE_MIN_SPEED * coef;
+      MoveSpeed = BASELINE_DEFAULT_SPEED * coef;
+      MaxMoveSpeed = BASELINE_MAX_SPEED * coef;
     }
 
     private async Task ExportModel()

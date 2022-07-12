@@ -17,7 +17,7 @@ namespace Testbed
     public static void Main( string[] args )
     {
       // Index all game files
-      H2AFileContext.Global.OpenDirectory( GAME_PATH );
+      //H2AFileContext.Global.OpenDirectory( GAME_PATH );
 
       //TestReadTemplateModels();
       //TestReadLevelGeometry();
@@ -35,16 +35,17 @@ namespace Testbed
       //foreach ( var obj in tpl.GeometryGraph.Objects )
       //  Console.WriteLine( obj.UnkName );
 
-      var file = H2AFileContext.Global.GetFile( "brute__h.tpl" );
-      using ( var fs = File.Create( @"F:\brute__h.tpl" ) )
+      H2AFileContext.Global.OpenDirectory( GAME_PATH );
+      var file = H2AFileContext.Global.GetFile( "warthog__h.tpl" );
+      using ( var fs = File.Create( @"F:\warthog__h.tpl" ) )
       {
         var s = file.GetStream();
         s.CopyTo( fs );
         fs.Flush();
       }
 
-      //LoadFbx( @"F:\armdeformrigid.fbx" );
-
+      //LoadFbx( @"Z:\Blender\Models\Destiny 2\Enemies\Fallen Marauder\Marauder.fbx" );
+      //LoadFbx( @"G:\h2a\test\dervish__h.fbx" );
     }
 
 
@@ -55,6 +56,14 @@ namespace Testbed
         scene = ctx.ImportFile( path );
 
       var rootNode = scene.RootNode;
+
+      void Print( Node node, int level = 0 )
+      {
+        Console.WriteLine( "{0}{1}", new string( ' ', level ), node.Name );
+        foreach ( var child in node.Children )
+          Print( child, level + 1 );
+      }
+      Print( rootNode );
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
