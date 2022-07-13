@@ -18,6 +18,7 @@ namespace H2AIndex.Services
     Task<TextureModel> LoadTexture( string name, S3DPicture file );
 
     Task<Stream> GetDDSStream( IS3DFile file );
+    Task<Stream> GetJpgStream( IS3DFile file, float quality = 1f );
 
     Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage );
     Task InvertGreenChannel( IMagickImage<float> image );

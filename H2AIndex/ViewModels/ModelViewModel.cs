@@ -156,7 +156,7 @@ namespace H2AIndex.ViewModels
           return true;
 
         var node = obj as ModelNodeModel;
-        return node.Name.Contains( _searchTerm, StringComparison.InvariantCultureIgnoreCase );
+        return node.Name.Contains( _searchTerm, StringComparison.InvariantCultureIgnoreCase ); ~
       };
 
       return collectionView;
@@ -169,7 +169,7 @@ namespace H2AIndex.ViewModels
         return null;
 
       var svc = ServiceProvider.GetService<ITextureConversionService>();
-      var stream = await svc.GetDDSStream( file );
+      var stream = await svc.GetJpgStream( file, Options.ModelTexturePreviewQuality );
 
       return TextureModel.Create( stream );
     }

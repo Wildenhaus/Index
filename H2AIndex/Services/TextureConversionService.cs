@@ -59,6 +59,21 @@ namespace H2AIndex.Services
       }
     }
 
+    public async Task<Stream> GetJpgStream( IS3DFile file, float quality = 1f )
+    {
+      var pict = DeserializeFile( file );
+
+      var outStream = new MemoryStream();
+      using ( var ddsImage = CreateDDS( pict ) )
+      using ( var compatImage = PrepareNonDDSImage( ddsImage ) )
+      using ( var jpgStream = compatImage.SaveToJPGMemory( 0, quality ) )
+      {
+        jpgStream.CopyTo( outStream );
+        outStream.Position = 0;
+        return outStream;
+      }
+    }
+
     public async Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage )
     {
       var convertWasRequired = PrepareNonDDSImage( ddsImage, out var decompressedImage );
@@ -189,6 +204,19 @@ namespace H2AIndex.Services
         rgbImage = ddsImage.Convert( DXGI_FORMAT.R8G8B8A8_UNORM, TEX_FILTER_FLAGS.DEFAULT, 0 );
 
       return true;
+    }
+
+    [Obsolete( "You should only use this if you are planning on tossing the result." )]
+    private ScratchImage PrepareNonDDSImage( ScratchImage ddsImage )
+    {
+      var format = ddsImage.GetMetadata().Format;
+      if ( format == DXGI_FORMAT.R8G8B8A8_UNORM )
+        return ddsImage;
+
+      if ( format.ToString().StartsWith( "BC" ) )
+        return ddsImage.Decompress( DXGI_FORMAT.R8G8B8A8_UNORM );
+      else
+        return ddsImage.Convert( DXGI_FORMAT.R8G8B8A8_UNORM, TEX_FILTER_FLAGS.DEFAULT, 0 );
     }
 
     private DXGI_FORMAT GetDxgiFormat( S3DPictureFormat format )
