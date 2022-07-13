@@ -227,8 +227,6 @@ namespace H2AIndex.Processes
         var builder = new MeshBuilder( _context, obj, submesh );
         var mesh = builder.Build();
 
-        Debug.WriteLine( "{0} {1} {2}", node.Name, builder.SkinCompoundId != -1, obj.GeometryGraph.Meshes[ ( int ) submesh.MeshId ].Flags );
-
         _context.Scene.Meshes.Add( mesh );
         var meshId = _context.Scene.Meshes.Count - 1;
         node.MeshIndices.Add( meshId );
@@ -245,6 +243,17 @@ namespace H2AIndex.Processes
         {
           if ( obj.Parent.GetName() == obj.Parent.GetBoneName() )
             node.Transform = obj.MatrixLT.ToAssimp();
+        }
+
+        if ( !mesh.HasBones )
+        {
+          var parentToBoneName = obj.GetBoneName();
+          if ( parentToBoneName != null )
+          {
+            var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
+            if ( parentToBoneObject != null )
+              builder.ParentMeshToBone( parentToBoneObject );
+          }
         }
 
         CompletedUnits++;
@@ -308,7 +317,7 @@ namespace H2AIndex.Processes
       }
 
       foreach ( var mesh in _context.Scene.Meshes )
-        foreach ( var bone in mesh.Bones )
+        foreach ( var bone in mesh.Bones.ToList() )
           foreach ( var bonePair in boneLookup )
             if ( !mesh.Bones.Any( x => x.Name == bonePair.Key ) )
               mesh.Bones.Add( bonePair.Value );
@@ -352,7 +361,6 @@ namespace H2AIndex.Processes
     #endregion
 
   }
-
 
   internal class SceneContext
   {
@@ -448,9 +456,6 @@ namespace H2AIndex.Processes
       SkinCompoundId = _submesh.BufferInfo.SkinCompoundId;
 
       var meshName = _object.GetMeshName();
-      //if ( _context.LodIndices.TryGetValue( _object.Id, out var lodIndex ) && lodIndex > 0 )
-      //  if ( !meshName.Contains( "LOD", System.StringComparison.InvariantCultureIgnoreCase ) )
-      //    meshName = $"{meshName}.LOD{lodIndex}";
 
       Mesh = new Mesh( meshName, PrimitiveType.Triangle );
 
@@ -486,6 +491,12 @@ namespace H2AIndex.Processes
       AddMaterial();
 
       return Mesh;
+    }
+
+    public void ParentMeshToBone( S3DObject boneObject )
+    {
+      for ( var i = 0; i < Mesh.VertexCount; i++ )
+        AddBoneWeight( boneObject.Id, 1, i );
     }
 
     private void AddFaces( S3DGeometryBuffer buffer, S3DGeometryMeshBuffer meshBuffer )
