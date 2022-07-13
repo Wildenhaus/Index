@@ -21,8 +21,6 @@ namespace H2AIndex.ViewModels
       }
     }
 
-    public ICommand OpenLinkCommand { get; set; }
-
     #endregion
 
     #region Constructor
@@ -30,7 +28,6 @@ namespace H2AIndex.ViewModels
     public AboutViewModel( IServiceProvider serviceProvider )
       : base( serviceProvider )
     {
-      OpenLinkCommand = new Command<string>( OpenWebPage );
     }
 
     #endregion

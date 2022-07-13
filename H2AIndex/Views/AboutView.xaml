@@ -51,7 +51,7 @@
                                 Cursor="Hand">
                             <Border.InputBindings>
                                 <MouseBinding MouseAction="LeftClick" 
-                                              Command="{Binding OpenLinkCommand}"
+                                              Command="{Binding ShowWebPageCommand}"
                                               CommandParameter="https://ko-fi.com/hausdev" />
                             </Border.InputBindings>
                             <Path Fill="White" 
@@ -94,7 +94,179 @@
             </Grid>
 
         </TabItem>
-        <TabItem Header="Third Party" />
+        
+        <TabItem Header="Third Party">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition SharedSizeGroup="ContentGroup" />
+                </Grid.RowDefinitions>
+
+                <ScrollViewer Height="450" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                    <StackPanel HorizontalAlignment="Center" Margin="0,25">
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/assimp/assimp" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            Assimp - Open Asset Import Library
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        assimp team
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/assimp/assimp/blob/master/LICENSE" Command="{Binding ShowWebPageCommand}">
+                                            Modified BSD License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://bitbucket.org/Starnick/assimpnet/src/master/" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            AssimpNet
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        Nicholas Woodfield
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://bitbucket.org/Starnick/assimpnet/src/master/License.txt" Command="{Binding ShowWebPageCommand}">
+                                            MIT License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/icsharpcode/AvalonEdit" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            AvalonEdit
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        AvalonEdit Contributors
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/icsharpcode/AvalonEdit/blob/master/LICENSE" Command="{Binding ShowWebPageCommand}">
+                                            MIT License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/deng0/DirectXTexNet" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            DirectXTexNet
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        Dennis Gocke
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/deng0/DirectXTexNet/blob/master/LICENSE" Command="{Binding ShowWebPageCommand}">
+                                            MIT License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/Fody/Fody" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            Fody
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        Simon Cropp
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/Fody/Fody/blob/master/License.txt" Command="{Binding ShowWebPageCommand}">
+                                            MIT License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/helix-toolkit/helix-toolkit" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            Helix Toolkit
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        Helix Toolkit contributors
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/helix-toolkit/helix-toolkit/blob/develop/LICENSE" Command="{Binding ShowWebPageCommand}">
+                                            MIT License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/dlemstra/Magick.NET" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            Magick.NET
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        Dirk Lemstra
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/dlemstra/Magick.NET/blob/main/License.txt" Command="{Binding ShowWebPageCommand}">
+                                            Apache License 2.0
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/ookii-dialogs/ookii-dialogs-wpf" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            Ookii.Dialogs.Wpf
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        C. Augusto Proiete
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/ookii-dialogs/ookii-dialogs-wpf/blob/master/LICENSE" Command="{Binding ShowWebPageCommand}">
+                                            BSD 3-Clause License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/sharpdx/SharpDX" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            SharpDX
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        Alexandre Mutel
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/sharpdx/SharpDX/blob/master/LICENSE" Command="{Binding ShowWebPageCommand}">
+                                            MIT License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,5">
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center">
+                                        <Hyperlink CommandParameter="https://github.com/AngryCarrot789/WPFDarkTheme" FontWeight="Black" FontSize="16" Command="{Binding ShowWebPageCommand}">
+                                            WPFDarkTheme (Modified)
+                                        </Hyperlink>
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        REghZy
+                            </TextBlock>
+                            <TextBlock TextAlignment="Center" HorizontalAlignment="Center" FontSize="12">
+                                        <Hyperlink CommandParameter="https://github.com/AngryCarrot789/WPFDarkTheme/blob/master/LICENSE" Command="{Binding ShowWebPageCommand}">
+                                            MIT License
+                                        </Hyperlink>
+                            </TextBlock>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </TabItem>
 
     </TabControl>
 </view:View>
