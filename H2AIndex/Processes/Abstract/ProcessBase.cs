@@ -104,6 +104,7 @@ namespace H2AIndex.Processes
         State = ProcessState.Faulted;
         _isCompleted = true;
         RaiseErrorEvent( ex );
+        StatusList.AddError( "Process", "An unknown error occured.", ex );
       }
       finally
       {
