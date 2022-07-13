@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using Saber3D.Common;
 
 namespace Saber3D.Files.FileTypes
 {
@@ -17,8 +16,10 @@ namespace Saber3D.Files.FileTypes
 
     #region Constructor
 
-    public CacheBlockFile( string name, Stream stream, IS3DFile parent = null )
-      : base( name, stream, parent )
+    public CacheBlockFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
+      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
     {
     }
 
@@ -35,15 +36,16 @@ namespace Saber3D.Files.FileTypes
        * S3DFileFactory by just treating them all as generic text files unless defined here.
        */
 
-      var stream = new StreamSegment( BaseStream, offset, size );
+      var dataStartOffset = CalculateTrueChildOffset( offset );
+      var dataEndOffset = dataStartOffset + size;
 
       switch ( Path.GetExtension( name ) )
       {
         case ".td":
-          return new TextureDefinitionFile( name, stream, this );
+          return new TextureDefinitionFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
 
         default:
-          return new GenericTextFile( name, stream, this );
+          return new GenericTextFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
       }
 
     }

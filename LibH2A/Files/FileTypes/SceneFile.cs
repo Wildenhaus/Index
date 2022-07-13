@@ -1,20 +1,19 @@
 ﻿namespace Saber3D.Files.FileTypes
 {
 
-  [FileSignature( "1SERcdt" )]
-  [FileExtension( ".cdt" )]
-  public class CdtFile : S3DFile
+  [FileExtension( ".scn" )]
+  public class SceneFile : S3DContainerFile
   {
 
     #region Properties
 
-    public override string FileTypeDisplay => "CDT (.cdt)";
+    public override string FileTypeDisplay => "Scene (.scn)";
 
     #endregion
 
     #region Constructor
 
-    public CdtFile( string name, H2AStream baseStream,
+    public SceneFile( string name, H2AStream baseStream,
       long dataStartOffset, long dataEndOffset,
       IS3DFile parent = null )
       : base( name, baseStream, dataStartOffset, dataEndOffset, parent )

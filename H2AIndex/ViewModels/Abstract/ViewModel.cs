@@ -80,9 +80,16 @@ namespace H2AIndex.ViewModels
       if ( _isInitialized )
         return;
 
-      await OnInitializing();
+      try
+      {
+        await OnInitializing();
 
-      _isInitialized = true;
+        _isInitialized = true;
+      }
+      catch ( Exception ex )
+      {
+        await ShowExceptionModal( ex );
+      }
     }
 
     #endregion

@@ -106,13 +106,10 @@ namespace Saber3D.Common
       offset = Math.Max( _startOffset, offset );
       offset = Math.Min( _endOffset, offset );
 
-      lock ( _baseStream )
-      {
-        _baseStream.Seek( offset, SeekOrigin.Begin );
-        _position = offset - _startOffset;
+      _baseStream.Seek( offset, SeekOrigin.Begin );
+      _position = offset - _startOffset;
 
-        return _position;
-      }
+      return _position;
     }
 
     public override void SetLength( long value )

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 using DeepCopy;
 using H2AIndex.Common;
 using H2AIndex.Common.Enumerations;
@@ -21,7 +22,7 @@ namespace H2AIndex.Models
           OutputNormalMapFormat = NormalMapFormat.OpenGL,
           RecalculateNormalMapZChannel = true,
           ExportAllMips = false,
-          OverwriteExisting = false,
+          OverwriteExisting = true,
           ExportTextureDefinition = true
         };
       }
@@ -37,11 +38,22 @@ namespace H2AIndex.Models
     [JsonIgnore]
     public string Filters { get; set; }
 
+    [DefaultValue( TextureFileFormat.DDS )]
     public TextureFileFormat OutputFileFormat { get; set; }
+
+    [DefaultValue( NormalMapFormat.OpenGL )]
     public NormalMapFormat OutputNormalMapFormat { get; set; }
+
+    [DefaultValue( true )]
     public bool RecalculateNormalMapZChannel { get; set; }
+
+    [DefaultValue( false )]
     public bool ExportAllMips { get; set; }
+
+    [DefaultValue( true )]
     public bool OverwriteExisting { get; set; }
+
+    [DefaultValue( true )]
     public bool ExportTextureDefinition { get; set; }
 
     #endregion

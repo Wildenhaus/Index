@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Saber3D.Files
 {
@@ -10,21 +9,21 @@ namespace Saber3D.Files
 
     #region Properties
 
-    string Name { get; }
-    string Extension { get; }
-
+    H2AFileContext FileContext { get; }
     IS3DFile Parent { get; }
     IEnumerable<IS3DFile> Children { get; }
 
-    string FileTypeDisplay { get; }
+    string Name { get; }
+    string Extension { get; }
+    long SizeInBytes { get; }
 
-    H2AFileContext FileContext { get; }
+    string FileTypeDisplay { get; }
 
     #endregion
 
     #region Public Methods
 
-    Stream GetStream();
+    H2AStream GetStream();
     void SetFileContext( H2AFileContext fileContext );
 
     #endregion

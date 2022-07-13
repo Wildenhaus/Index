@@ -57,29 +57,32 @@ namespace H2AIndex.Processes
 
     protected override async Task OnExecuting()
     {
+      Status = _filePaths.Length > 1 ? "Opening Files" : "Opening File";
       UnitName = _filePaths.Length > 1 ? "files opened" : "file opened";
       TotalUnits = _filePaths.Length;
       IsIndeterminate = _filePaths.Length == 1;
 
-      foreach ( var filePath in _filePaths )
+      var objLock = new object();
+      Parallel.ForEach( _filePaths, filePath =>
       {
         var fileName = Path.GetFileName( filePath );
-        Status = $"Opening {fileName}";
-
         try
         {
           if ( !_fileContext.OpenFile( filePath ) )
             StatusList.AddWarning( fileName, "Failed to open file." );
           else
             _filesLoaded.Add( fileName );
-
-          CompletedUnits++;
         }
         catch ( Exception ex )
         {
           StatusList.AddError( fileName, ex );
         }
-      }
+        finally
+        {
+          lock ( objLock )
+            CompletedUnits++;
+        }
+      } );
     }
 
     #endregion
@@ -128,7 +131,7 @@ namespace H2AIndex.Processes
     private static bool IsFileExtensionRecognized( string filePath )
     {
       var ext = Path.GetExtension( filePath );
-      return S3DFileFactory.RecognizedExtensions.Contains( ext ); // TODO
+      return H2AFileContext.SupportedFileExtensions.Contains( ext );
     }
 
     #endregion

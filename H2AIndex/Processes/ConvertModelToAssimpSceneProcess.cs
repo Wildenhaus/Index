@@ -251,8 +251,8 @@ namespace H2AIndex.Processes
           if ( parentToBoneName != null )
           {
             var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
-            if ( parentToBoneObject != null )
-              builder.ParentMeshToBone( parentToBoneObject );
+            //if ( parentToBoneObject != null )
+            //  builder.ParentMeshToBone( parentToBoneObject );
           }
         }
 

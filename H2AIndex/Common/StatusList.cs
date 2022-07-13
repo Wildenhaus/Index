@@ -12,6 +12,7 @@ namespace H2AIndex.Common
 
     #region Data Members
 
+    private readonly object _lock;
     private readonly List<Entry> _messages;
     private readonly List<Entry> _warnings;
     private readonly List<Entry> _errors;
@@ -36,6 +37,8 @@ namespace H2AIndex.Common
 
     public StatusList()
     {
+      _lock = new object();
+
       _messages = new List<Entry>();
       _warnings = new List<Entry>();
       _errors = new List<Entry>();
@@ -46,22 +49,37 @@ namespace H2AIndex.Common
     #region Public Methods
 
     public void AddMessage( string name, string message )
-        => _messages.Add( new Entry( StatusListEntryType.Message, name, message ) );
+    {
+      lock ( _lock )
+        _messages.Add( new Entry( StatusListEntryType.Message, name, message ) );
+    }
 
     public void AddWarning( string name, string message )
-        => _warnings.Add( new Entry( StatusListEntryType.Warning, name, message ) );
+    {
+      lock ( _lock )
+        _warnings.Add( new Entry( StatusListEntryType.Warning, name, message ) );
+    }
 
     public void AddError( string name, string message, Exception exception = null )
-        => _errors.Add( new Entry( StatusListEntryType.Error, name, message, exception ) );
+    {
+      lock ( _lock )
+        _errors.Add( new Entry( StatusListEntryType.Error, name, message, exception ) );
+    }
 
     public void AddError( string name, Exception exception )
-      => _errors.Add( new Entry( StatusListEntryType.Error, name, exception.Message, exception ) );
+    {
+      lock ( _lock )
+        _errors.Add( new Entry( StatusListEntryType.Error, name, exception.Message, exception ) );
+    }
 
     public void Merge( StatusList statusList )
     {
-      _messages.AddRange( statusList.Messages );
-      _warnings.AddRange( statusList.Warnings );
-      _errors.AddRange( statusList.Errors );
+      lock ( _lock )
+      {
+        _messages.AddRange( statusList.Messages );
+        _warnings.AddRange( statusList.Warnings );
+        _errors.AddRange( statusList.Errors );
+      }
     }
 
     #endregion
@@ -70,9 +88,12 @@ namespace H2AIndex.Common
 
     public IEnumerator<Entry> GetEnumerator()
     {
-      var entries = _messages.Concat( _warnings ).Concat( _errors );
-      foreach ( var entry in entries.OrderBy( x => x.Time ) )
-        yield return entry;
+      lock ( _lock )
+      {
+        var entries = _messages.Concat( _warnings ).Concat( _errors );
+        foreach ( var entry in entries.OrderBy( x => x.Time ) )
+          yield return entry;
+      }
     }
 
     IEnumerator IEnumerable.GetEnumerator()

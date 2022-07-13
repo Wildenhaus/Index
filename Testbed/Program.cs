@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Assimp;
 using Saber3D.Common;
 using Saber3D.Files;
@@ -35,19 +38,51 @@ namespace Testbed
       //foreach ( var obj in tpl.GeometryGraph.Objects )
       //  Console.WriteLine( obj.UnkName );
 
-      H2AFileContext.Global.OpenDirectory( GAME_PATH );
-      var file = H2AFileContext.Global.GetFile( "warthog__h.tpl" );
-      using ( var fs = File.Create( @"F:\warthog__h.tpl" ) )
-      {
-        var s = file.GetStream();
-        s.CopyTo( fs );
-        fs.Flush();
-      }
+      //H2AFileContext.Global.OpenDirectory( GAME_PATH );
+      //var file = H2AFileContext.Global.GetFile( "warthog__h.tpl" );
+      //using ( var fs = File.Create( @"F:\warthog__h.tpl" ) )
+      //{
+      //  var s = file.GetStream();
+      //  s.CopyTo( fs );
+      //  fs.Flush();
+      //}
 
       //LoadFbx( @"Z:\Blender\Models\Destiny 2\Enemies\Fallen Marauder\Marauder.fbx" );
       //LoadFbx( @"G:\h2a\test\dervish__h.fbx" );
+
+      TestMultithreaded();
     }
 
+    private static void TestMultithreaded()
+    {
+      //H2AFileContext.Global.OpenFile( @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo2\preload\paks\01b_spacestation.pck" );
+      for ( var i = 0; i < 100; i++ )
+        new H2AFileContext().OpenFile( @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo2\preload\paks\shared.pck" );
+      return;
+      var lgFile = H2AFileContext.Global.GetFiles( ".lg" ).First();
+
+      var tasks = new Task<byte[]>[ 1 ];
+      for ( var i = 0; i < tasks.Length; i++ )
+        tasks[ i ] = HashFile( lgFile );
+
+      Task.WaitAll( tasks );
+
+      var expected = tasks[ 0 ].Result;
+      foreach ( var task in tasks )
+        Debug.Assert( task.Result.SequenceEqual( expected ) );
+    }
+
+    static async Task<byte[]> HashFile( IS3DFile file )
+    {
+      var stream = file.GetStream();
+      using ( var sha = SHA256.Create() )
+      {
+        stream.AcquireLock();
+        var hash = await sha.ComputeHashAsync( stream );
+        stream.ReleaseLock();
+        return hash;
+      }
+    }
 
     private static void LoadFbx( string path )
     {

@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Saber3D.Files.FileTypes
+﻿namespace Saber3D.Files.FileTypes
 {
 
   [FileSignature( "1SERsm_tpl_tbl" )]
@@ -16,8 +14,10 @@ namespace Saber3D.Files.FileTypes
 
     #region Constructor
 
-    public TplTableFile( string name, Stream stream, IS3DFile parent = null )
-      : base( name, stream, parent )
+    public TplTableFile( string name, H2AStream baseStream,
+      long dataStartOffset, long dataEndOffset,
+      IS3DFile parent = null )
+      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
     {
     }
 

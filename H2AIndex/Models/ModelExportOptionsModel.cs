@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 using DeepCopy;
 using H2AIndex.Common;
 using H2AIndex.Common.Enumerations;
@@ -19,8 +20,8 @@ namespace H2AIndex.Models
         {
           OutputFileFormat = ModelFileFormat.FBX,
           ExportTextures = true,
-          RemoveLODs = false,
-          RemoveVolumes = false,
+          RemoveLODs = true,
+          RemoveVolumes = true,
           OverwriteExisting = false
         };
       }
@@ -36,10 +37,19 @@ namespace H2AIndex.Models
     [JsonIgnore]
     public string Filters { get; set; }
 
+    [DefaultValue( ModelFileFormat.FBX )]
     public ModelFileFormat OutputFileFormat { get; set; }
+
+    [DefaultValue( true )]
     public bool ExportTextures { get; set; }
+
+    [DefaultValue( true )]
     public bool RemoveLODs { get; set; }
+
+    [DefaultValue( true )]
     public bool RemoveVolumes { get; set; }
+
+    [DefaultValue( true )]
     public bool OverwriteExisting { get; set; }
 
     #endregion

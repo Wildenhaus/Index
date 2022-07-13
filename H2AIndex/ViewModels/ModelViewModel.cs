@@ -156,7 +156,7 @@ namespace H2AIndex.ViewModels
           return true;
 
         var node = obj as ModelNodeModel;
-        return node.Name.Contains( _searchTerm, StringComparison.InvariantCultureIgnoreCase ); ~
+        return node.Name.Contains( _searchTerm, StringComparison.InvariantCultureIgnoreCase );
       };
 
       return collectionView;
