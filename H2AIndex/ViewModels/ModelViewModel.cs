@@ -23,6 +23,7 @@ using PropertyChanged;
 using Saber3D.Data;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
+using MaterialCore = HelixToolkit.SharpDX.Core.Model.MaterialCore;
 using PhongMaterialCore = HelixToolkit.SharpDX.Core.Model.PhongMaterialCore;
 using TextureModel = HelixToolkit.SharpDX.Core.TextureModel;
 
@@ -66,7 +67,8 @@ namespace H2AIndex.ViewModels
 
     [OnChangedMethod( nameof( ToggleShowWireframe ) )]
     public bool ShowWireframe { get; set; }
-
+    [OnChangedMethod( nameof( ToggleShowTextures ) )]
+    public bool ShowTextures { get; set; }
     public bool UseFlycam { get; set; }
 
     public ICollectionView Nodes => _nodeCollectionView;
@@ -101,14 +103,12 @@ namespace H2AIndex.ViewModels
       EffectsManager = new DefaultEffectsManager();
       Camera = new PerspectiveCamera() { FarPlaneDistance = 300000 };
       Model = new SceneNodeGroupModel3D();
-
-      var transform = new System.Windows.Media.Media3D.RotateTransform3D();
-      transform.Rotation = new System.Windows.Media.Media3D.AxisAngleRotation3D(
-        new System.Windows.Media.Media3D.Vector3D( 0, 1, 0 ), -90 );
-      Model.Transform = transform;
+      ApplyTransformsToModel();
 
       _nodes = new ObservableCollection<ModelNodeModel>();
       _nodeCollectionView = InitializeNodeCollectionView( _nodes );
+
+      ShowTextures = true;
 
       ShowAllCommand = new Command( ShowAllNodes );
       HideAllCommand = new Command( HideAllNodes );
@@ -205,9 +205,24 @@ namespace H2AIndex.ViewModels
 
       nodeMaterial.DiffuseMap = await LoadTexture( $"{baseTexName}.pct" );
       nodeMaterial.SpecularColorMap = await LoadTexture( $"{baseTexName}_spec.pct" );
-      nodeMaterial.NormalMap = await LoadTexture( $"{baseTexName}_nm.pct" );
+      //nodeMaterial.NormalMap = await LoadTexture( $"{baseTexName}_nm.pct" );
       nodeMaterial.EnableTessellation = true;
       nodeMaterial.UVTransform = new UVTransform( 0, 1, -1, 0, 0 );
+    }
+
+    private void ApplyTransformsToModel()
+    {
+      var transformGroup = new System.Windows.Media.Media3D.Transform3DGroup();
+
+      var rotTransform = new System.Windows.Media.Media3D.RotateTransform3D();
+      rotTransform.Rotation = new System.Windows.Media.Media3D.AxisAngleRotation3D(
+        new System.Windows.Media.Media3D.Vector3D( 0, 1, 0 ), -90 );
+      transformGroup.Children.Add( rotTransform );
+
+      var scaleTransform = new System.Windows.Media.Media3D.ScaleTransform3D( 100, 100, 100 );
+      transformGroup.Children.Add( scaleTransform );
+
+      Model.Transform = transformGroup;
     }
 
     private async Task PrepareModelViewer( Assimp.Scene assimpScene )
@@ -297,10 +312,14 @@ namespace H2AIndex.ViewModels
     {
       var show = ShowWireframe;
       foreach ( var node in Traverse( _nodes ) )
-        if ( node.Node is MeshNode meshNode )
-        {
-          meshNode.RenderWireframe = show;
-        }
+        node.ShowWireframe = show;
+    }
+
+    private void ToggleShowTextures()
+    {
+      var show = ShowTextures;
+      foreach ( var node in Traverse( _nodes ) )
+        node.ShowTexture = show;
     }
 
     private IEnumerable<ModelNodeModel> Traverse( IEnumerable<ModelNodeModel> rootElems )
@@ -381,26 +400,69 @@ namespace H2AIndex.ViewModels
   public class ModelNodeModel : ObservableObject
   {
 
+    #region Data Members
+
+    private static readonly MaterialCore DEFAULT_MATERIAL
+      = new DiffuseMaterial();
+
     private SceneNode _node;
+    private MaterialCore _material;
+
+    #endregion
+
+    #region Properties
 
     public SceneNode Node => _node;
-    public bool IsExpanded { get; set; }
-
     public string Name => _node.Name;
-
     public ICollection<ModelNodeModel> Items { get; }
 
+    public bool IsExpanded { get; set; }
     [OnChangedMethod( nameof( OnNodeVisibilityChanged ) )]
     public bool IsVisible { get; set; }
+    [OnChangedMethod( nameof( OnShowTextureChanged ) )]
+    public bool ShowTexture { get; set; }
+    [OnChangedMethod( nameof( OnShowWireframeChanged ) )]
+    public bool ShowWireframe { get; set; }
+
+    #endregion
+
+    #region Constructor
 
     public ModelNodeModel( SceneNode node )
     {
       _node = node;
+      if ( node is MeshNode meshNode )
+        _material = meshNode.Material;
+
       node.Tag = this;
       Items = new ObservableCollection<ModelNodeModel>();
 
       IsExpanded = true;
       IsVisible = true;
+
+      ShowTexture = true;
+      ShowWireframe = false;
+    }
+
+    #endregion
+
+    #region Event Handlers
+
+    private void OnShowTextureChanged()
+    {
+      if ( _node is MeshNode meshNode )
+      {
+        if ( ShowTexture )
+          meshNode.Material = _material;
+        else
+          meshNode.Material = DEFAULT_MATERIAL;
+      }
+    }
+
+    private void OnShowWireframeChanged()
+    {
+      if ( _node is MeshNode meshNode )
+        meshNode.RenderWireframe = ShowWireframe;
     }
 
     private void OnNodeVisibilityChanged()
@@ -415,6 +477,8 @@ namespace H2AIndex.ViewModels
         nodeModel.IsVisible = IsVisible;
       }
     }
+
+    #endregion
 
   }
 

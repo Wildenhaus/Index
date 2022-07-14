@@ -22,28 +22,70 @@
         </Grid.ColumnDefinitions>
 
         <Menu Grid.ColumnSpan="2"
-              Grid.Row="0">
+              Grid.Row="0"
+              VerticalAlignment="Bottom">
             <MenuItem Header="File">
                 <MenuItem Header="Export" Command="{Binding ExportModelCommand}" />
             </MenuItem>
             <MenuItem Header="View">
+                <MenuItem Header="Use Flycam" IsCheckable="True" IsChecked="{Binding UseFlycam}" />
+                <MenuItem Header="Show Textures" IsCheckable="True" IsChecked="{Binding ShowTextures}" />
                 <MenuItem Header="Show Wireframe" IsCheckable="True" IsChecked="{Binding ShowWireframe}" />
                 <MenuItem Header="Zoom To Extents" Command="hx:ViewportCommands.ZoomExtents" CommandTarget="{Binding Viewport}" />
             </MenuItem>
         </Menu>
-        <ToggleButton Grid.Row="0" 
-                      Grid.Column="0" 
-                      HorizontalAlignment="Right"
-                      ToolTip="Use Flycam"
-                      IsChecked="{Binding UseFlycam}">
-            <ToggleButton.Content>
-                <Path Data="{Binding Source={StaticResource Icon_Crosshair}, Path=Data}"
-                                  Fill="{DynamicResource Brush.Glyph.Static}" 
-                                  Stretch="Uniform"
-                                  Width="14"
-                                  Height="14" />
-            </ToggleButton.Content>
-        </ToggleButton>
+
+        <StackPanel Grid.Row="0"
+                    Grid.Column="0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+
+            <ToggleButton ToolTip="Show Wireframe"
+                          IsChecked="{Binding ShowWireframe}">
+                <ToggleButton.Content>
+                    <Path Data="{Binding Source={StaticResource Icon_CircleOutline}, Path=Data}"
+                                      Fill="{DynamicResource Brush.Glyph.Static}" 
+                                      Stretch="Uniform"
+                                      Width="14"
+                                      Height="14" />
+                </ToggleButton.Content>
+            </ToggleButton>
+            <ToggleButton ToolTip="Show Textures"
+                          IsChecked="{Binding ShowTextures}">
+                <ToggleButton.Content>
+                    <Path Data="{Binding Source={StaticResource Icon_Circle}, Path=Data}"
+                                      Fill="{DynamicResource Brush.Glyph.Static}" 
+                                      Stretch="Uniform"
+                                      Width="14"
+                                      Height="14" />
+                </ToggleButton.Content>
+            </ToggleButton>
+
+            <Button ToolTip="Zoom To Extents"
+                    Margin="15,0,0,0"
+                    Command="hx:ViewportCommands.ZoomExtents"
+                    CommandTarget="{Binding Viewport}">
+                <Button.Content>
+                    <Path Data="{Binding Source={StaticResource Icon_Camera}, Path=Data}"
+                                      Fill="{DynamicResource Brush.Glyph.Static}" 
+                                      Stretch="Uniform"
+                                      Width="14"
+                                      Height="14" />
+                </Button.Content>
+            </Button>
+
+            <ToggleButton ToolTip="Use Flycam"
+                          IsChecked="{Binding UseFlycam}">
+                <ToggleButton.Content>
+                    <Path Data="{Binding Source={StaticResource Icon_Crosshair}, Path=Data}"
+                                      Fill="{DynamicResource Brush.Glyph.Static}" 
+                                      Stretch="Uniform"
+                                      Width="14"
+                                      Height="14" />
+                </ToggleButton.Content>
+            </ToggleButton>
+            
+        </StackPanel>
 
         <controls:ModelViewerControl x:Name="ModelViewer" 
                                      Grid.Row="1" 

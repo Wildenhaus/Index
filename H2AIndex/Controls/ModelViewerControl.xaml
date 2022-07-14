@@ -26,7 +26,8 @@
                         IsHitTestVisible="{Binding UseFlycam, ElementName=self, Converter={StaticResource InverseBoolConverter}}"
                         IsMoveEnabled="True"
                         ZoomDistanceLimitNear="0"
-                        EnableRenderFrustum="False">
+                        EnableRenderFrustum="True"
+                        ShowViewCube="{Binding UseFlycam, ElementName=self, Converter={StaticResource InverseBoolConverter}}">
 
             <hx:Viewport3DX.InputBindings>
                 <MouseBinding Command="hx:ViewportCommands.Rotate" Gesture="RightClick" />
