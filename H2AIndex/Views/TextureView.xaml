@@ -38,6 +38,27 @@
                RenderOptions.BitmapScalingMode="HighQuality"
                Source="{Binding Texture.SelectedMip.Preview}" />
 
+        <StackPanel Grid.Column="0"
+                    Grid.Row="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Background="#a0000000">
+            <Label Content="{Binding Texture.FaceCount}" ContentStringFormat="Faces: {0}" Padding="10,5,10,0" FontWeight="Bold" />
+            <Label Content="{Binding Texture.MipLevels}" ContentStringFormat="Mip Levels: {0}" Padding="10,0" FontWeight="Bold" />
+            <Label Content="{Binding Texture.DimensionString}" ContentStringFormat="Dims: {0}" Padding="10,0" FontWeight="Bold" />
+            <Label Content="{Binding Texture.Format}" ContentStringFormat="Format: {0}" Padding="10,0,10,5" FontWeight="Bold" />
+
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="0.1" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+        </StackPanel>
+
         <DockPanel Grid.Column="1" Grid.Row="1">
             <Border DockPanel.Dock="Top"
                     BorderThickness="1"

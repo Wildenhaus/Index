@@ -34,6 +34,9 @@ namespace H2AIndex.Models
 
     public IReadOnlyList<TextureImage> Faces { get; set; }
 
+    [DependsOn( nameof( Width ), nameof( Height ), nameof( Depth ) )]
+    public string DimensionString => $"{Width} x {Height} x {Depth}";
+
     [OnChangedMethod( nameof( OnSelectedFaceChanged ) )]
     public TextureImage SelectedFace { get; set; }
 
