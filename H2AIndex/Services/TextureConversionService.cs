@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using DirectXTexNet;
 using H2AIndex.Models;
 using ImageMagick;
-using ImageMagick.Formats;
 using Saber3D.Data.Textures;
 using Saber3D.Files.FileTypes;
 
@@ -29,7 +31,7 @@ namespace H2AIndex.Services
       var metadata = ddsImage.GetMetadata();
 
       var name = Path.GetFileNameWithoutExtension( fileName );
-      var model = TextureModel.Create( name, ddsImage, metadata );
+      var model = TextureModel.Create( name, file, ddsImage, metadata );
 
       await CreateImagePreviews( ddsImage, model );
 
@@ -65,20 +67,39 @@ namespace H2AIndex.Services
       }
     }
 
-    public async Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage )
+    public async Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage, IEnumerable<int> indices = null )
     {
       var convertWasRequired = PrepareNonDDSImage( ddsImage, out var decompressedImage );
 
-      var readSettings = new MagickReadSettings();
-      readSettings.SetDefines( new DdsReadDefines { SkipMipmaps = false } );
+      var imageCount = ddsImage.GetImageCount();
+      if ( indices is null )
+        indices = Enumerable.Range( 0, imageCount );
 
-      var ddsStream = decompressedImage.SaveToDDSMemory( 0 );
-      var result = new MagickImageCollection( ddsStream, readSettings );
+      var idxSet = indices.ToHashSet();
+      var imageDict = new ConcurrentDictionary<int, MagickImage>();
+      Parallel.For( 0, imageCount, i =>
+      {
+        if ( !idxSet.Contains( i ) )
+        {
+          imageDict[ i ] = new MagickImage();
+          return;
+        }
+
+        using ( var imageStream = decompressedImage.SaveToDDSMemory( i, DDS_FLAGS.NONE ) )
+        {
+          var image = new MagickImage( imageStream );
+          imageDict[ i ] = image;
+        }
+      } );
 
       if ( convertWasRequired )
         decompressedImage?.Dispose();
 
-      return result;
+      var collection = new MagickImageCollection();
+      for ( var i = 0; i < imageCount; i++ )
+        collection.Add( imageDict[ i ] );
+
+      return collection;
     }
 
     public async Task InvertGreenChannel( IMagickImage<float> image )

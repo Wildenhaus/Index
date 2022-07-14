@@ -155,10 +155,8 @@ namespace H2AIndex.Processes
       try
       {
         _texture = await _textureConversionService.LoadTexture( _file );
-        _imageCollection = await _textureConversionService.CreateMagickImageCollection( _texture.DdsImage );
 
         _targetImages = new List<TextureImage>();
-
         var targetImageIndices = new HashSet<(int? face, int? mip, int index)>();
         for ( var faceIndex = 0; faceIndex < _texture.FaceCount; faceIndex++ )
         {
@@ -171,12 +169,10 @@ namespace H2AIndex.Processes
             targetImageIndices.Add( (_texture.IsCubeMap ? faceIndex : null, null, face.MipMaps.First().ImageIndex) );
         }
 
+        var indices = targetImageIndices.Select( x => x.index );
+        _imageCollection = await _textureConversionService.CreateMagickImageCollection( _texture.DdsImage, indices );
         foreach ( var pair in targetImageIndices )
         {
-          // TODO: ImageMagick isn't loading all mips for cubemaps?
-          if ( pair.index >= _imageCollection.Count )
-            continue;
-
           _targetImages.Add( new TextureImage
           {
             FaceIndex = pair.face,

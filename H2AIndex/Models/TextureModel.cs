@@ -4,6 +4,7 @@ using System.Windows.Media.Imaging;
 using DirectXTexNet;
 using H2AIndex.Common;
 using PropertyChanged;
+using Saber3D.Data.Textures;
 
 namespace H2AIndex.Models
 {
@@ -13,6 +14,7 @@ namespace H2AIndex.Models
 
     #region Data Members
 
+    private S3DPicture _pict;
     private ScratchImage _ddsImage;
     private TexMetadata _metadata;
 
@@ -23,12 +25,12 @@ namespace H2AIndex.Models
     public string Name { get; }
     public ScratchImage DdsImage => _ddsImage;
 
-    public int Width => _metadata.Width;
-    public int Height => _metadata.Height;
-    public int Depth => _metadata.Depth;
-    public int FaceCount => _metadata.ArraySize;
-    public int MipLevels => _metadata.MipLevels;
-    public DXGI_FORMAT Format => _metadata.Format;
+    public int Width => _pict.Width;
+    public int Height => _pict.Height;
+    public int Depth => _pict.Depth;
+    public int FaceCount => _pict.Faces;
+    public int MipLevels => _pict.MipMapCount;
+    public S3DPictureFormat Format => _pict.Format;
 
     public IReadOnlyList<TextureImage> Faces { get; set; }
 
@@ -46,25 +48,25 @@ namespace H2AIndex.Models
 
     #region Constructor
 
-    private TextureModel( string name, ScratchImage ddsImage, TexMetadata metadata )
+    private TextureModel( string name, S3DPicture pict, ScratchImage ddsImage, TexMetadata metadata )
     {
+      _pict = pict;
       _ddsImage = ddsImage;
       _metadata = metadata;
 
       Name = name;
     }
 
-    public static TextureModel Create( string name, ScratchImage ddsImage, TexMetadata metadata )
+    public static TextureModel Create( string name, S3DPicture pict, ScratchImage ddsImage, TexMetadata metadata )
     {
-      var model = new TextureModel( name, ddsImage, metadata );
+      var model = new TextureModel( name, pict, ddsImage, metadata );
 
-      var imageCount = ddsImage.GetImageCount() / metadata.MipLevels;
-      var images = new List<TextureImage>( imageCount );
+      var images = new List<TextureImage>();
 
-      for ( var i = 0; i < imageCount; i++ )
+      for ( var i = 0; i < pict.Faces; i++ )
       {
         var image = new TextureImage { Index = i };
-        var imageMips = new List<TextureImageMip>( metadata.MipLevels );
+        var imageMips = new List<TextureImageMip>( pict.MipMapCount );
 
         for ( var j = 0; j < metadata.MipLevels; j++ )
           imageMips.Add( new TextureImageMip

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using DirectXTexNet;
 using H2AIndex.Models;
@@ -18,7 +19,7 @@ namespace H2AIndex.Services
     Task<Stream> GetDDSStream( PictureFile file );
     Task<Stream> GetJpgStream( PictureFile file, float quality = 1f );
 
-    Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage );
+    Task<MagickImageCollection> CreateMagickImageCollection( ScratchImage ddsImage, IEnumerable<int> indices = null );
     Task InvertGreenChannel( IMagickImage<float> image );
     Task RecalculateZChannel( IMagickImage<float> image );
 

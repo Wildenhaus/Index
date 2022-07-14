@@ -86,7 +86,7 @@
                     </TextBlock>
                 </Label>
                 <CheckBox Grid.Row="4" Grid.Column="1"
-                          IsChecked="{Binding Options.ExportTextureDefinitions}" />
+                          IsChecked="{Binding Options.ExportTextureDefinition}" />
                 
                 <Label Grid.Row="6" Grid.Column="0" 
                        Content="Export All Mips"
