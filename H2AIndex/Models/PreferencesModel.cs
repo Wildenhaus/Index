@@ -1,4 +1,5 @@
-﻿using H2AIndex.Common;
+﻿using System.ComponentModel;
+using H2AIndex.Common;
 using PropertyChanged;
 
 namespace H2AIndex.Models
@@ -21,6 +22,9 @@ namespace H2AIndex.Models
         };
       }
     }
+
+    [DefaultValue( false )]
+    public bool LoadH2ADirectoryOnStartup { get; set; }
 
     public string H2ADirectoryPath { get; set; }
 

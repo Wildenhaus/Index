@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using H2AIndex.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Files;
+using Saber3D.Files.FileTypes;
 
 namespace H2AIndex.Processes
 {
@@ -10,20 +12,33 @@ namespace H2AIndex.Processes
   public class BulkExportTexturesProcess : ProcessBase
   {
 
-    private IEnumerable<IS3DFile> _targetFiles;
+    #region Data Members
+
+    private IH2AFileContext _fileContext;
+
+    private IEnumerable<PictureFile> _targetFiles;
     private IList<ExportTextureProcess> _processes;
     private readonly TextureExportOptionsModel _options;
+
+    #endregion
+
+    #region Constructor
 
     public BulkExportTexturesProcess( TextureExportOptionsModel options )
     {
       _options = options;
+      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
     }
 
-    public BulkExportTexturesProcess( IEnumerable<IS3DFile> files, TextureExportOptionsModel options )
+    public BulkExportTexturesProcess( IEnumerable<PictureFile> files, TextureExportOptionsModel options )
       : this( options )
     {
       _targetFiles = files;
     }
+
+    #endregion
+
+    #region Overrides
 
     protected override async Task OnInitializing()
     {
@@ -38,28 +53,35 @@ namespace H2AIndex.Processes
 
     protected override async Task OnExecuting()
     {
+      Status = "Exporting Textures";
       CompletedUnits = 0;
       TotalUnits = _processes.Count;
       UnitName = "Textures Exported";
       IsIndeterminate = false;
 
-      foreach ( var process in _processes )
+      var processLock = new object();
+      var tasks = _processes.Select( x => x.Execute().ContinueWith( t =>
       {
-        Status = $"Exporting {process.TextureName}";
-        await process.Execute();
+        lock ( processLock )
+          CompletedUnits++;
+      } ) );
 
+      await Task.WhenAll( tasks );
+      foreach ( var process in _processes )
         StatusList.Merge( process.StatusList );
-        CompletedUnits++;
-      }
     }
 
-    private IEnumerable<IS3DFile> GatherFiles()
+    #endregion
+
+    #region Private Methods
+
+    private IEnumerable<PictureFile> GatherFiles()
     {
       string[] filters = null;
       if ( !string.IsNullOrWhiteSpace( _options.Filters ) )
         filters = _options.Filters.Split( new char[] { ';' } );
 
-      return H2AFileContext.Global.GetFiles( ".pct" ).Where( file =>
+      return _fileContext.GetFiles<PictureFile>().Where( file =>
       {
         if ( filters is null )
           return true;
@@ -72,8 +94,10 @@ namespace H2AIndex.Processes
       } );
     }
 
-    private IList<ExportTextureProcess> CreateProcesses( IEnumerable<IS3DFile> files )
+    private IList<ExportTextureProcess> CreateProcesses( IEnumerable<PictureFile> files )
       => files.Select( file => new ExportTextureProcess( file, _options ) ).ToList();
+
+    #endregion
 
   }
 

@@ -8,7 +8,6 @@ namespace Saber3D.Serializers
     where T : class, new()
   {
 
-
     #region Public Methods
 
     public T Deserialize( BinaryReader reader )

@@ -44,6 +44,9 @@ namespace H2AIndex.Models
     public bool ExportTextures { get; set; }
 
     [DefaultValue( true )]
+    public bool ExportMaterialDefinitions { get; set; }
+
+    [DefaultValue( true )]
     public bool RemoveLODs { get; set; }
 
     [DefaultValue( true )]

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Data;
 using System.Windows.Input;
 using H2AIndex.Common;
@@ -18,7 +19,7 @@ namespace H2AIndex.Models
 
     #region Data Members
 
-    private readonly H2AFileContext _context;
+    private readonly IH2AFileContext _context;
     private readonly ObservableCollection<FileModel> _files;
 
     private IReadOnlySet<string> _editorFileExtensions;
@@ -55,23 +56,25 @@ namespace H2AIndex.Models
 
     public FileContextModel()
     {
+      var serviceProvider = ( ( App ) App.Current ).ServiceProvider;
+
       // Initialize the underlying collection
       _collectionLock = new object();
       _files = new ObservableCollection<FileModel>();
       InitializeThreadSynchronization( _files, _collectionLock );
 
       // Initialize File Queues/Throttlers
-      _throttler = new ActionThrottler( UpdateFiles, 100 );
+      _throttler = new ActionThrottler( UpdateFiles, 1000 );
       _fileAddQueue = new ConcurrentQueue<FileModel>();
       _fileRemoveQueue = new ConcurrentQueue<FileModel>();
       _fileLookup = new ConcurrentDictionary<string, FileModel>();
 
       // Initialize File Extension Lookup
-      var fileTypeService = ( ( App ) App.Current ).ServiceProvider.GetRequiredService<IFileTypeService>();
+      var fileTypeService = serviceProvider.GetRequiredService<IFileTypeService>();
       _editorFileExtensions = fileTypeService.ExtensionsWithEditorSupport;
 
       // Initialize the LibH2A Context
-      _context = H2AFileContext.Global;
+      _context = serviceProvider.GetRequiredService<IH2AFileContext>();
       _context.FileAdded += OnFileAdded;
       _context.FileRemoved += OnFileRemoved;
 
@@ -80,6 +83,8 @@ namespace H2AIndex.Models
 
       // Initialize Commands
       SearchTermChangedCommand = new Command<string>( OnSearchTermUpdated );
+
+      AddExistingFiles();
 
       //_context.OpenFile( @"G:\h2a\re files\dervish__h.tpl" );
       //foreach ( var file in Directory.GetFiles( @"G:\h2a\d\", "*.pct", SearchOption.AllDirectories ) )
@@ -136,6 +141,8 @@ namespace H2AIndex.Models
       }
 
       RefreshFileTree();
+      if ( _fileAddQueue.Count > 0 || _fileRemoveQueue.Count > 0 )
+        _throttler.Execute();
     }
 
     #endregion
@@ -149,10 +156,11 @@ namespace H2AIndex.Models
         return;
 
       var model = new FileModel( file );
-      _fileAddQueue.Enqueue( model );
-      _fileLookup.TryAdd( file.Name, model );
-
-      _throttler.Execute();
+      if ( _fileLookup.TryAdd( file.Name, model ) )
+      {
+        _fileAddQueue.Enqueue( model );
+        _throttler.Execute();
+      }
     }
 
     private void OnFileRemoved( object sender, IS3DFile file )
@@ -180,6 +188,12 @@ namespace H2AIndex.Models
     {
       _searchTerm = searchTerm;
       _throttler.Execute();
+    }
+
+    private void AddExistingFiles()
+    {
+      foreach ( var file in _context.Files.Values.ToArray() )
+        OnFileAdded( this, file );
     }
 
     private void RefreshFileTree()

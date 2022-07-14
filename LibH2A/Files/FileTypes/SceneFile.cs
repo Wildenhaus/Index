@@ -1,27 +1,27 @@
-﻿namespace Saber3D.Files.FileTypes
-{
+﻿//namespace Saber3D.Files.FileTypes
+//{
 
-  [FileExtension( ".scn" )]
-  public class SceneFile : S3DContainerFile
-  {
+//  [FileExtension( ".scn" )]
+//  public class SceneFile : S3DContainerFile
+//  {
 
-    #region Properties
+//    #region Properties
 
-    public override string FileTypeDisplay => "Scene (.scn)";
+//    public override string FileTypeDisplay => "Scene (.scn)";
 
-    #endregion
+//    #endregion
 
-    #region Constructor
+//    #region Constructor
 
-    public SceneFile( string name, H2AStream baseStream,
-      long dataStartOffset, long dataEndOffset,
-      IS3DFile parent = null )
-      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
-    {
-    }
+//    public SceneFile( string name, H2AStream baseStream,
+//      long dataStartOffset, long dataEndOffset,
+//      IS3DFile parent = null )
+//      : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
+//    {
+//    }
 
-    #endregion
+//    #endregion
 
-  }
+//  }
 
-}
+//}

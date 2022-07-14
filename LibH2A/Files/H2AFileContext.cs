@@ -1,12 +1,50 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Saber3D.Files
 {
 
-  public class H2AFileContext
+  public interface IH2AFileContext
+  {
+
+    #region Events
+
+    event EventHandler<IS3DFile> FileAdded;
+    event EventHandler<IS3DFile> FileRemoved;
+
+    #endregion
+
+    #region Properties
+
+    IReadOnlyDictionary<string, IS3DFile> Files { get; }
+
+    #endregion
+
+    #region Public Methods
+
+    bool AddFile( IS3DFile file );
+    bool RemoveFile( IS3DFile file );
+
+    IS3DFile GetFile( string fileName );
+    TFile GetFile<TFile>( string fileName ) where TFile : class, IS3DFile;
+
+    IEnumerable<IS3DFile> GetFiles( string searchPattern );
+    IEnumerable<TFile> GetFiles<TFile>( string searchPattern ) where TFile : class, IS3DFile;
+    IEnumerable<TFile> GetFiles<TFile>() where TFile : class, IS3DFile;
+
+    bool OpenDirectory( string path );
+    bool OpenFile( string filePath );
+
+    #endregion
+
+  }
+
+  public class H2AFileContext : IH2AFileContext
   {
 
     #region Events
@@ -23,9 +61,8 @@ namespace Saber3D.Files
       get => S3DFileFactory.SupportedFileExtensions;
     }
 
-    public static H2AFileContext Global = new H2AFileContext();
-
-    private Dictionary<string, IS3DFile> _files;
+    private readonly SemaphoreSlim _fileLock;
+    private ConcurrentDictionary<string, IS3DFile> _files;
 
     #endregion
 
@@ -42,15 +79,8 @@ namespace Saber3D.Files
 
     public H2AFileContext()
     {
-      _files = new Dictionary<string, IS3DFile>();
-    }
-
-    public static H2AFileContext FromDirectory( string path )
-    {
-      var context = new H2AFileContext();
-      context.OpenDirectory( path );
-
-      return context;
+      _fileLock = new SemaphoreSlim( 1 );
+      _files = new ConcurrentDictionary<string, IS3DFile>();
     }
 
     #endregion
@@ -60,15 +90,14 @@ namespace Saber3D.Files
     public bool AddFile( IS3DFile file )
     {
       bool filesAdded = false;
-      lock ( _files )
-        if ( !_files.ContainsKey( file.Name ) )
-        {
-          _files.Add( file.Name, file );
-          file.SetFileContext( this );
-          filesAdded = true;
 
-          FileAdded?.Invoke( this, file );
-        }
+      if ( !_files.ContainsKey( file.Name ) )
+      {
+        _files.TryAdd( file.Name, file );
+        filesAdded = true;
+
+        FileAdded?.Invoke( this, file );
+      }
 
       foreach ( var childFile in file.Children )
         filesAdded |= AddFile( childFile );
@@ -80,24 +109,30 @@ namespace Saber3D.Files
     {
       fileName = fileName.ToLower();
 
-      lock ( _files )
-      {
-        _files.TryGetValue( fileName, out var file );
-        return file;
-      }
+      _files.TryGetValue( fileName, out var file );
+      return file;
     }
+
+    public TFile GetFile<TFile>( string fileName )
+      where TFile : class, IS3DFile
+      => GetFile( fileName ) as TFile;
+
+    public IEnumerable<TFile> GetFiles<TFile>()
+      where TFile : class, IS3DFile
+      => _files.Values.OfType<TFile>();
 
     public IEnumerable<IS3DFile> GetFiles( string searchPattern )
     {
       searchPattern = searchPattern.ToLower();
 
-      lock ( _files )
-      {
-        foreach ( var file in _files.Values )
-          if ( file.Name.ToLower().Contains( searchPattern ) )
-            yield return file;
-      }
+      foreach ( var file in _files.Values )
+        if ( file.Name.ToLower().Contains( searchPattern ) )
+          yield return file;
     }
+
+    public IEnumerable<TFile> GetFiles<TFile>( string searchPattern )
+      where TFile : class, IS3DFile
+      => GetFiles( searchPattern ).OfType<TFile>();
 
     public bool OpenDirectory( string path )
     {
@@ -121,16 +156,21 @@ namespace Saber3D.Files
       else
         stream = H2AExtractedFileStream.FromFile( filePath );
 
-      var file = S3DFileFactory.CreateFile( fileName, stream, 0, stream.Length );
-      if ( file is null )
-        return false;
+      try
+      {
+        stream.AcquireLock();
+        var file = S3DFileFactory.CreateFile( fileName, stream, 0, stream.Length );
+        if ( file is null )
+          return false;
 
-      return AddFile( file );
+        return AddFile( file );
+      }
+      finally { stream.ReleaseLock(); }
     }
 
     public bool RemoveFile( IS3DFile file )
     {
-      if ( _files.Remove( file.Name ) )
+      if ( _files.TryRemove( file.Name, out _ ) )
       {
         FileRemoved?.Invoke( this, file );
         return true;

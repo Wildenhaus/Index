@@ -6,6 +6,7 @@ using H2AIndex.UI.Modals;
 using H2AIndex.ViewModels;
 using H2AIndex.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Saber3D.Files;
 
 namespace H2AIndex
 {
@@ -93,6 +94,8 @@ namespace H2AIndex
 
     private void ConfigureServices( IServiceCollection services )
     {
+      services.AddSingleton<IH2AFileContext, H2AFileContext>();
+
       services.AddSingleton<IFileTypeService, FileTypeService>();
       services.AddSingleton<IMeshIdentifierService, MeshIdentifierService>();
       services.AddSingleton<IPreferencesService, PreferencesService>();

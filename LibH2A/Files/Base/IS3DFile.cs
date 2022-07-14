@@ -9,7 +9,6 @@ namespace Saber3D.Files
 
     #region Properties
 
-    H2AFileContext FileContext { get; }
     IS3DFile Parent { get; }
     IEnumerable<IS3DFile> Children { get; }
 
@@ -24,7 +23,6 @@ namespace Saber3D.Files
     #region Public Methods
 
     H2AStream GetStream();
-    void SetFileContext( H2AFileContext fileContext );
 
     #endregion
 

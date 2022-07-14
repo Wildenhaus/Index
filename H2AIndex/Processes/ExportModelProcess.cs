@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Assimp;
 using H2AIndex.Common;
@@ -9,6 +11,7 @@ using H2AIndex.Common.Enumerations;
 using H2AIndex.Models;
 using H2AIndex.Services.Abstract;
 using Microsoft.Extensions.DependencyInjection;
+using Saber3D.Data;
 using Saber3D.Data.Textures;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
@@ -22,9 +25,12 @@ namespace H2AIndex.Processes
 
     #region Data Members
 
+    private readonly IH2AFileContext _fileContext;
 
     private IS3DFile _file;
     private Scene _scene;
+    private S3DGeometryGraph _geometryGraph;
+
     private ModelExportOptionsModel _modelOptions;
     private TextureExportOptionsModel _textureOptions;
 
@@ -34,20 +40,23 @@ namespace H2AIndex.Processes
 
     #region Constructor
 
-    public ExportModelProcess( IS3DFile file, Tuple<ModelExportOptionsModel, TextureExportOptionsModel> options )
+    public ExportModelProcess( IS3DFile file, ModelExportOptionsModel modelOptions, TextureExportOptionsModel textureOptions )
     {
+      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
+
       _file = file;
-      _modelOptions = options.Item1.DeepCopy();
-      _textureOptions = options.Item2.DeepCopy();
+      _modelOptions = modelOptions.DeepCopy();
+      _textureOptions = textureOptions.DeepCopy();
 
       _textureOptions.OutputPath = _modelOptions.OutputPath;
       _textureOptions.ExportAllMips = false;
     }
 
-    public ExportModelProcess( IS3DFile file, Scene scene, Tuple<ModelExportOptionsModel, TextureExportOptionsModel> options )
-      : this( file, options )
+    public ExportModelProcess( IS3DFile file, Scene scene, S3DGeometryGraph geometryGraph, ModelExportOptionsModel modelOptions, TextureExportOptionsModel textureOptions )
+      : this( file, modelOptions, textureOptions )
     {
       _scene = scene;
+      _geometryGraph = geometryGraph;
     }
 
     #endregion
@@ -63,6 +72,9 @@ namespace H2AIndex.Processes
     {
       if ( _scene is null )
         await ConvertFileToAssimpScene();
+
+      if ( _modelOptions.ExportMaterialDefinitions )
+        await ExportMaterialDefinitions();
 
       if ( _modelOptions.ExportTextures )
         FixupTextureSlotFileExtensions();
@@ -95,6 +107,41 @@ namespace H2AIndex.Processes
       StatusList.Merge( process.StatusList );
 
       _scene = process.Result;
+      _geometryGraph = process.GeometryGraph;
+    }
+
+    private async Task ExportMaterialDefinitions()
+    {
+      var materials = _geometryGraph.SubMeshes
+        .Select( y => y.Material )
+        .Where( y => y != null )
+        .ToDictionary(
+          x => x.MaterialName,
+          x => x
+        );
+
+      try
+      {
+        var fileName = Path.GetFileNameWithoutExtension( _file.Name );
+        var outputFileName = $"{fileName}_materials.json";
+        var outputPath = Path.Combine( _modelOptions.OutputPath, outputFileName );
+
+        using ( var fs = File.Create( outputPath ) )
+        {
+          var jsonOptions = new JsonSerializerOptions
+          {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          };
+          await JsonSerializer.SerializeAsync( fs, materials, jsonOptions );
+
+          await fs.FlushAsync();
+        }
+      }
+      catch ( Exception ex )
+      {
+        StatusList.AddError( _file.Name, "Encountered an error attempting to export material definitions.", ex );
+      }
     }
 
     private async Task WriteAssimpSceneToFile()
@@ -130,35 +177,38 @@ namespace H2AIndex.Processes
       StatusList.Merge( process.StatusList );
     }
 
-    private IEnumerable<IS3DFile> GatherTextures()
+    private IEnumerable<PictureFile> GatherTextures()
     {
-      var textures = new Dictionary<string, IS3DFile>();
+      var textures = new Dictionary<string, PictureFile>();
 
       // Get base textures
-      foreach ( var material in _scene.Materials )
+      var textureNames = _geometryGraph.SubMeshes
+        .Select( x => x.Material.ShadingMaterialTexture )
+        .ToHashSet();
+
+      foreach ( var textureName in textureNames )
       {
-        if ( material.Name == "DefaultMaterial" )
+        if ( string.IsNullOrWhiteSpace( textureName ) )
           continue;
 
-        var textureFiles = H2AFileContext.Global
-          .GetFiles( material.Name )
-          .OfType<PictureFile>();
+        var textureFiles = _fileContext
+          .GetFiles<PictureFile>( textureName );
 
         foreach ( var file in textureFiles )
           textures.TryAdd( file.Name, file );
       }
 
       // Get Detail Maps and addl textures from TextureDefinition
-      var textureNames = textures.Keys.ToArray();
-      foreach ( var textureName in textureNames )
+      foreach ( var textureName in textures.Keys.ToArray() )
         GatherDetailMaps( textureName, textures );
 
       return textures.Values;
     }
 
-    private void GatherDetailMaps( string parentTextureName, Dictionary<string, IS3DFile> textures )
+    private void GatherDetailMaps( string parentTextureName, Dictionary<string, PictureFile> textures )
     {
-      var tdFile = H2AFileContext.Global.GetFile( Path.ChangeExtension( parentTextureName, ".td" ) );
+      var tdFileName = Path.ChangeExtension( parentTextureName, ".td" );
+      var tdFile = _fileContext.GetFile( tdFileName );
       if ( tdFile is null )
         return;
 
@@ -169,7 +219,7 @@ namespace H2AIndex.Processes
         if ( textures.ContainsKey( nameWithExt ) )
           continue;
 
-        var textureFile = H2AFileContext.Global.GetFile( nameWithExt );
+        var textureFile = _fileContext.GetFile<PictureFile>( nameWithExt );
         if ( textureFile is null )
           continue;
 

@@ -1,4 +1,7 @@
-﻿namespace Saber3D.Files.FileTypes
+﻿using Saber3D.Data.Textures;
+using Saber3D.Serializers;
+
+namespace Saber3D.Files.FileTypes
 {
 
   [FileExtension( ".pct" )]
@@ -18,6 +21,21 @@
       IS3DFile parent = null )
       : base( name, baseStream, dataStartOffset, dataEndOffset, parent )
     {
+    }
+
+    #endregion
+
+    #region Public Methods
+
+    public S3DPicture Deserialize()
+    {
+      var stream = GetStream();
+      try
+      {
+        stream.AcquireLock();
+        return S3DPictureSerializer.Deserialize( stream );
+      }
+      finally { stream.ReleaseLock(); }
     }
 
     #endregion

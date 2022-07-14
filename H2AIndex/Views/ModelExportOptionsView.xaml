@@ -64,6 +64,8 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="3" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="3" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Grid.Column="0" Content="File Format" />
@@ -73,26 +75,31 @@
                           SelectedItem="{Binding ModelOptions.OutputFileFormat}"/>
 
                 <Label Grid.Row="2" Grid.Column="0" 
-                       Content="Overwrite Existing" />
+                       Content="Export Material Definitions" />
                 <CheckBox Grid.Row="2" Grid.Column="1" 
+                          IsChecked="{Binding ModelOptions.ExportMaterialDefinitions}" />
+                
+                <Label Grid.Row="4" Grid.Column="0" 
+                       Content="Overwrite Existing" />
+                <CheckBox Grid.Row="4" Grid.Column="1" 
                           IsChecked="{Binding ModelOptions.OverwriteExisting}" />
 
-                <Label Grid.Row="4" Grid.Column="0">
+                <Label Grid.Row="6" Grid.Column="0">
                     <TextBlock>
                         <Run>Remove LODs</Run>
                         <Hyperlink Command="{Binding ExplainLODsCommand}">?</Hyperlink>
                     </TextBlock>
                 </Label>
-                <CheckBox Grid.Row="4" Grid.Column="1"
+                <CheckBox Grid.Row="6" Grid.Column="1"
                           IsChecked="{Binding ModelOptions.RemoveLODs}" />
 
-                <Label Grid.Row="6" Grid.Column="0">
+                <Label Grid.Row="8" Grid.Column="0">
                     <TextBlock>
                         <Run>Remove Volumes</Run>
                         <Hyperlink Command="{Binding ExplainVolumesCommand}">?</Hyperlink>
                     </TextBlock>
                 </Label>
-                <CheckBox Grid.Row="6" Grid.Column="1"
+                <CheckBox Grid.Row="8" Grid.Column="1"
                           IsChecked="{Binding ModelOptions.RemoveVolumes}" />
 
             </Grid>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Files;
 
 namespace H2AIndex.Processes
@@ -13,7 +14,7 @@ namespace H2AIndex.Processes
 
     #region Data Members
 
-    private H2AFileContext _fileContext;
+    private readonly IH2AFileContext _fileContext;
 
     private IEnumerable<string> _inputPaths;
     private string[] _filePaths;
@@ -33,17 +34,12 @@ namespace H2AIndex.Processes
 
     #region Constructor
 
-    public OpenFilesProcess( H2AFileContext fileContext, IEnumerable<string> paths )
+    public OpenFilesProcess( params string[] paths )
     {
-      _fileContext = fileContext;
+      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
       _inputPaths = paths;
 
       _filesLoaded = new List<string>();
-    }
-
-    public OpenFilesProcess( H2AFileContext fileContext, string path )
-      : this( fileContext, new string[] { path } )
-    {
     }
 
     #endregion

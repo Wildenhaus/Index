@@ -9,8 +9,7 @@ using H2AIndex.Models;
 using ImageMagick;
 using ImageMagick.Formats;
 using Saber3D.Data.Textures;
-using Saber3D.Files;
-using Saber3D.Serializers;
+using Saber3D.Files.FileTypes;
 
 namespace H2AIndex.Services
 {
@@ -18,17 +17,9 @@ namespace H2AIndex.Services
   public class TextureConversionService : ITextureConversionService
   {
 
-    public S3DPicture DeserializeFile( IS3DFile file )
+    public Task<TextureModel> LoadTexture( PictureFile file )
     {
-      var stream = file.GetStream();
-      var reader = new BinaryReader( stream );
-
-      return new S3DPictureSerializer().Deserialize( reader );
-    }
-
-    public Task<TextureModel> LoadTexture( IS3DFile file )
-    {
-      var pict = DeserializeFile( file );
+      var pict = file.Deserialize();
       return LoadTexture( file.Name, pict );
     }
 
@@ -45,9 +36,9 @@ namespace H2AIndex.Services
       return model;
     }
 
-    public async Task<Stream> GetDDSStream( IS3DFile file )
+    public async Task<Stream> GetDDSStream( PictureFile file )
     {
-      var pict = DeserializeFile( file );
+      var pict = file.Deserialize();
 
       var outStream = new MemoryStream();
       using ( var ddsImage = CreateDDS( pict ) )
@@ -59,9 +50,9 @@ namespace H2AIndex.Services
       }
     }
 
-    public async Task<Stream> GetJpgStream( IS3DFile file, float quality = 1f )
+    public async Task<Stream> GetJpgStream( PictureFile file, float quality = 1f )
     {
-      var pict = DeserializeFile( file );
+      var pict = file.Deserialize();
 
       var outStream = new MemoryStream();
       using ( var ddsImage = CreateDDS( pict ) )
@@ -247,38 +238,6 @@ namespace H2AIndex.Services
         default:
           throw new NotImplementedException();
       }
-    }
-
-    private string GetMagickCompressionDefine( DXGI_FORMAT format )
-    {
-      switch ( format )
-      {
-        case DXGI_FORMAT.BC1_UNORM:
-          return "dxt1";
-
-        case DXGI_FORMAT.BC2_UNORM:
-        case DXGI_FORMAT.BC3_UNORM:
-        case DXGI_FORMAT.BC4_UNORM:
-        case DXGI_FORMAT.BC5_UNORM:
-          return "dxt5";
-
-        default:
-          return "none";
-      }
-    }
-
-    private bool IsCompressed( ScratchImage ddsImage )
-    {
-      var format = ddsImage.GetMetadata().Format;
-      return format.ToString().StartsWith( "BC" );
-    }
-
-    private async Task<ScratchImage> DecompressImage( ScratchImage ddsImage )
-    {
-      var decompressedImage = ddsImage.Decompress( DXGI_FORMAT.R8G8B8A8_UNORM );
-      ddsImage.Dispose();
-
-      return decompressedImage;
     }
 
     #endregion

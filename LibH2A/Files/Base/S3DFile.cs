@@ -11,14 +11,13 @@ namespace Saber3D.Files
 
     private IS3DFile _parent;
     private IList<IS3DFile> _children;
-    private H2AFileContext _fileContext;
 
     private string _name;
     private string _extension;
 
     private H2AStream _baseStream;
-    private long _dataStartOffset;
-    private long _dataEndOffset;
+    public long _dataStartOffset;
+    public long _dataEndOffset;
     private BinaryReader _reader;
 
     private bool _isInitialized;
@@ -28,7 +27,6 @@ namespace Saber3D.Files
 
     #region Properties
 
-    public H2AFileContext FileContext => _fileContext;
     public IS3DFile Parent => _parent;
     public IEnumerable<IS3DFile> Children => _children;
 
@@ -88,15 +86,6 @@ namespace Saber3D.Files
     public virtual H2AStream GetStream()
       => new H2AStreamSegment( _baseStream, _dataStartOffset, SizeInBytes );
 
-    public void SetFileContext( H2AFileContext fileContext )
-    {
-      if ( _fileContext != null )
-        _fileContext.RemoveFile( this );
-
-      fileContext.AddFile( this );
-      _fileContext = fileContext;
-    }
-
     #endregion
 
     #region Protected Methods
@@ -138,8 +127,6 @@ namespace Saber3D.Files
       {
         foreach ( var child in _children )
           child?.Dispose();
-
-        _fileContext?.RemoveFile( this );
       }
 
       _isDisposed = true;

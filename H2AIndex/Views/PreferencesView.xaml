@@ -14,11 +14,20 @@
 
     <TabControl>
 
-        <TabItem Header="General">
+        <TabItem Header="Files">
             <StackPanel>
-                <GroupBox Header="Default H2A Directory"
-                  Grid.Row="0"
-                  Margin="5,5,5,0">
+                <GroupBox Grid.Row="0"
+                          Margin="5,5,5,0">
+                    <GroupBox.Header>
+                        <DockPanel>
+                            <Label DockPanel.Dock="Left"
+                                   Content="Default H2A Directory" />
+                            <CheckBox DockPanel.Dock="Right"
+                                      Content="Load on Startup"
+                                      FlowDirection="RightToLeft"
+                                      IsChecked="{Binding Preferences.LoadH2ADirectoryOnStartup}" />
+                        </DockPanel>
+                    </GroupBox.Header>
                     <controls:FileBrowserBox Path="{Binding Preferences.H2ADirectoryPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DialogPathType="Directory"  />
                 </GroupBox>

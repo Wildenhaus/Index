@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -19,8 +20,10 @@ using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using Microsoft.Extensions.DependencyInjection;
 using PropertyChanged;
+using Saber3D.Data;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
+using PhongMaterialCore = HelixToolkit.SharpDX.Core.Model.PhongMaterialCore;
 using TextureModel = HelixToolkit.SharpDX.Core.TextureModel;
 
 namespace H2AIndex.ViewModels
@@ -33,6 +36,7 @@ namespace H2AIndex.ViewModels
 
     #region Data Members
 
+    private readonly IH2AFileContext _fileContext;
     private readonly IMeshIdentifierService _meshIdentifierService;
 
     private IS3DFile _file;
@@ -42,6 +46,8 @@ namespace H2AIndex.ViewModels
     private ICollectionView _nodeCollectionView;
 
     private Assimp.Scene _assimpScene;
+    private S3DGeometryGraph _geometryGraph;
+    private Dictionary<string, TextureModel> _loadedTextures;
 
     #endregion
 
@@ -87,6 +93,9 @@ namespace H2AIndex.ViewModels
       : base( serviceProvider )
     {
       _file = file;
+      _loadedTextures = new Dictionary<string, TextureModel>();
+
+      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
       _meshIdentifierService = ServiceProvider.GetRequiredService<IMeshIdentifierService>();
 
       EffectsManager = new DefaultEffectsManager();
@@ -125,6 +134,7 @@ namespace H2AIndex.ViewModels
       await RunProcess( convertProcess );
 
       _assimpScene = convertProcess.Result;
+      _geometryGraph = convertProcess.GeometryGraph;
 
       using ( var prog = ShowProgress() )
       {
@@ -162,16 +172,42 @@ namespace H2AIndex.ViewModels
       return collectionView;
     }
 
-    private async Task<TextureModel> GetTexture( string name )
+    private async Task<TextureModel> LoadTexture( string name )
     {
-      var file = H2AFileContext.Global.GetFiles( name ).FirstOrDefault();
+      if ( string.IsNullOrWhiteSpace( name ) )
+        return null;
+
+      name = Path.ChangeExtension( name, ".pct" );
+      if ( _loadedTextures.TryGetValue( name, out var texture ) )
+        return texture;
+
+      var file = _fileContext.GetFile<PictureFile>( name );
       if ( file is null )
         return null;
 
       var svc = ServiceProvider.GetService<ITextureConversionService>();
       var stream = await svc.GetJpgStream( file, Options.ModelTexturePreviewQuality );
 
-      return TextureModel.Create( stream );
+      texture = TextureModel.Create( stream );
+      _loadedTextures.Add( name, texture );
+      return texture;
+    }
+
+    private async void ApplyTexturesToNode( MeshNode meshNode )
+    {
+      var nodeMaterial = meshNode.Material as PhongMaterialCore;
+      if ( nodeMaterial is null )
+        return;
+
+      var baseTexName = nodeMaterial.DiffuseMapFilePath;
+      if ( string.IsNullOrWhiteSpace( baseTexName ) )
+        return;
+
+      nodeMaterial.DiffuseMap = await LoadTexture( $"{baseTexName}.pct" );
+      nodeMaterial.SpecularColorMap = await LoadTexture( $"{baseTexName}_spec.pct" );
+      nodeMaterial.NormalMap = await LoadTexture( $"{baseTexName}_nm.pct" );
+      nodeMaterial.EnableTessellation = true;
+      nodeMaterial.UVTransform = new UVTransform( 0, 1, -1, 0, 0 );
     }
 
     private async Task PrepareModelViewer( Assimp.Scene assimpScene )
@@ -193,33 +229,20 @@ namespace H2AIndex.ViewModels
 
       AddNodeModels( scene.Root );
 
-      var matLookup = new Dictionary<string, Material>();
+      var materialLookup = new Dictionary<string, Material>();
       foreach ( var node in scene.Root.Traverse() )
       {
-        if ( node is MeshNode mn )
-        {
-          var matName = mn.Material.Name;
-          if ( !matLookup.TryGetValue( matName, out var mat ) )
-          {
-            mat = new PhongMaterial
-            {
-              DiffuseMap = await GetTexture( $"{matName}.pct" ),
-              SpecularColorMap = await GetTexture( $"{matName}_spec.pct" ),
-              NormalMap = await GetTexture( $"{matName}_nm.pct" ),
-              EnableTessellation = true,
-              UVTransform = new UVTransform( 0, 1, -1, 0, 0 )
-            };
-            matLookup.Add( matName, mat );
-          }
-
-          mn.Material = mat;
-        }
+        if ( node is MeshNode meshNode )
+          ApplyTexturesToNode( meshNode );
       }
 
-      Model.AddNode( scene.Root );
-      CalculateMoveSpeed( scene );
-      Camera.ZoomExtents( Viewport );
-      UpdateMeshInfo();
+      App.Current.Dispatcher.Invoke( () =>
+      {
+        Model.AddNode( scene.Root );
+        CalculateMoveSpeed( scene );
+        Camera.ZoomExtents( Viewport );
+        UpdateMeshInfo();
+      } );
     }
 
     private void ShowAllNodes()
@@ -344,7 +367,10 @@ namespace H2AIndex.ViewModels
       if ( !( result is Tuple<ModelExportOptionsModel, TextureExportOptionsModel> options ) )
         return;
 
-      var exportProcess = new ExportModelProcess( _file, _assimpScene, options );
+      var modelOptions = options.Item1;
+      var textureOptions = options.Item2;
+
+      var exportProcess = new ExportModelProcess( _file, _assimpScene, _geometryGraph, modelOptions, textureOptions );
       await RunProcess( exportProcess );
     }
 

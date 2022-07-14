@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading;
 using Ionic.Zlib;
-using Saber3D.Common;
 using static Saber3D.Assertions;
 
 namespace Saber3D.Files
@@ -165,8 +164,6 @@ namespace Saber3D.Files
     private const long CHUNK_SIZE = 0x8000;
     private const long MAX_CHUNK_COUNT = ( HEADER_SIZE - sizeof( long ) ) / sizeof( long );
 
-    private const int CACHE_SIZE = 400;
-
     #endregion
 
     #region Data Members
@@ -185,7 +182,6 @@ namespace Saber3D.Files
     private int _currentChunkIndex;
     private byte[] _decompressBuffer;
     private MemoryStream _decompressStream;
-    private LruCache<int, MemoryStream> _decompressCache;
 
     #endregion
 
@@ -214,7 +210,6 @@ namespace Saber3D.Files
     {
       _baseStream = baseStream;
       _reader = new BinaryReader( _baseStream );
-      _decompressCache = new LruCache<int, MemoryStream>( CACHE_SIZE );
     }
 
     public static H2ADecompressionStream FromStream( Stream baseStream )
@@ -234,6 +229,10 @@ namespace Saber3D.Files
 
     public override int Read( byte[] buffer, int offset, int size )
     {
+#if DEBUG
+      //Assert( IsLocked, "Attempting to read without a lock." );
+#endif
+
       if ( size == 0 )
         return -1;
 
@@ -245,6 +244,9 @@ namespace Saber3D.Files
 
     public override long Seek( long offset, SeekOrigin origin )
     {
+#if DEBUG
+      //Assert( IsLocked, "Attempting to seek without a lock." );
+#endif
       // Calculate the true offset.
       switch ( origin )
       {
@@ -461,13 +463,6 @@ namespace Saber3D.Files
       var chunk = _chunks[ chunkIndex ];
       _baseStream.Position = chunk.StartOffset;
 
-      if ( _decompressCache.TryGet( chunkIndex, out var cachedStream ) )
-      {
-        _decompressStream = cachedStream;
-        _decompressStream.Position = 0;
-        return;
-      }
-
       using ( var zlibStream = new ZlibStream( _baseStream, CompressionMode.Decompress, true ) )
       {
         _decompressStream.SetLength( CHUNK_SIZE );
@@ -476,7 +471,6 @@ namespace Saber3D.Files
 
         _decompressStream.Position = 0;
         _decompressStream.SetLength( bytesRead );
-        _decompressCache.Put( chunkIndex, _decompressStream );
       }
     }
 

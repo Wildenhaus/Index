@@ -9,7 +9,6 @@ using H2AIndex.Processes;
 using H2AIndex.Services;
 using H2AIndex.Views;
 using Microsoft.Extensions.DependencyInjection;
-using Saber3D.Files;
 
 namespace H2AIndex.ViewModels
 {
@@ -87,6 +86,23 @@ namespace H2AIndex.ViewModels
 
     #endregion
 
+    #region Overrides
+
+    protected override async Task OnInitializing()
+    {
+      var prefs = GetPreferences();
+      if ( prefs.LoadH2ADirectoryOnStartup )
+      {
+        if ( Directory.Exists( prefs.H2ADirectoryPath ) )
+        {
+          var process = new OpenFilesProcess( prefs.H2ADirectoryPath );
+          await RunProcess( process );
+        }
+      }
+    }
+
+    #endregion
+
     #region Private Methods
 
     private async Task OpenFile()
@@ -98,7 +114,7 @@ namespace H2AIndex.ViewModels
       if ( filePaths == null )
         return;
 
-      var process = new OpenFilesProcess( H2AFileContext.Global, filePaths );
+      var process = new OpenFilesProcess( filePaths );
       await RunProcess( process );
     }
 
@@ -111,7 +127,7 @@ namespace H2AIndex.ViewModels
       if ( directoryPath == null )
         return;
 
-      var process = new OpenFilesProcess( H2AFileContext.Global, directoryPath );
+      var process = new OpenFilesProcess( directoryPath );
       await RunProcess( process );
     }
 

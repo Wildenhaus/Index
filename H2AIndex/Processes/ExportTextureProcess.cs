@@ -13,6 +13,7 @@ using ImageMagick;
 using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Data.Textures;
 using Saber3D.Files;
+using Saber3D.Files.FileTypes;
 using Saber3D.Serializers.Configurations;
 
 namespace H2AIndex.Processes
@@ -25,9 +26,10 @@ namespace H2AIndex.Processes
 
     #region Data Members
 
+    private readonly IH2AFileContext _fileContext;
     private readonly ITextureConversionService _textureConversionService;
 
-    private readonly IS3DFile _file;
+    private readonly PictureFile _file;
     private readonly TextureExportOptionsModel _options;
 
     private string _outputFilePath;
@@ -51,12 +53,13 @@ namespace H2AIndex.Processes
 
     #region Constructor
 
-    public ExportTextureProcess( IS3DFile file, TextureExportOptionsModel options )
+    public ExportTextureProcess( PictureFile file, TextureExportOptionsModel options )
     {
+      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
+      _textureConversionService = ServiceProvider.GetRequiredService<ITextureConversionService>();
+
       _file = file;
       _options = options.DeepCopy();
-
-      _textureConversionService = ServiceProvider.GetRequiredService<ITextureConversionService>();
     }
 
     #endregion
@@ -65,7 +68,7 @@ namespace H2AIndex.Processes
 
     protected override async Task OnExecuting()
     {
-      _picture = _textureConversionService.DeserializeFile( _file );
+      _picture = _file.Deserialize();
 
       if ( !_options.OverwriteExisting && CheckIfFileExists() )
       {
@@ -246,7 +249,7 @@ namespace H2AIndex.Processes
     private async Task ExportTextureDefinition()
     {
       var tdFileName = Path.ChangeExtension( _file.Name, ".td" );
-      var tdFile = H2AFileContext.Global.GetFiles( tdFileName ).FirstOrDefault();
+      var tdFile = _fileContext.GetFile<TextureDefinitionFile>( tdFileName );
       if ( tdFile is null )
       {
         StatusList.AddWarning( tdFileName, "Could not find Texture Definition. It isn't loaded or doesn't exist." );
@@ -275,8 +278,7 @@ namespace H2AIndex.Processes
       }
       catch ( Exception ex )
       {
-        StatusList.AddError( tdFileName, "Encountered an error attempting to read the texture definition.", ex );
-        throw;
+        StatusList.AddError( tdFileName, "Encountered an error attempting to export the texture definition.", ex );
       }
     }
 

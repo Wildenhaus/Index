@@ -21,10 +21,11 @@ namespace H2AIndex.ViewModels
 
     #region Data Members
 
+    private readonly IH2AFileContext _fileContext;
     private readonly ITextureConversionService _textureService;
     private readonly ITabService _tabService;
 
-    private readonly IS3DFile _file;
+    private readonly PictureFile _file;
 
     #endregion
 
@@ -39,10 +40,12 @@ namespace H2AIndex.ViewModels
 
     #region Constructor
 
-    public TextureViewModel( IServiceProvider serviceProvider, IS3DFile file )
+    public TextureViewModel( IServiceProvider serviceProvider, PictureFile file )
       : base( serviceProvider )
     {
       _file = file;
+
+      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
       _textureService = ServiceProvider.GetService<ITextureConversionService>();
       _tabService = ServiceProvider.GetService<ITabService>();
 
@@ -79,7 +82,7 @@ namespace H2AIndex.ViewModels
 
     private Task OpenTextureDefinitionFile()
     {
-      var tdFile = H2AFileContext.Global.GetFile( Path.ChangeExtension( _file.Name, ".td" ) );
+      var tdFile = _fileContext.GetFile( Path.ChangeExtension( _file.Name, ".td" ) );
       if ( tdFile is null )
         return ShowMessageModal( "File Not Found", "Could not find a texture definition for this file." );
 

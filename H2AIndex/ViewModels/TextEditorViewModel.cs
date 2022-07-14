@@ -67,8 +67,14 @@ namespace H2AIndex.ViewModels
     private async Task<TextDocument> LoadDocument( IS3DFile file )
     {
       var fileStream = file.GetStream();
-      using ( var reader = new StreamReader( fileStream, leaveOpen: true ) )
-        return new TextDocument( await reader.ReadToEndAsync() );
+
+      try
+      {
+        fileStream.AcquireLock();
+        using ( var reader = new StreamReader( fileStream, leaveOpen: true ) )
+          return new TextDocument( await reader.ReadToEndAsync() );
+      }
+      finally { fileStream.ReleaseLock(); }
     }
 
     private async Task ExportFile()

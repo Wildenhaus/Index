@@ -23,7 +23,6 @@ namespace H2AIndex.Processes
     #region Data Members
 
     private readonly IS3DFile _file;
-    private BinaryReader _reader;
 
     private SceneContext _context;
 
@@ -32,6 +31,7 @@ namespace H2AIndex.Processes
     #region Properties
 
     public override Scene Result => _context.Scene;
+    public S3DGeometryGraph GeometryGraph => _context.GeometryGraph;
 
     #endregion
 
@@ -51,7 +51,6 @@ namespace H2AIndex.Processes
       _context = await DeserializeFile();
 
       ConvertObjects();
-      //FixupModel();
     }
 
     #endregion
@@ -64,25 +63,30 @@ namespace H2AIndex.Processes
       IsIndeterminate = true;
 
       var stream = _file.GetStream();
-      _reader = new BinaryReader( stream );
 
-      if ( _file is TplFile )
+      try
       {
-        var tpl = new S3DTemplateSerializer().Deserialize( _reader );
-        var context = new SceneContext( tpl.GeometryGraph, _reader );
-        context.AddLodDefinitions( tpl.LodDefinitions );
+        stream.AcquireLock();
 
-        return context;
-      }
-      else if ( _file is LgFile )
-      {
-        var lg = new S3DSceneSerializer().Deserialize( _reader );
-        var context = new SceneContext( lg.GeometryGraph, _reader );
+        if ( _file is TplFile )
+        {
+          var tpl = S3DTemplateSerializer.Deserialize( stream );
+          var context = new SceneContext( tpl.GeometryGraph, stream );
+          context.AddLodDefinitions( tpl.LodDefinitions );
 
-        return context;
+          return context;
+        }
+        else if ( _file is LgFile )
+        {
+          var lg = S3DSceneSerializer.Deserialize( stream );
+          var context = new SceneContext( lg.GeometryGraph, stream );
+
+          return context;
+        }
+        else
+          throw new InvalidDataException( "File must be TPL or LG." );
       }
-      else
-        throw new InvalidDataException( "File must be TPL or LG." );
+      finally { stream.ReleaseLock(); }
     }
 
     private void ConvertObjects()
@@ -131,6 +135,9 @@ namespace H2AIndex.Processes
       foreach ( var skinCompoundId in skinCompoundIds )
       {
         var skinCompoundObject = _context.GeometryGraph.Objects[ skinCompoundId ];
+        if ( !skinCompoundObject.SubMeshes.Any() )
+          continue;
+
         var builder = new MeshBuilder( _context, skinCompoundObject, skinCompoundObject.SubMeshes.First() );
         builder.Build();
 
@@ -263,49 +270,6 @@ namespace H2AIndex.Processes
       _context.NodeNames.Add( node.Name, node );
     }
 
-    //private void AddSubMeshes( S3DObject obj )
-    //{
-    //  Node parentNode;
-
-    //  var parentName = obj.GetBoneName();
-    //  if ( parentName != null )
-    //    parentNode = _context.NodeNames[ parentName ];
-    //  else
-    //  {
-    //    parentName = obj.GetParentName();
-    //    parentNode = _context.NodeNames[ parentName ];
-    //  }
-
-    //  foreach ( var submesh in obj.SubMeshes )
-    //  {
-    //    var builder = new MeshBuilder( _context, obj, submesh );
-    //    var mesh = builder.Build();
-
-    //    _context.Scene.Meshes.Add( mesh );
-    //    var meshId = _context.Scene.Meshes.Count - 1;
-
-    //    var meshName = obj.GetMeshName();
-    //    var meshNode = new Node( meshName, parentNode );
-    //    parentNode.Children.Add( meshNode );
-
-    //    meshNode.MeshIndices.Add( meshId );
-
-    //    if ( builder.SkinCompoundId != -1 )
-    //    {
-    //      //var boneId = builder.Bones.Keys.First();
-    //      //var boneObject = _context.GeometryGraph.Objects[ boneId ];
-
-    //      //if ( boneObject.GetMeshName().Contains( "_lod" ) )
-    //      //  boneObject = boneObject.Parent;
-
-    //      var parentMeshName = obj.GetParentMeshName();
-    //      var parentObj = _context.GeometryGraph.Objects.First( x => x.GetName() == parentMeshName );
-
-    //      meshNode.Transform = parentObj.MatrixModel.ToAssimp();
-    //    }
-    //  }
-    //}
-
     private void AddRemainingMeshBones()
     {
       var boneLookup = new Dictionary<string, Bone>();
@@ -323,41 +287,6 @@ namespace H2AIndex.Processes
               mesh.Bones.Add( bonePair.Value );
     }
 
-    private void FixupModel()
-    {
-      var scene = _context.Scene;
-      var newScene = new Scene();
-      newScene.RootNode = new Node( scene.RootNode.Name );
-      newScene.Materials.AddRange( scene.Materials );
-
-      var meshLookup = new Dictionary<int, int>();
-
-      void AddNode( Node oldNode, Node newParentNode )
-      {
-        var newNode = new Node( oldNode.Name );
-        foreach ( var oldMeshIdx in oldNode.MeshIndices )
-        {
-          if ( !meshLookup.TryGetValue( oldMeshIdx, out var newMeshIdx ) )
-          {
-            newScene.Meshes.Add( scene.Meshes[ oldMeshIdx ] );
-            newMeshIdx = newScene.Meshes.Count - 1;
-            meshLookup.Add( oldMeshIdx, newMeshIdx );
-          }
-          newNode.MeshIndices.Add( newMeshIdx );
-        }
-
-        newParentNode.Children.Add( newNode );
-
-        foreach ( var child in oldNode.Children )
-          AddNode( child, newNode );
-      }
-
-      foreach ( var oldNode in scene.RootNode.Children )
-        AddNode( oldNode, newScene.RootNode );
-
-      _context.Scene = newScene;
-    }
-
     #endregion
 
   }
@@ -366,6 +295,7 @@ namespace H2AIndex.Processes
   {
 
     public Scene Scene { get; set; }
+    public H2AStream Stream { get; }
     public BinaryReader Reader { get; }
     public S3DGeometryGraph GeometryGraph { get; }
 
@@ -378,11 +308,13 @@ namespace H2AIndex.Processes
     public Dictionary<short, MeshBuilder> SkinCompounds { get; }
     public Dictionary<short, short> LodIndices { get; }
 
-    public SceneContext( S3DGeometryGraph graph, BinaryReader reader )
+    public SceneContext( S3DGeometryGraph graph, H2AStream stream )
     {
       Scene = new Scene();
 
-      Reader = reader;
+      Stream = stream;
+      Reader = new BinaryReader( stream );
+
       GeometryGraph = graph;
 
       Bones = new Dictionary<short, Bone>();
@@ -393,33 +325,6 @@ namespace H2AIndex.Processes
       LodIndices = new Dictionary<short, short>();
 
       Scene.Materials.Add( new Material() { Name = "DefaultMaterial" } );
-    }
-
-    public Node GetNodeFromPath( string path )
-    {
-      var nodeParts = path.Split( '|', System.StringSplitOptions.RemoveEmptyEntries );
-
-      if ( nodeParts.Length == 0 )
-        return null;
-
-      if ( !NodeNames.TryGetValue( nodeParts[ 0 ], out var currentNode ) )
-        return null;
-
-      foreach ( var part in nodeParts.Skip( 1 ) )
-      {
-        if ( !NodeNames.TryGetValue( part, out currentNode ) )
-          return null;
-      }
-
-      return currentNode;
-    }
-
-    public Node GetNodeParentFromPath( string path )
-    {
-      if ( path.Contains( "|" ) )
-        return GetNodeFromPath( path.Substring( 0, path.LastIndexOf( '|' ) ) );
-      else
-        return null;
     }
 
     public void AddLodDefinitions( IList<S3DLodDefinition> lodDefinitions )
@@ -436,17 +341,28 @@ namespace H2AIndex.Processes
   internal class MeshBuilder
   {
 
+    #region Data Members
+
     private readonly SceneContext _context;
     private readonly S3DObject _object;
     private readonly S3DGeometrySubMesh _submesh;
 
+    #endregion
+
+    #region Properties
+
     public Mesh Mesh { get; }
+    public Dictionary<short, Bone> Bones { get; }
     public Dictionary<int, int> VertexLookup { get; }
     public short SkinCompoundId { get; }
 
+    private H2AStream Stream => _context.Stream;
     private BinaryReader Reader => _context.Reader;
     private S3DGeometryGraph Graph => _context.GeometryGraph;
-    public Dictionary<short, Bone> Bones { get; }
+
+    #endregion
+
+    #region Constructor
 
     public MeshBuilder( SceneContext context, S3DObject obj, S3DGeometrySubMesh submesh )
     {
@@ -462,6 +378,10 @@ namespace H2AIndex.Processes
       Bones = new Dictionary<short, Bone>();
       VertexLookup = new Dictionary<int, int>();
     }
+
+    #endregion
+
+    #region Public Methods
 
     public Mesh Build()
     {
@@ -496,7 +416,24 @@ namespace H2AIndex.Processes
     public void ParentMeshToBone( S3DObject boneObject )
     {
       for ( var i = 0; i < Mesh.VertexCount; i++ )
-        AddBoneWeight( boneObject.Id, 1, i );
+        AddVertexWeight( boneObject.Id, 1, i );
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    #region Face Methods
+
+    private S3DFace[] DeserializeFaces( S3DGeometryBuffer buffer, uint startIndex, uint endIndex )
+    {
+      try
+      {
+        Stream.AcquireLock();
+        var serializer = new S3DFaceSerializer( buffer );
+        return serializer.DeserializeRange( Reader, ( int ) startIndex, ( int ) endIndex ).ToArray();
+      }
+      finally { Stream.ReleaseLock(); }
     }
 
     private void AddFaces( S3DGeometryBuffer buffer, S3DGeometryMeshBuffer meshBuffer )
@@ -505,8 +442,8 @@ namespace H2AIndex.Processes
       var startIndex = offset + meshBuffer.SubBufferOffset / buffer.ElementSize;
       var endIndex = startIndex + _submesh.BufferInfo.FaceCount;
 
-      var serializer = new S3DFaceSerializer( buffer );
-      foreach ( var face in serializer.DeserializeRange( Reader, ( int ) startIndex, ( int ) endIndex ) )
+      var faces = DeserializeFaces( buffer, startIndex, endIndex );
+      foreach ( var face in faces )
       {
         var assimpFace = new Face();
         assimpFace.Indices.Add( VertexLookup[ face[ 0 ] ] );
@@ -515,6 +452,21 @@ namespace H2AIndex.Processes
 
         Mesh.Faces.Add( assimpFace );
       }
+    }
+
+    #endregion
+
+    #region Vertex Methods
+
+    private S3DVertex[] DeserializeVertices( S3DGeometryBuffer buffer, uint startIndex, uint endIndex )
+    {
+      try
+      {
+        Stream.AcquireLock();
+        var serializer = new S3DVertexSerializer( buffer );
+        return serializer.DeserializeRange( Reader, ( int ) startIndex, ( int ) endIndex ).ToArray();
+      }
+      finally { Stream.ReleaseLock(); }
     }
 
     private void AddVertices( S3DGeometryBuffer buffer, S3DGeometryMeshBuffer meshBuffer )
@@ -531,8 +483,8 @@ namespace H2AIndex.Processes
       if ( _submesh.Position.HasValue )
         pos = _submesh.Position.Value.ToAssimp();
 
-      var serializer = new S3DVertexSerializer( buffer );
-      foreach ( var vertex in serializer.DeserializeRange( Reader, ( int ) startIndex, ( int ) endIndex ) )
+      var vertices = DeserializeVertices( buffer, startIndex, endIndex );
+      foreach ( var vertex in vertices )
       {
         Mesh.Vertices.Add( vertex.Position.ToAssimp3D() * scale + pos );
 
@@ -552,16 +504,16 @@ namespace H2AIndex.Processes
       var set = new HashSet<byte>();
 
       if ( skinnedVertex.Weight1.HasValue && set.Add( skinnedVertex.Index1 ) )
-        AddBoneWeight( boneIds[ skinnedVertex.Index1 ], skinnedVertex.Weight1.Value );
+        AddVertexWeight( boneIds[ skinnedVertex.Index1 ], skinnedVertex.Weight1.Value );
       if ( skinnedVertex.Weight2.HasValue && set.Add( skinnedVertex.Index2 ) )
-        AddBoneWeight( boneIds[ skinnedVertex.Index2 ], skinnedVertex.Weight2.Value );
+        AddVertexWeight( boneIds[ skinnedVertex.Index2 ], skinnedVertex.Weight2.Value );
       if ( skinnedVertex.Weight3.HasValue && set.Add( skinnedVertex.Index3 ) )
-        AddBoneWeight( boneIds[ skinnedVertex.Index3 ], skinnedVertex.Weight3.Value );
+        AddVertexWeight( boneIds[ skinnedVertex.Index3 ], skinnedVertex.Weight3.Value );
       if ( skinnedVertex.Weight4.HasValue && set.Add( skinnedVertex.Index4 ) )
-        AddBoneWeight( boneIds[ skinnedVertex.Index4 ], skinnedVertex.Weight4.Value );
+        AddVertexWeight( boneIds[ skinnedVertex.Index4 ], skinnedVertex.Weight4.Value );
     }
 
-    private void AddBoneWeight( short boneObjectId, float weight, int vertIndex = -1 )
+    private void AddVertexWeight( short boneObjectId, float weight, int vertIndex = -1 )
     {
       if ( boneObjectId == -1 )
         return;
@@ -573,27 +525,42 @@ namespace H2AIndex.Processes
       bone.VertexWeights.Add( new VertexWeight( vertIndex, weight ) );
     }
 
+    #endregion
+
+    #region Interleaved Methods
+
+    private S3DInterleavedData[] DeserializeInterleavedData( S3DGeometryBuffer buffer, uint startIndex, uint endIndex )
+    {
+      try
+      {
+        Stream.AcquireLock();
+        var serializer = new S3DInterleavedDataSerializer( buffer );
+        return serializer.DeserializeRange( Reader, ( int ) startIndex, ( int ) endIndex ).ToArray();
+      }
+      finally { Stream.ReleaseLock(); }
+    }
+
     private void AddInterleavedData( S3DGeometryBuffer buffer, S3DGeometryMeshBuffer meshBuffer )
     {
       var offset = _submesh.BufferInfo.VertexOffset;
       var startIndex = offset + ( meshBuffer.SubBufferOffset / buffer.ElementSize );
       var endIndex = startIndex + _submesh.BufferInfo.VertexCount;
 
-      var serializer = new S3DInterleavedDataSerializer( buffer );
-      foreach ( var data in serializer.DeserializeRange( Reader, ( int ) startIndex, ( int ) endIndex ) )
+      var data = DeserializeInterleavedData( buffer, startIndex, endIndex );
+      foreach ( var datum in data )
       {
-        if ( data.UV0.HasValue ) AddVertexUV( 0, data.UV0.Value );
-        if ( data.UV1.HasValue ) AddVertexUV( 1, data.UV1.Value );
-        if ( data.UV2.HasValue ) AddVertexUV( 2, data.UV2.Value );
-        if ( data.UV3.HasValue ) AddVertexUV( 3, data.UV3.Value );
-        if ( data.UV4.HasValue ) AddVertexUV( 4, data.UV4.Value );
+        if ( datum.UV0.HasValue ) AddVertexUV( 0, datum.UV0.Value );
+        if ( datum.UV1.HasValue ) AddVertexUV( 1, datum.UV1.Value );
+        if ( datum.UV2.HasValue ) AddVertexUV( 2, datum.UV2.Value );
+        if ( datum.UV3.HasValue ) AddVertexUV( 3, datum.UV3.Value );
+        if ( datum.UV4.HasValue ) AddVertexUV( 4, datum.UV4.Value );
 
         // TODO
         /* Assimp only allows 1 Tangent channel.
          * Multiple tangent channels seem to only occur for level geometry.
          * See AddVertexTangent() for more info.
          */
-        if ( data.Tangent0.HasValue ) AddVertexTangent( 0, data.Tangent0.Value );
+        if ( datum.Tangent0.HasValue ) AddVertexTangent( 0, datum.Tangent0.Value );
         //if ( data.Tangent1.HasValue ) System.Diagnostics.Debugger.Break();
         //if ( data.Tangent2.HasValue ) System.Diagnostics.Debugger.Break();
         //if ( data.Tangent3.HasValue ) System.Diagnostics.Debugger.Break();
@@ -631,6 +598,10 @@ namespace H2AIndex.Processes
       Mesh.UVComponentCount[ uvChannel ] = 2;
     }
 
+    #endregion
+
+    #region Skin Compound Methods
+
     private void AddSkinCompoundBoneIds( S3DGeometryBuffer buffer, S3DGeometryMeshBuffer meshBuffer )
     {
       var offset = _submesh.BufferInfo.VertexOffset;
@@ -639,13 +610,18 @@ namespace H2AIndex.Processes
 
       var boneIds = _submesh.BoneIds;
 
-      Reader.BaseStream.Position = buffer.StartOffset + meshBuffer.SubBufferOffset + offset * buffer.ElementSize;
-      for ( var i = startIndex; i < endIndex; i++ )
+      try
       {
-        var boneIndex = boneIds[ Reader.ReadInt32() ];
-        var vertIndex = VertexLookup[ offset++ ];
-        AddBoneWeight( boneIndex, 1, vertIndex );
+        Stream.AcquireLock();
+        Stream.Position = buffer.StartOffset + meshBuffer.SubBufferOffset + offset * buffer.ElementSize;
+        for ( var i = startIndex; i < endIndex; i++ )
+        {
+          var boneIndex = boneIds[ Reader.ReadInt32() ];
+          var vertIndex = VertexLookup[ offset++ ];
+          AddVertexWeight( boneIndex, 1, vertIndex );
+        }
       }
+      finally { Stream.ReleaseLock(); }
     }
 
     private void ApplySkinCompoundData()
@@ -676,10 +652,12 @@ namespace H2AIndex.Processes
           Debug.Assert( skinVertex.Y == targetVertex.Y );
           Debug.Assert( skinVertex.Z == targetVertex.Z );
 
-          AddBoneWeight( boneId, 1, translatedVertOffset );
+          AddVertexWeight( boneId, 1, translatedVertOffset );
         }
       }
     }
+
+    #endregion
 
     private Bone GetOrCreateBone( short boneObjectId )
     {
@@ -716,27 +694,29 @@ namespace H2AIndex.Processes
       if ( submeshMaterial is null )
         return;
 
-      var materialName = submeshMaterial.ShadingMaterialTexture;
-      if ( string.IsNullOrWhiteSpace( materialName ) )
-        return;
+      var materialName = submeshMaterial.ShadingMaterialMaterial;
+      var textureName = submeshMaterial.ShadingMaterialTexture;
+      var exportMatName = submeshMaterial.MaterialName;
 
-      if ( _context.MaterialIndices.TryGetValue( materialName, out var materialIndex ) )
+      if ( _context.MaterialIndices.TryGetValue( exportMatName, out var materialIndex ) )
       {
         Mesh.MaterialIndex = materialIndex;
         return;
       }
 
-      var material = new Material { Name = materialName };
-      material.TextureDiffuse = new TextureSlot( materialName, TextureType.Diffuse, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 ); ;
-      material.TextureNormal = new TextureSlot( $"{materialName}nm", TextureType.Normals, 1, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
-      material.TextureSpecular = new TextureSlot( $"{materialName}_spec", TextureType.Specular, 2, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
+      var material = new Material { Name = exportMatName };
+      material.TextureDiffuse = new TextureSlot( textureName, TextureType.Diffuse, 0, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 ); ;
+      material.TextureNormal = new TextureSlot( $"{textureName}_nm", TextureType.Normals, 1, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
+      material.TextureSpecular = new TextureSlot( $"{textureName}_spec", TextureType.Specular, 2, TextureMapping.FromUV, 0, blendFactor: 0, TextureOperation.Add, TextureWrapMode.Wrap, TextureWrapMode.Wrap, 0 );
 
       materialIndex = _context.Scene.Materials.Count;
 
       _context.Scene.Materials.Add( material );
-      _context.MaterialIndices.Add( materialName, materialIndex );
+      _context.MaterialIndices.Add( exportMatName, materialIndex );
       Mesh.MaterialIndex = materialIndex;
     }
+
+    #endregion
 
   }
 

@@ -15,15 +15,38 @@ namespace Testbed
   public static class Program
   {
     // Change this
+    static readonly IH2AFileContext FileContext = new H2AFileContext();
     const string GAME_PATH = @"G:\Steam\steamapps\common\Halo The Master Chief Collection\";
 
     public static void Main( string[] args )
     {
       // Index all game files
-      //H2AFileContext.Global.OpenDirectory( GAME_PATH );
+      FileContext.OpenDirectory( GAME_PATH );
 
-      //TestReadTemplateModels();
-      //TestReadLevelGeometry();
+      //using ( var fs = File.CreateText( @"F:\h2a.txt" ) )
+      //{
+      //  Console.SetOut( fs );
+      //  void Print( IS3DFile file, int level = 0 )
+      //  {
+      //    var sf = file as S3DFile;
+      //    Console.WriteLine( "{0}{1} {2} {3} {4}", new string( ' ', level ), sf.Name, sf._dataStartOffset, sf._dataEndOffset, sf.SizeInBytes );
+      //    foreach ( var child in file.Children )
+      //      Print( child, level + 1 );
+      //  }
+
+      //  var pckFiles = Directory.GetFiles( GAME_PATH, "*.pck", SearchOption.AllDirectories );
+      //  foreach ( var pckFileName in pckFiles )
+      //  {
+      //    var file = FileContext.GetFile<PckFile>( Path.GetFileName( pckFileName ) );
+      //    Print( file );
+      //  }
+
+      //  fs.Flush();
+      //}
+
+      //return;
+      TestReadTemplateModels();
+      TestReadLevelGeometry();
       //TestReadTextures();
       //TestConvertTexturesToDDS();
       //TestConvertTexturesToTGA();
@@ -50,16 +73,16 @@ namespace Testbed
       //LoadFbx( @"Z:\Blender\Models\Destiny 2\Enemies\Fallen Marauder\Marauder.fbx" );
       //LoadFbx( @"G:\h2a\test\dervish__h.fbx" );
 
-      TestMultithreaded();
+      //TestMultithreaded();
     }
 
     private static void TestMultithreaded()
     {
       //H2AFileContext.Global.OpenFile( @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo2\preload\paks\01b_spacestation.pck" );
       for ( var i = 0; i < 100; i++ )
-        new H2AFileContext().OpenFile( @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo2\preload\paks\shared.pck" );
+        FileContext.OpenFile( @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo2\preload\paks\shared.pck" );
       return;
-      var lgFile = H2AFileContext.Global.GetFiles( ".lg" ).First();
+      var lgFile = FileContext.GetFiles( ".lg" ).First();
 
       var tasks = new Task<byte[]>[ 1 ];
       for ( var i = 0; i < tasks.Length; i++ )
@@ -103,7 +126,7 @@ namespace Testbed
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var tplFile = fileContext.GetFiles( tplName )
         .Where( x => x.Name.Contains( tplName ) )
@@ -129,7 +152,7 @@ namespace Testbed
 
     private static void ExportLevelGeometry( string lgName, string outFbxPath )
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var lgFile = fileContext.GetFiles( lgName )
         .Where( x => x.Name.Contains( lgName ) )
@@ -155,7 +178,7 @@ namespace Testbed
 
     private static void TestReadLevelGeometry()
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var count = 0;
       var success = 0;
@@ -186,7 +209,7 @@ namespace Testbed
 
     private static void TestReadTemplateModels()
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var count = 0;
       var success = 0;
@@ -217,7 +240,7 @@ namespace Testbed
 
     private static void TestReadTextures()
     {
-      var fileContext = H2AFileContext.Global;
+      var fileContext = FileContext;
 
       var count = 0;
       var success = 0;
@@ -249,7 +272,7 @@ namespace Testbed
     private static void TestConvertTexturesToDDS()
     {
       int success = 0, count = 0;
-      foreach ( var file in H2AFileContext.Global.GetFiles( ".pct" ) )
+      foreach ( var file in FileContext.GetFiles( ".pct" ) )
       {
         var fs = file.GetStream();
         var reader = new BinaryReader( fs );
@@ -282,7 +305,7 @@ namespace Testbed
     private static void TestConvertTexturesToTGA()
     {
       int success = 0, count = 0;
-      foreach ( var file in H2AFileContext.Global.GetFiles( ".pct" ) )
+      foreach ( var file in FileContext.GetFiles( ".pct" ) )
       {
         var fs = file.GetStream();
         var reader = new BinaryReader( fs );

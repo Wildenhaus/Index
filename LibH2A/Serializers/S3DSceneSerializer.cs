@@ -19,6 +19,18 @@ namespace Saber3D.Serializers
 
     #endregion
 
+    #region Public Methods
+
+    public static S3DScene Deserialize( Stream stream )
+    {
+      var reader = new BinaryReader( stream );
+      return new S3DSceneSerializer().Deserialize( reader );
+    }
+
+    #endregion
+
+    #region Overrides
+
     protected override void OnDeserialize( BinaryReader reader, S3DScene scene )
     {
       ReadSerLgHeader( reader );
@@ -59,6 +71,10 @@ namespace Saber3D.Serializers
         _ = reader.ReadPascalString32();
       }
     }
+
+    #endregion
+
+    #region Private Methods
 
     private void ReadPropertyCount( BinaryReader reader, S3DScene scene )
     {
@@ -144,6 +160,8 @@ namespace Saber3D.Serializers
       var geometryGraphSerializer = new S3DGeometryGraphSerializer();
       scene.GeometryGraph = geometryGraphSerializer.Deserialize( reader );
     }
+
+    #endregion
 
   }
 

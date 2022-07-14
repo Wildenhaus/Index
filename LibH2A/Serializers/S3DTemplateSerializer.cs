@@ -20,6 +20,16 @@ namespace Saber3D.Serializers
 
     #endregion
 
+    #region Public Methods
+
+    public static S3DTemplate Deserialize( Stream stream )
+    {
+      var reader = new BinaryReader( stream );
+      return new S3DTemplateSerializer().Deserialize( reader );
+    }
+
+    #endregion
+
     #region Overrides
 
     protected override void OnDeserialize( BinaryReader reader, S3DTemplate template )
