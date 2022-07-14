@@ -17,6 +17,8 @@ namespace H2AIndex.Processes
 
     #region Properties
 
+    bool CanCancel { get; }
+
     ProcessState State { get; }
 
     StatusList StatusList { get; }
@@ -26,6 +28,8 @@ namespace H2AIndex.Processes
     #endregion
 
     #region Public Methods
+
+    void Cancel();
 
     Task Execute();
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using H2AIndex.Common;
 using PropertyChanged;
 
@@ -24,10 +26,13 @@ namespace H2AIndex.Processes
     private bool _isInitialized;
     private bool _isCompleted;
     private TaskCompletionSource _tcs;
+    private CancellationTokenSource _cancelCts;
 
     #endregion
 
     #region Properties
+
+    public virtual bool CanCancel { get; }
 
     public string Status { get; protected set; }
     public string UnitName { get; protected set; }
@@ -60,6 +65,18 @@ namespace H2AIndex.Processes
       get => _tcs.Task;
     }
 
+    public ICommand CancelCommand { get; }
+
+    protected bool IsCancellationRequested
+    {
+      get => CancellationToken.IsCancellationRequested;
+    }
+
+    protected CancellationToken CancellationToken
+    {
+      get => _cancelCts.Token;
+    }
+
     protected IServiceProvider ServiceProvider
     {
       get => ( ( App ) App.Current ).ServiceProvider;
@@ -76,11 +93,23 @@ namespace H2AIndex.Processes
 
       _isInitialized = false;
       _tcs = new TaskCompletionSource();
+      _cancelCts = new CancellationTokenSource();
+
+      CancelCommand = new FireOnceCommand( Cancel );
     }
 
     #endregion
 
     #region Public Methods
+
+    public void Cancel()
+    {
+      _cancelCts.Cancel();
+      StatusList.AddWarning( "Process", "Process canceled by user." );
+
+      Status = "Finishing Current Operations";
+      IsIndeterminate = true;
+    }
 
     public async Task Execute()
     {
@@ -110,6 +139,8 @@ namespace H2AIndex.Processes
       {
         _tcs.TrySetResult();
       }
+
+      OnComplete();
     }
 
     #endregion
@@ -120,6 +151,9 @@ namespace H2AIndex.Processes
       => Task.CompletedTask;
 
     protected abstract Task OnExecuting();
+
+    protected virtual Task OnComplete()
+      => Task.CompletedTask;
 
     protected void BindStatusToSubProcess( IProcess subProcess )
     {

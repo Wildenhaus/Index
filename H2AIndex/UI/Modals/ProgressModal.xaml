@@ -14,17 +14,22 @@
             <DropShadowEffect BlurRadius="25" ShadowDepth="1" Direction="270" Opacity=".75" Color="#000"/>
         </Grid.Effect>
 
-        <StackPanel Orientation="Vertical"
-                    VerticalAlignment="Center"
-                    Background="#2B2B2B">
+        <Grid VerticalAlignment="Center"
+              Background="#2B2B2B">
 
-            <StackPanel Orientation="Vertical"
-                    VerticalAlignment="Bottom"
-                    HorizontalAlignment="Stretch"
-                        Margin="0,50,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="25"/>
+                <RowDefinition />
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition />
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="25"/>
+            </Grid.RowDefinitions>
 
-
-                <Label x:Name="StatusLabel" 
+            <Label x:Name="StatusLabel" 
+                   Grid.Row="2"
                    Content="{Binding Status, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                    FontWeight="Bold" 
                    FontSize="20" 
@@ -32,23 +37,39 @@
                    Padding="0" />
 
                 <Label x:Name="SubStatusLabel" 
-                   Content="{Binding SubStatus, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
-                   FontWeight="Light" 
-                   FontSize="14" 
-                   HorizontalAlignment="Center" 
-                   Padding="0" />
-            </StackPanel>
-            <ProgressBar x:Name="ProgressBar"
-                     Grid.Row="1"
-                     Margin="50,10,50,50"
-                     Height="10"
-                     VerticalAlignment="Top"
-                     Value="{Binding PercentageComplete, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                     Minimum="0"
-                     Maximum="1"
-                     IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                       Grid.Row="3"
+                       Content="{Binding SubStatus, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
+                       FontWeight="Light" 
+                       FontSize="14" 
+                       HorizontalAlignment="Center" 
+                       Padding="0" />
+                <ProgressBar x:Name="ProgressBar"
+                         Grid.Row="5"
+                         Margin="50,0"
+                         Height="10"
+                         VerticalAlignment="Top"
+                         Value="{Binding PercentageComplete, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                         Minimum="0"
+                         Maximum="1"
+                         IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
 
-        </StackPanel>
+            <Button HorizontalAlignment="Right"
+                    Grid.RowSpan="2"
+                    Margin="5"
+                    Height="25"
+                    Width="25"
+                    VerticalAlignment="Top"
+                    Visibility="{Binding CanCancel, Converter={StaticResource BoolVisibilityConverter}}"
+                    Command="{Binding CancelCommand}">
+                <Button.Content>
+                    <Grid>
+                        <Line X1="0" Y1="0" X2="10" Y2="10" Stroke="{DynamicResource Brush.Glyph.Static}" StrokeThickness="2" />
+                        <Line X1="0" Y2="0" Y1="10" X2="10" Stroke="{DynamicResource Brush.Glyph.Static}" StrokeThickness="2" />
+                    </Grid>
+                </Button.Content>
+            </Button>
+
+        </Grid>
 
     </Grid>
 </modal:BoundModal>

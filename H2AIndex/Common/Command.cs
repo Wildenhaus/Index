@@ -189,4 +189,46 @@ namespace H2AIndex.Common
 
   }
 
+  public class FireOnceCommand : ICommand
+  {
+
+    #region Events
+
+    public event EventHandler CanExecuteChanged;
+
+    #endregion
+
+    #region Data Members
+
+    private readonly Action _execute;
+    private bool _hasExecuted;
+
+    #endregion
+
+    #region Constructor
+
+    public FireOnceCommand( Action execute )
+    {
+      _execute = execute;
+      _hasExecuted = false;
+    }
+
+    #endregion
+
+    #region Public Methods
+
+    public bool CanExecute( object parameter )
+      => !_hasExecuted;
+
+    public void Execute( object parameter )
+    {
+      _execute();
+      _hasExecuted = true;
+      CanExecuteChanged?.Invoke( this, EventArgs.Empty );
+    }
+
+    #endregion
+
+  }
+
 }

@@ -103,6 +103,17 @@ namespace H2AIndex.Processes
         await ExportTextureDefinition();
     }
 
+    protected override async Task OnComplete()
+    {
+      _texture?.Dispose();
+      _imageCollection?.Dispose();
+
+      _picture = null;
+      _texture = null;
+      _imageCollection = null;
+      _targetImages = null;
+    }
+
     #endregion
 
     #region Private Methods

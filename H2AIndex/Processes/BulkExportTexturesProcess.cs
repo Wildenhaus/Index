@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using H2AIndex.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Files;
@@ -19,6 +21,12 @@ namespace H2AIndex.Processes
     private IEnumerable<PictureFile> _targetFiles;
     private IList<ExportTextureProcess> _processes;
     private readonly TextureExportOptionsModel _options;
+
+    #endregion
+
+    #region Properties
+
+    public override bool CanCancel => true;
 
     #endregion
 
@@ -59,18 +67,40 @@ namespace H2AIndex.Processes
       UnitName = "Textures Exported";
       IsIndeterminate = false;
 
+      if ( IsCancellationRequested )
+        return;
+
       var processLock = new object();
-      var tasks = _processes.Select( x =>
-        Task.Factory.StartNew( x.Execute, TaskCreationOptions.LongRunning )
-        .ContinueWith( t =>
+
+      var executionBlock = new ActionBlock<ExportTextureProcess>( async process =>
       {
+        if ( IsCancellationRequested )
+          return;
+
+        await process.Execute();
+
         lock ( processLock )
           CompletedUnits++;
-      } ) );
+      },
+      new ExecutionDataflowBlockOptions
+      {
+        MaxDegreeOfParallelism = Math.Min( 8, Environment.ProcessorCount ),
+        EnsureOrdered = false
+      } );
 
-      await Task.WhenAll( tasks );
+      foreach ( var process in _processes )
+        executionBlock.Post( process );
+
+      executionBlock.Complete();
+      await executionBlock.Completion;
+
       foreach ( var process in _processes )
         StatusList.Merge( process.StatusList );
+    }
+
+    protected override async Task OnComplete()
+    {
+      _processes = null;
     }
 
     #endregion
