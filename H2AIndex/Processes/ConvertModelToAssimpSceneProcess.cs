@@ -25,6 +25,7 @@ namespace H2AIndex.Processes
     private readonly IS3DFile _file;
 
     private SceneContext _context;
+    private readonly object _statusLock;
 
     #endregion
 
@@ -40,6 +41,7 @@ namespace H2AIndex.Processes
     public ConvertModelToAssimpSceneProcess( IS3DFile file )
     {
       _file = file;
+      _statusLock = new object();
     }
 
     #endregion
@@ -105,7 +107,7 @@ namespace H2AIndex.Processes
         foreach ( var child in obj.EnumerateChildren() )
           PrintObjects( child, level + 1 );
       }
-      PrintObjects( _context.GeometryGraph.RootObject );
+      //PrintObjects( _context.GeometryGraph.RootObject );
 
       void Print( Node node, int level = 0 )
       {
@@ -207,6 +209,7 @@ namespace H2AIndex.Processes
       {
         if ( _context.SkinCompounds.ContainsKey( obj.Id ) )
           continue;
+
         AddSubMeshes( obj );
       }
 
@@ -234,32 +237,35 @@ namespace H2AIndex.Processes
         var builder = new MeshBuilder( _context, obj, submesh );
         var mesh = builder.Build();
 
-        _context.Scene.Meshes.Add( mesh );
-        var meshId = _context.Scene.Meshes.Count - 1;
-        node.MeshIndices.Add( meshId );
-
-        if ( builder.SkinCompoundId != -1 )
+        lock ( _context )
         {
-          System.Numerics.Matrix4x4 transform = System.Numerics.Matrix4x4.Identity;
-          if ( obj.Parent != null )
-            transform = obj.MatrixModel * obj.Parent.MatrixLT;
+          _context.Scene.Meshes.Add( mesh );
+          var meshId = _context.Scene.Meshes.Count - 1;
+          node.MeshIndices.Add( meshId );
 
-          node.Transform = transform.ToAssimp();
-        }
-        else if ( obj.Parent != null )
-        {
-          if ( obj.Parent.GetName() == obj.Parent.GetBoneName() )
-            node.Transform = obj.MatrixLT.ToAssimp();
-        }
-
-        if ( !mesh.HasBones )
-        {
-          var parentToBoneName = obj.GetBoneName();
-          if ( parentToBoneName != null )
+          if ( builder.SkinCompoundId != -1 )
           {
-            var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
-            //if ( parentToBoneObject != null )
-            //  builder.ParentMeshToBone( parentToBoneObject );
+            System.Numerics.Matrix4x4 transform = System.Numerics.Matrix4x4.Identity;
+            if ( obj.Parent != null )
+              transform = obj.MatrixModel * obj.Parent.MatrixLT;
+
+            node.Transform = transform.ToAssimp();
+          }
+          else if ( obj.Parent != null )
+          {
+            if ( obj.Parent.GetName() == obj.Parent.GetBoneName() )
+              node.Transform = obj.MatrixLT.ToAssimp();
+          }
+
+          if ( !mesh.HasBones )
+          {
+            var parentToBoneName = obj.GetBoneName();
+            if ( parentToBoneName != null )
+            {
+              var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
+              //if ( parentToBoneObject != null )
+              //  builder.ParentMeshToBone( parentToBoneObject );
+            }
           }
         }
 

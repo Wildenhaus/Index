@@ -12,6 +12,7 @@ using H2AIndex.Models;
 using H2AIndex.Services.Abstract;
 using Microsoft.Extensions.DependencyInjection;
 using Saber3D.Data;
+using Saber3D.Data.Materials;
 using Saber3D.Data.Textures;
 using Saber3D.Files;
 using Saber3D.Files.FileTypes;
@@ -114,11 +115,17 @@ namespace H2AIndex.Processes
     {
       var materials = _geometryGraph.SubMeshes
         .Select( y => y.Material )
-        .Where( y => y != null )
-        .ToDictionary(
-          x => x.MaterialName,
-          x => x
-        );
+        .Where( y => y != null );
+
+      var exportDictionary = new Dictionary<string, S3DMaterial>();
+      foreach ( var material in materials )
+      {
+        var matName = material.MaterialName;
+        if ( string.IsNullOrWhiteSpace( matName ) )
+          continue;
+
+        exportDictionary[ matName ] = material;
+      }
 
       try
       {
@@ -133,7 +140,7 @@ namespace H2AIndex.Processes
             WriteIndented = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
           };
-          await JsonSerializer.SerializeAsync( fs, materials, jsonOptions );
+          await JsonSerializer.SerializeAsync( fs, exportDictionary, jsonOptions );
 
           await fs.FlushAsync();
         }

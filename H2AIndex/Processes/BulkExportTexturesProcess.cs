@@ -60,7 +60,9 @@ namespace H2AIndex.Processes
       IsIndeterminate = false;
 
       var processLock = new object();
-      var tasks = _processes.Select( x => x.Execute().ContinueWith( t =>
+      var tasks = _processes.Select( x =>
+        Task.Factory.StartNew( x.Execute, TaskCreationOptions.LongRunning )
+        .ContinueWith( t =>
       {
         lock ( processLock )
           CompletedUnits++;

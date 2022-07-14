@@ -135,7 +135,17 @@ namespace H2AIndex.Processes
     }
 
     private bool IsTextureNormalMap()
-      => _file.Name.Contains( "_nm" );
+    {
+      var baseFileName = Path.GetFileNameWithoutExtension( _file.Name );
+
+      if ( baseFileName.EndsWith( "_nm" ) )
+        return true;
+
+      if ( baseFileName.EndsWith( "_det" ) )
+        return true;
+
+      return false;
+    }
 
     private async Task LoadTexture()
     {

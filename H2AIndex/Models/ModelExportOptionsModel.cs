@@ -20,6 +20,7 @@ namespace H2AIndex.Models
         {
           OutputFileFormat = ModelFileFormat.FBX,
           ExportTextures = true,
+          ExportMaterialDefinitions = true,
           RemoveLODs = true,
           RemoveVolumes = true,
           OverwriteExisting = false
