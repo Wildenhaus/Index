@@ -244,18 +244,9 @@ namespace H2AIndex.Processes
           node.MeshIndices.Add( meshId );
 
           var meshName = obj.GetMeshName();
-          if ( obj.Parent != null && mesh.HasBones )
-          {
-            var boneName = obj.GetBoneName();
-            var parent = obj.Parent;
-            //while ( parent.SubMeshes.Any() )
-            //{
-            //  node.Transform = parent.MatrixLT.ToAssimp();
-            //  parent = parent.Parent;
-            //}
+          if ( mesh.HasBones )
             node.Transform = obj.MatrixLT.ToAssimp();
-          }
-          else if ( !mesh.HasBones )
+          else
           {
             var parentToBoneName = obj.GetBoneName();
             if ( parentToBoneName == _context.GeometryGraph.RootObject.GetName() )
