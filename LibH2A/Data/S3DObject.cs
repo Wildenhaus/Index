@@ -9,6 +9,14 @@ namespace Saber3D.Data
   public class S3DObject
   {
 
+    #region Data Members
+
+    private string _name;
+    private string _boneName;
+    private string _meshName;
+
+    #endregion
+
     #region Properties
 
     public S3DGeometryGraph GeometryGraph { get; }
@@ -80,23 +88,28 @@ namespace Saber3D.Data
 
     public string GetName()
     {
+      if ( _name != null )
+        return _name;
+
       if ( !string.IsNullOrWhiteSpace( UnkName ) )
-        return UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries ).Last();
+        return _name = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries ).Last();
 
       if ( !string.IsNullOrWhiteSpace( Name ) )
-        return Name;
+        return _name = Name;
 
       if ( !string.IsNullOrWhiteSpace( ReadName ) )
-        return ReadName;
+        return _name = ReadName;
 
       return null;
     }
 
     public string GetParentName()
-      => Parent.GetName();
+      => Parent?.GetName();
 
     public string GetMeshName()
     {
+      if ( _meshName != null )
+        return _meshName;
 
       if ( string.IsNullOrWhiteSpace( UnkName ) )
         return null;
@@ -104,7 +117,7 @@ namespace Saber3D.Data
       var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
         .Where( x => x != "h" && !x.StartsWith( "_b_" ) && !x.StartsWith( "_m_" ) );
 
-      return string.Join( "_", nameParts.TakeLast( 2 ) ).Trim();
+      return _meshName = string.Join( "_", nameParts.TakeLast( 2 ) ).Trim();
     }
 
     public string GetParentMeshName()
@@ -121,13 +134,16 @@ namespace Saber3D.Data
 
     public string GetBoneName()
     {
+      if ( _boneName != null )
+        return _boneName;
+
       if ( string.IsNullOrWhiteSpace( UnkName ) )
         return null;
 
       var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
         .Where( x => x == "h" || x.StartsWith( "_b_" ) || x.StartsWith( "_m_" ) );
 
-      return nameParts.LastOrDefault();
+      return _boneName = nameParts.LastOrDefault();
     }
 
     #endregion

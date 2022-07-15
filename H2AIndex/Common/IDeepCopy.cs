@@ -1,4 +1,5 @@
 ﻿using DeepCopy;
+using H2AIndex.Models;
 
 namespace H2AIndex.Common
 {
@@ -7,12 +8,23 @@ namespace H2AIndex.Common
   {
   }
 
-  public static class IDeepCopyExtensions
+  public static class DeepCopyExtensions
   {
 
     [DeepCopyExtension]
-    public static T DeepCopy<T>( this T source )
-      where T : IDeepCopy<T>
+    public static ModelExportOptionsModel DeepCopy( this ModelExportOptionsModel source )
+      => source;
+
+    [DeepCopyExtension]
+    public static ModelViewerOptionsModel DeepCopy( this ModelViewerOptionsModel source )
+      => source;
+
+    [DeepCopyExtension]
+    public static TextureExportOptionsModel DeepCopy( this TextureExportOptionsModel source )
+      => source;
+
+    [DeepCopyExtension]
+    public static TextureViewerOptionsModel DeepCopy( this TextureViewerOptionsModel source )
       => source;
 
   }

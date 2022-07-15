@@ -24,10 +24,24 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <GroupBox Header="Output Path"
-                  Grid.Row="0"
+        <GroupBox Grid.Row="0"
                   Grid.ColumnSpan="2"
                   Margin="5,5,5,0">
+            <GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0"
+                           Content="Output Directory" />
+                    <CheckBox Grid.Column="1"
+                              Content="Create Directory for Model"
+                              FlowDirection="RightToLeft"
+                              HorizontalAlignment="Stretch"
+                              IsChecked="{Binding ModelOptions.CreateDirectoryForModel}" />
+                </Grid>
+            </GroupBox.Header>
             <controls:FileBrowserBox x:Name="OutputPath" 
                                      Path="{Binding ModelOptions.OutputPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      DialogPathType="Directory"

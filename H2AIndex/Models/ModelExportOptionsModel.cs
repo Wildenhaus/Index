@@ -18,6 +18,7 @@ namespace H2AIndex.Models
       {
         return new ModelExportOptionsModel
         {
+          CreateDirectoryForModel = true,
           OutputFileFormat = ModelFileFormat.FBX,
           ExportTextures = true,
           ExportMaterialDefinitions = true,
@@ -37,6 +38,9 @@ namespace H2AIndex.Models
 
     [JsonIgnore]
     public string Filters { get; set; }
+
+    [DefaultValue( true )]
+    public bool CreateDirectoryForModel { get; set; }
 
     [DefaultValue( ModelFileFormat.FBX )]
     public ModelFileFormat OutputFileFormat { get; set; }

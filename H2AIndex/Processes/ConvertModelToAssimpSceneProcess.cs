@@ -6,7 +6,9 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Assimp;
+using H2AIndex.Common;
 using H2AIndex.Common.Extensions;
+using Saber3D;
 using Saber3D.Data;
 using Saber3D.Data.Geometry;
 using Saber3D.Files;
@@ -73,7 +75,7 @@ namespace H2AIndex.Processes
         if ( _file is TplFile )
         {
           var tpl = S3DTemplateSerializer.Deserialize( stream );
-          var context = new SceneContext( tpl.GeometryGraph, stream );
+          var context = new SceneContext( tpl.GeometryGraph, stream, StatusList );
           context.AddLodDefinitions( tpl.LodDefinitions );
 
           return context;
@@ -81,7 +83,7 @@ namespace H2AIndex.Processes
         else if ( _file is LgFile )
         {
           var lg = S3DSceneSerializer.Deserialize( stream );
-          var context = new SceneContext( lg.GeometryGraph, stream );
+          var context = new SceneContext( lg.GeometryGraph, stream, StatusList );
 
           return context;
         }
@@ -306,6 +308,8 @@ namespace H2AIndex.Processes
   internal class SceneContext
   {
 
+    public StatusList StatusList { get; }
+
     public Scene Scene { get; set; }
     public H2AStream Stream { get; }
     public BinaryReader Reader { get; }
@@ -320,8 +324,10 @@ namespace H2AIndex.Processes
     public Dictionary<short, MeshBuilder> SkinCompounds { get; }
     public Dictionary<short, short> LodIndices { get; }
 
-    public SceneContext( S3DGeometryGraph graph, H2AStream stream )
+    public SceneContext( S3DGeometryGraph graph, H2AStream stream, StatusList statusList )
     {
+      StatusList = statusList;
+
       Scene = new Scene();
 
       Stream = stream;
@@ -549,6 +555,11 @@ namespace H2AIndex.Processes
         var serializer = new S3DInterleavedDataSerializer( buffer );
         return serializer.DeserializeRange( Reader, ( int ) startIndex, ( int ) endIndex ).ToArray();
       }
+      catch ( AssertionFailedException ex )
+      {
+        _context.StatusList.AddWarning( Mesh.Name, "Failed to read mesh interleaved data." );
+        return null;
+      }
       finally { Stream.ReleaseLock(); }
     }
 
@@ -559,6 +570,9 @@ namespace H2AIndex.Processes
       var endIndex = startIndex + _submesh.BufferInfo.VertexCount;
 
       var data = DeserializeInterleavedData( buffer, startIndex, endIndex );
+      if ( data is null )
+        return;
+
       foreach ( var datum in data )
       {
         if ( datum.UV0.HasValue ) AddVertexUV( 0, datum.UV0.Value );

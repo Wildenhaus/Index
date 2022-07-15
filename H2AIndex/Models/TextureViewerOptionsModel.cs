@@ -1,4 +1,5 @@
-﻿using H2AIndex.Common;
+﻿using DeepCopy;
+using H2AIndex.Common;
 
 namespace H2AIndex.Models
 {
@@ -20,6 +21,19 @@ namespace H2AIndex.Models
     }
 
     public float PreviewQuality { get; set; }
+
+    #endregion
+
+    #region Constructor
+
+    public TextureViewerOptionsModel()
+    {
+    }
+
+    [DeepCopyConstructor]
+    public TextureViewerOptionsModel( TextureViewerOptionsModel source )
+    {
+    }
 
     #endregion
 

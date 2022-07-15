@@ -49,6 +49,12 @@ namespace H2AIndex.Processes
       _modelOptions = modelOptions.DeepCopy();
       _textureOptions = textureOptions.DeepCopy();
 
+      if ( _modelOptions.CreateDirectoryForModel )
+      {
+        var fileName = Path.GetFileNameWithoutExtension( _file.Name );
+        _modelOptions.OutputPath = Path.Combine( _modelOptions.OutputPath, fileName );
+      }
+
       _textureOptions.OutputPath = _modelOptions.OutputPath;
       _textureOptions.ExportAllMips = false;
     }
@@ -77,6 +83,9 @@ namespace H2AIndex.Processes
         if ( !success )
           return;
       }
+
+      if ( !Directory.Exists( _modelOptions.OutputPath ) )
+        Directory.CreateDirectory( _modelOptions.OutputPath );
 
       if ( _modelOptions.ExportMaterialDefinitions )
         await ExportMaterialDefinitions();

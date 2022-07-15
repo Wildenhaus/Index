@@ -164,10 +164,16 @@ namespace H2AIndex.Controls
     #region Overrides
 
     protected override void OnGotMouseCapture( MouseEventArgs e )
-      => _isFocusedEvent.Set();
+    {
+      if ( UseFlycam )
+        _isFocusedEvent.Set();
+    }
 
     protected override void OnLostMouseCapture( MouseEventArgs e )
-      => _isFocusedEvent.Reset();
+    {
+      if ( UseFlycam )
+        _isFocusedEvent.Reset();
+    }
 
     protected override void OnPreviewMouseLeftButtonDown( MouseButtonEventArgs e )
     {
@@ -176,6 +182,7 @@ namespace H2AIndex.Controls
       if ( !UseFlycam )
         return;
 
+      Focus();
       CaptureMouse();
       Cursor = Cursors.None;
 
@@ -213,7 +220,7 @@ namespace H2AIndex.Controls
     {
       _moveSpeedThrottler = new ActionThrottler( () =>
       {
-      Dispatcher.Invoke( () => { MoveSpeed = _moveSpeed = _newMoveSpeed; }, DispatcherPriority.Send );
+        Dispatcher.Invoke( () => { MoveSpeed = _moveSpeed = _newMoveSpeed; }, DispatcherPriority.Send );
       }, 100 );
 
       _isFocusedEvent = new ManualResetEvent( false );

@@ -220,7 +220,7 @@ namespace H2AIndex.ViewModels
       transformGroup.Children.Add( rotTransform );
 
       var scaleTransform = new System.Windows.Media.Media3D.ScaleTransform3D( 100, 100, 100 );
-      transformGroup.Children.Add( scaleTransform );
+      //transformGroup.Children.Add( scaleTransform );
 
       Model.Transform = transformGroup;
     }
@@ -232,8 +232,10 @@ namespace H2AIndex.ViewModels
 
       void AddNodeModels( SceneNode node )
       {
-        if ( node is MeshNode )
+        if ( node is MeshNode meshNode )
         {
+          meshNode.CullMode = SharpDX.Direct3D11.CullMode.Back;
+
           var nodeModel = new ModelNodeModel( node );
           _nodes.Add( nodeModel );
         }

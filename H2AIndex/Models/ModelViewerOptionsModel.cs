@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using DeepCopy;
 using H2AIndex.Common;
 using HelixToolkit.SharpDX.Core;
 
@@ -39,6 +40,19 @@ namespace H2AIndex.Models
 
     [DefaultValue( 1.0f )]
     public float ModelTexturePreviewQuality { get; set; }
+
+    #endregion
+
+    #region Constructor
+
+    public ModelViewerOptionsModel()
+    {
+    }
+
+    [DeepCopyConstructor]
+    public ModelViewerOptionsModel( ModelViewerOptionsModel source )
+    {
+    }
 
     #endregion
 
