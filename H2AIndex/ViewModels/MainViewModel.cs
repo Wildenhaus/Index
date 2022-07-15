@@ -35,6 +35,7 @@ namespace H2AIndex.ViewModels
 
     public ICommand EditPreferencesCommand { get; }
 
+    public ICommand BulkExportModelsCommand { get; }
     public ICommand BulkExportTexturesCommand { get; }
 
     #endregion
@@ -54,6 +55,7 @@ namespace H2AIndex.ViewModels
       OpenDirectoryCommand = new AsyncCommand( OpenDirectory );
       EditPreferencesCommand = new AsyncCommand( EditPreferences );
 
+      BulkExportModelsCommand = new AsyncCommand( BulkExportModels );
       BulkExportTexturesCommand = new AsyncCommand( BulkExportTextures );
 
       App.Current.DispatcherUnhandledException += OnUnhandledExceptionRaised;
@@ -149,6 +151,24 @@ namespace H2AIndex.ViewModels
     {
       await ShowViewModal<PreferencesView>();
       await SavePreferences();
+    }
+
+    private async Task BulkExportModels()
+    {
+      var result = await ShowViewModal<ModelExportOptionsView>( vm =>
+      {
+        var viewModel = vm as ModelExportOptionsViewModel;
+        viewModel.IsForBatch = true;
+      } );
+
+      if ( !( result is Tuple<ModelExportOptionsModel, TextureExportOptionsModel> options ) )
+        return;
+
+      var modelOptions = options.Item1;
+      var textureOptions = options.Item2;
+
+      var exportProcess = new BulkExportModelsProcess( modelOptions, textureOptions );
+      await RunProcess( exportProcess );
     }
 
     private async Task BulkExportTextures()

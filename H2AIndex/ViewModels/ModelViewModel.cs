@@ -255,8 +255,12 @@ namespace H2AIndex.ViewModels
       {
         Model.AddNode( scene.Root );
         CalculateMoveSpeed( scene );
-        Camera.ZoomExtents( Viewport );
         UpdateMeshInfo();
+      } );
+
+      await Task.Delay( 250 ).ContinueWith( t =>
+      {
+        App.Current.Dispatcher.Invoke( () => Camera.ZoomExtents( Viewport ) );
       } );
     }
 

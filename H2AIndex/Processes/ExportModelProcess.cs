@@ -72,7 +72,11 @@ namespace H2AIndex.Processes
     protected override async Task OnExecuting()
     {
       if ( _scene is null )
-        await ConvertFileToAssimpScene();
+      {
+        var success = await ConvertFileToAssimpScene();
+        if ( !success )
+          return;
+      }
 
       if ( _modelOptions.ExportMaterialDefinitions )
         await ExportMaterialDefinitions();
@@ -99,16 +103,25 @@ namespace H2AIndex.Processes
       return Path.Combine( _modelOptions.OutputPath, fName );
     }
 
-    private async Task ConvertFileToAssimpScene()
+    private async Task<bool> ConvertFileToAssimpScene()
     {
-      var process = new ConvertModelToAssimpSceneProcess( _file );
-      BindStatusToSubProcess( process );
+      try
+      {
+        var process = new ConvertModelToAssimpSceneProcess( _file );
+        BindStatusToSubProcess( process );
 
-      await process.Execute();
-      StatusList.Merge( process.StatusList );
+        await process.Execute();
+        StatusList.Merge( process.StatusList );
 
-      _scene = process.Result;
-      _geometryGraph = process.GeometryGraph;
+        _scene = process.Result;
+        _geometryGraph = process.GeometryGraph;
+        return true;
+      }
+      catch ( Exception ex )
+      {
+        StatusList.AddError( _file.Name, "Encountered an error attempting to convert the model.", ex );
+        return false;
+      }
     }
 
     private async Task ExportMaterialDefinitions()
@@ -153,6 +166,12 @@ namespace H2AIndex.Processes
 
     private async Task WriteAssimpSceneToFile()
     {
+      if ( !_scene.HasMeshes )
+      {
+        StatusList.AddError( _file.Name, "File has no meshes. Skipping." );
+        return;
+      }
+
       try
       {
         Status = "Writing File";
@@ -166,7 +185,7 @@ namespace H2AIndex.Processes
       }
       catch ( Exception ex )
       {
-        StatusList.AddError( _file.Name, "Failed to write the model file.", ex );
+        StatusList.AddError( _file.Name, "Encountered an error while writing the model file.", ex );
         throw;
       }
     }

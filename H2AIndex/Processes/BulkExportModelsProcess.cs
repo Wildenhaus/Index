@@ -11,16 +11,18 @@ using Saber3D.Files.FileTypes;
 namespace H2AIndex.Processes
 {
 
-  public class BulkExportTexturesProcess : ProcessBase
+  public class BulkExportModelsProcess : ProcessBase
   {
 
     #region Data Members
 
     private IH2AFileContext _fileContext;
 
-    private IEnumerable<PictureFile> _targetFiles;
-    private IList<ExportTextureProcess> _processes;
-    private readonly TextureExportOptionsModel _options;
+    private IEnumerable<TplFile> _targetFiles;
+    private IList<ExportModelProcess> _processes;
+
+    private ModelExportOptionsModel _modelOptions;
+    private TextureExportOptionsModel _textureOptions;
 
     #endregion
 
@@ -32,16 +34,12 @@ namespace H2AIndex.Processes
 
     #region Constructor
 
-    public BulkExportTexturesProcess( TextureExportOptionsModel options )
+    public BulkExportModelsProcess( ModelExportOptionsModel modelOptions, TextureExportOptionsModel textureOptions )
     {
-      _options = options;
-      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
-    }
+      _modelOptions = modelOptions;
+      _textureOptions = textureOptions;
 
-    public BulkExportTexturesProcess( IEnumerable<PictureFile> files, TextureExportOptionsModel options )
-      : this( options )
-    {
-      _targetFiles = files;
+      _fileContext = ServiceProvider.GetRequiredService<IH2AFileContext>();
     }
 
     #endregion
@@ -53,7 +51,7 @@ namespace H2AIndex.Processes
       IsIndeterminate = true;
       Status = "Preparing Bulk Export";
 
-      if ( _targetFiles == null )
+      if ( _targetFiles is null )
         _targetFiles = GatherFiles();
 
       _processes = CreateProcesses( _targetFiles );
@@ -61,17 +59,17 @@ namespace H2AIndex.Processes
 
     protected override async Task OnExecuting()
     {
-      Status = "Exporting Textures";
+      Status = "Exporting Models";
       CompletedUnits = 0;
       TotalUnits = _processes.Count;
-      UnitName = "Textures Exported";
+      UnitName = "Models Exported";
       IsIndeterminate = false;
 
       if ( IsCancellationRequested )
         return;
 
       var processLock = new object();
-      var executionBlock = new ActionBlock<ExportTextureProcess>( async process =>
+      var executionBlock = new ActionBlock<ExportModelProcess>( async process =>
       {
         if ( IsCancellationRequested )
           return;
@@ -83,7 +81,7 @@ namespace H2AIndex.Processes
       },
       new ExecutionDataflowBlockOptions
       {
-        MaxDegreeOfParallelism = Math.Min( 8, Environment.ProcessorCount ),
+        MaxDegreeOfParallelism = Math.Min( 1, Environment.ProcessorCount ),
         EnsureOrdered = false
       } );
 
@@ -107,13 +105,13 @@ namespace H2AIndex.Processes
 
     #region Private Methods
 
-    private IEnumerable<PictureFile> GatherFiles()
+    private IEnumerable<TplFile> GatherFiles()
     {
       string[] filters = null;
-      if ( !string.IsNullOrWhiteSpace( _options.Filters ) )
-        filters = _options.Filters.Split( ';', System.StringSplitOptions.RemoveEmptyEntries );
+      if ( !string.IsNullOrWhiteSpace( _modelOptions.Filters ) )
+        filters = _modelOptions.Filters.Split( ';', System.StringSplitOptions.RemoveEmptyEntries );
 
-      return _fileContext.GetFiles<PictureFile>().Where( file =>
+      return _fileContext.GetFiles<TplFile>().Where( file =>
       {
         if ( filters is null )
           return true;
@@ -126,8 +124,8 @@ namespace H2AIndex.Processes
       } );
     }
 
-    private IList<ExportTextureProcess> CreateProcesses( IEnumerable<PictureFile> files )
-      => files.Select( file => new ExportTextureProcess( file, _options ) ).ToList();
+    private IList<ExportModelProcess> CreateProcesses( IEnumerable<TplFile> files )
+      => files.Select( file => new ExportModelProcess( file, _modelOptions, _textureOptions ) ).ToList();
 
     #endregion
 

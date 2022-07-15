@@ -251,22 +251,41 @@ namespace H2AIndex.Processes
 
             node.Transform = transform.ToAssimp();
           }
-          else if ( obj.Parent != null )
+          else if ( obj.Parent != null && mesh.HasBones )
           {
-            if ( obj.Parent.GetName() == obj.Parent.GetBoneName() )
-              node.Transform = obj.MatrixLT.ToAssimp();
+            var parent = obj.Parent;
+            while ( parent.SubMeshes.Any() )
+            {
+              node.Transform = parent.MatrixLT.ToAssimp();
+              parent = parent.Parent;
+            }
+            node.Transform = obj.MatrixLT.ToAssimp();
           }
-
-          if ( !mesh.HasBones )
+          else if ( !mesh.HasBones )
           {
             var parentToBoneName = obj.GetBoneName();
-            if ( parentToBoneName != null )
+            if ( parentToBoneName == _context.GeometryGraph.RootObject.GetName() )
+              node.Transform = obj.MatrixModel.ToAssimp();
+            else
             {
-              var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
-              if ( parentToBoneObject != null )
-                builder.ParentMeshToBone( parentToBoneObject );
+              node.Transform = obj.MatrixLT.ToAssimp();
+
+              if ( parentToBoneName != null )
+              {
+                var parent = obj.Parent;
+                while ( parent != null && parent.GetName() != parentToBoneName )
+                {
+                  node.Transform = parent.MatrixLT.ToAssimp();
+                  parent = parent.Parent;
+                }
+
+                var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
+                if ( parentToBoneObject != null )
+                  builder.ParentMeshToBone( parentToBoneObject );
+              }
             }
           }
+
         }
 
         CompletedUnits++;
@@ -672,8 +691,14 @@ namespace H2AIndex.Processes
       var boneName = boneObject.GetBoneName();
       if ( boneObject.GetName() != boneName )
       {
-        boneObject = Graph.Objects.First( x => x.GetName() == boneName );
-        boneObjectId = boneObject.Id;
+        //boneObject = Graph.Objects.First( x => x.GetName() == boneName );
+        while ( boneObject != null && boneObject.GetName() != boneName )
+          boneObject = boneObject.Parent;
+
+        if ( boneObject != null )
+          boneObjectId = boneObject.Id;
+        else
+          boneObject = Graph.Objects[ boneObjectId ];
       }
 
       if ( !Bones.TryGetValue( boneObjectId, out var bone ) )
