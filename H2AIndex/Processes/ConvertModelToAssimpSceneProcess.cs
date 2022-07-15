@@ -93,13 +93,17 @@ namespace H2AIndex.Processes
 
     private void ConvertObjects()
     {
-      AddNodes( _context.GeometryGraph.Objects );
-
-      BuildSkinCompounds();
-
-      AddMeshNodes( _context.GeometryGraph.Objects );
-
-      AddRemainingMeshBones();
+      try
+      {
+        AddNodes( _context.GeometryGraph.Objects );
+        BuildSkinCompounds();
+        AddMeshNodes( _context.GeometryGraph.Objects );
+        AddRemainingMeshBones();
+      }
+      catch ( Exception ex )
+      {
+        StatusList.AddError( _file.Name, "Encountered an error attempting to convert model.", ex );
+      }
 
       void PrintObjects( S3DObject obj, int level = 0 )
       {
@@ -637,7 +641,9 @@ namespace H2AIndex.Processes
       if ( SkinCompoundId == -1 )
         return;
 
-      var skinCompound = _context.SkinCompounds[ SkinCompoundId ];
+      if ( !_context.SkinCompounds.TryGetValue( SkinCompoundId, out var skinCompound ) )
+        return;
+
       var offset = _submesh.BufferInfo.VertexOffset;
       var vertCount = _submesh.BufferInfo.VertexCount;
 
@@ -672,26 +678,29 @@ namespace H2AIndex.Processes
       var boneObject = Graph.Objects[ boneObjectId ];
 
       var boneName = boneObject.GetBoneName();
-      if ( boneObject.GetName() != boneName )
+      if ( boneName == null )
+        boneName = $"Bone{boneObjectId}";
+      else if ( boneObject.GetName() != boneName )
       {
-        //boneObject = Graph.Objects.First( x => x.GetName() == boneName );
-        while ( boneObject != null && boneObject.GetName() != boneName )
-          boneObject = boneObject.Parent;
-
-        if ( boneObject != null )
+        var parentBoneObject = Graph.Objects.FirstOrDefault( x => x.GetName() == boneName );
+        if ( parentBoneObject != null )
+        {
+          boneObject = parentBoneObject;
           boneObjectId = boneObject.Id;
+        }
         else
-          boneObject = Graph.Objects[ boneObjectId ];
+        {
+          boneName = $"{boneObject.GetName()}__{boneObjectId}";
+        }
       }
 
       if ( !Bones.TryGetValue( boneObjectId, out var bone ) )
       {
-
         System.Numerics.Matrix4x4.Invert( boneObject.MatrixLT, out var invMatrix );
 
         bone = new Bone
         {
-          Name = boneObject.GetBoneName(),
+          Name = boneName,
           OffsetMatrix = invMatrix.ToAssimp()
         };
 
