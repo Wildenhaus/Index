@@ -243,29 +243,26 @@ namespace H2AIndex.Processes
           var meshId = _context.Scene.Meshes.Count - 1;
           node.MeshIndices.Add( meshId );
 
-          if ( builder.SkinCompoundId != -1 )
+          var meshName = obj.GetMeshName();
+          if ( obj.Parent != null && mesh.HasBones )
           {
-            System.Numerics.Matrix4x4 transform = System.Numerics.Matrix4x4.Identity;
-            if ( obj.Parent != null )
-              transform = obj.MatrixModel * obj.Parent.MatrixLT;
-
-            node.Transform = transform.ToAssimp();
-          }
-          else if ( obj.Parent != null && mesh.HasBones )
-          {
+            var boneName = obj.GetBoneName();
             var parent = obj.Parent;
-            while ( parent.SubMeshes.Any() )
-            {
-              node.Transform = parent.MatrixLT.ToAssimp();
-              parent = parent.Parent;
-            }
+            //while ( parent.SubMeshes.Any() )
+            //{
+            //  node.Transform = parent.MatrixLT.ToAssimp();
+            //  parent = parent.Parent;
+            //}
             node.Transform = obj.MatrixLT.ToAssimp();
           }
           else if ( !mesh.HasBones )
           {
             var parentToBoneName = obj.GetBoneName();
             if ( parentToBoneName == _context.GeometryGraph.RootObject.GetName() )
+            {
+              builder.ParentMeshToBone( _context.GeometryGraph.RootObject );
               node.Transform = obj.MatrixModel.ToAssimp();
+            }
             else
             {
               node.Transform = obj.MatrixLT.ToAssimp();
@@ -273,11 +270,6 @@ namespace H2AIndex.Processes
               if ( parentToBoneName != null )
               {
                 var parent = obj.Parent;
-                while ( parent != null && parent.GetName() != parentToBoneName )
-                {
-                  node.Transform = parent.MatrixLT.ToAssimp();
-                  parent = parent.Parent;
-                }
 
                 var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
                 if ( parentToBoneObject != null )
