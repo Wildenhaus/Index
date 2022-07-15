@@ -43,6 +43,24 @@ namespace Saber3D.Files.FileTypes
       {
         case ".td":
           return new TextureDefinitionFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".s3dprs":
+        case ".grsp":
+          return new PresetFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".sd":
+          return new ShaderDefinitionFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".ssc":
+        case ".ssl":
+        case ".ps":
+        case ".fsm":
+          return new ScriptingFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".cls":
+          return new ObjectClassFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
+        case ".dsh":
+        case ".fx":
+        case ".hsh":
+        case ".psh":
+        case ".vsh":
+          return new ShaderCodeFile( name, BaseStream, dataStartOffset, dataEndOffset, this );
 
         default:
           return new GenericTextFile( name, BaseStream, dataStartOffset, dataEndOffset, this );

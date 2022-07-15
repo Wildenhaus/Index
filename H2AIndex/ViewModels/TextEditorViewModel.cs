@@ -15,6 +15,11 @@ namespace H2AIndex.ViewModels
 
   [AcceptsFileType( typeof( GenericTextFile ) )]
   [AcceptsFileType( typeof( TextureDefinitionFile ) )]
+  [AcceptsFileType( typeof( PresetFile ) )]
+  [AcceptsFileType( typeof( ShaderDefinitionFile ) )]
+  [AcceptsFileType( typeof( ScriptingFile ) )]
+  [AcceptsFileType( typeof( ObjectClassFile ) )]
+  [AcceptsFileType( typeof( ShaderCodeFile ) )]
   public class TextEditorViewModel : ViewModel, IDisposeWithView
   {
 
