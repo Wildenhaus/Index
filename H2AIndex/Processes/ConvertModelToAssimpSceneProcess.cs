@@ -55,6 +55,10 @@ namespace H2AIndex.Processes
       _context = await DeserializeFile();
 
       ConvertObjects();
+
+      var armatureNode = _context.Scene.RootNode.FindNode( "h" );
+      if ( armatureNode != null )
+        armatureNode.Name = Path.GetFileNameWithoutExtension( _file.Name );
     }
 
     #endregion
@@ -100,28 +104,12 @@ namespace H2AIndex.Processes
         AddNodes( _context.GeometryGraph.Objects );
         BuildSkinCompounds();
         AddMeshNodes( _context.GeometryGraph.Objects );
-        //AddRemainingMeshBones();
+        AddRemainingMeshBones();
       }
       catch ( Exception ex )
       {
         StatusList.AddError( _file.Name, "Encountered an error attempting to convert model.", ex );
       }
-
-      void PrintObjects( S3DObject obj, int level = 0 )
-      {
-        Debug.WriteLine( "{0}{1}", new string( ' ', level ), obj.GetName() );
-        foreach ( var child in obj.EnumerateChildren() )
-          PrintObjects( child, level + 1 );
-      }
-      //PrintObjects( _context.GeometryGraph.RootObject );
-
-      void Print( Node node, int level = 0 )
-      {
-        Debug.WriteLine( "{0}{1}", new string( ' ', level ), node.Name );
-        foreach ( var child in node.Children )
-          Print( child, level + 1 );
-      }
-      //Print( _context.Scene.RootNode );
     }
 
     private void BuildSkinCompounds()
@@ -215,19 +203,6 @@ namespace H2AIndex.Processes
 
         AddSubMeshes( obj );
       }
-
-      //var queue = new Queue<S3DObject>();
-      //queue.Enqueue( _context.GeometryGraph.RootObject );
-      //foreach ( var child in _context.GeometryGraph.RootObject.EnumerateChildren() )
-      //  queue.Enqueue( child );
-
-      //while ( queue.TryDequeue( out var obj ) )
-      //{
-      //  if ( !obj.SubMeshes.Any() )
-      //    continue;
-
-      //  AddSubMeshes( obj );
-      //}
     }
 
     private void AddSubMeshes( S3DObject obj )
@@ -249,20 +224,20 @@ namespace H2AIndex.Processes
           node.Transform = obj.MatrixLT.ToAssimp();
 
           var meshName = obj.GetMeshName();
-          if ( !mesh.HasBones )
+          if ( !mesh.HasBones && obj.Parent != null )
             builder.ParentMeshToBone( obj.Parent );
 
         }
 
         CompletedUnits++;
       }
-
-      //_context.Nodes.Add( obj.Id, node );
-      //_context.NodeNames.Add( node.Name, node );
     }
 
     private void AddRemainingMeshBones()
     {
+      // Blender sometimes freaks out if bones in the hierarchy chain aren't on the meshes.
+      // Hence this icky looking method.
+
       var boneLookup = new Dictionary<string, Bone>();
       foreach ( var mesh in _context.Scene.Meshes )
       {
@@ -272,10 +247,24 @@ namespace H2AIndex.Processes
       }
 
       foreach ( var mesh in _context.Scene.Meshes )
-        foreach ( var bone in mesh.Bones.ToList() )
-          foreach ( var bonePair in boneLookup )
-            if ( !mesh.Bones.Any( x => x.Name == bonePair.Key ) )
-              mesh.Bones.Add( bonePair.Value );
+      {
+        foreach ( var meshBone in mesh.Bones.ToList() )
+        {
+          var meshBoneNode = _context.Scene.RootNode.FindNode( meshBone.Name );
+          if ( meshBoneNode is null )
+            continue;
+
+          var parent = meshBoneNode.Parent;
+          while ( parent != null && !parent.HasMeshes )
+          {
+            if ( !mesh.Bones.Any( x => x.Name == parent.Name ) )
+              if ( boneLookup.TryGetValue( parent.Name, out var parentBone ) )
+                mesh.Bones.Add( new Bone { Name = parentBone.Name, OffsetMatrix = parentBone.OffsetMatrix } );
+
+            parent = parent.Parent;
+          }
+        }
+      }
     }
 
     #endregion
@@ -642,10 +631,30 @@ namespace H2AIndex.Processes
 
       var skinCompoundVertOffset = skinCompound.VertexLookup.Min( x => x.Key );
 
+      var boneLookup = new Dictionary<short, short>();
       foreach ( var bonePair in skinCompound.Bones )
       {
         var boneId = bonePair.Key;
         var sourceBone = bonePair.Value;
+
+        if ( !boneLookup.TryGetValue( boneId, out var adjustedBoneId ) )
+        {
+          var boneObject = Graph.Objects[ boneId ];
+          var boneName = _object.GetBoneName();
+          if ( boneName is null )
+            adjustedBoneId = boneId;
+          else if ( boneObject.GetName() != boneName )
+          {
+            var parentBoneObject = Graph.Objects.FirstOrDefault( x => x.GetName() == boneName );
+            if ( parentBoneObject != null )
+            {
+              boneObject = parentBoneObject;
+              adjustedBoneId = boneObject.Id;
+            }
+          }
+
+          boneLookup.Add( boneId, adjustedBoneId );
+        }
 
         foreach ( var weight in sourceBone.VertexWeights )
         {
@@ -659,7 +668,7 @@ namespace H2AIndex.Processes
           Debug.Assert( skinVertex.Y == targetVertex.Y );
           Debug.Assert( skinVertex.Z == targetVertex.Z );
 
-          AddVertexWeight( boneId, 1, translatedVertOffset );
+          AddVertexWeight( adjustedBoneId, 1, translatedVertOffset );
         }
       }
     }

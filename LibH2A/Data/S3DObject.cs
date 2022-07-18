@@ -141,7 +141,7 @@ namespace Saber3D.Data
         return null;
 
       var nameParts = UnkName.Split( new[] { "|" }, System.StringSplitOptions.RemoveEmptyEntries )
-        .Where( x => x == "h" || x.StartsWith( "_b_" ) || x.StartsWith( "_m_" ) );
+        .Where( x => x.StartsWith( "_b_" ) );
 
       return _boneName = nameParts.LastOrDefault();
     }
