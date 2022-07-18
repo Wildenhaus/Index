@@ -20,6 +20,8 @@ namespace H2AIndex.Models
           ShowFps = true,
           ShowModelInfo = true,
           DefaultToFlycam = false,
+          DefaultHideLODs = false,
+          DefaultHideVolumes = true,
           RenderFxaaQuality = FXAALevel.Low,
           ModelTexturePreviewQuality = 1f
         };
@@ -34,6 +36,12 @@ namespace H2AIndex.Models
 
     [DefaultValue( false )]
     public bool DefaultToFlycam { get; set; }
+
+    [DefaultValue( false )]
+    public bool DefaultHideLODs { get; set; }
+
+    [DefaultValue( true )]
+    public bool DefaultHideVolumes { get; set; }
 
     [DefaultValue( FXAALevel.Low )]
     public FXAALevel RenderFxaaQuality { get; set; }

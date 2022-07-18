@@ -49,47 +49,8 @@
                     <ColumnDefinition Width="5" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                
-                <GroupBox Header="Model Viewer" Grid.Column="0" Margin="5,5,0,5">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
 
-                        <Label Grid.Row="0" Grid.Column="0" Content="Show FPS" />
-                        <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowFps}" />
-
-                        <Label Grid.Row="1" Grid.Column="0" Content="Show Model Info" />
-                        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowModelInfo}" />
-
-                        <Label Grid.Row="2" Grid.Column="0" Content="Default to Flycam" />
-                        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.DefaultToFlycam}" />
-
-                        <Label Grid.Row="3" Grid.Column="0" Content="FXAA Quality" />
-                        <ComboBox Grid.Row="3" Grid.Column="1" 
-                                  ItemsSource="{Binding RenderFxaaLevels}" 
-                                  SelectedItem="{Binding Preferences.ModelViewerOptions.RenderFxaaQuality}" />
-
-                        <Label Grid.Row="4" Grid.Column="0" 
-                               Content="{Binding Preferences.ModelViewerOptions.ModelTexturePreviewQuality}"
-                               ContentStringFormat="Texture Quality ({0:0%})"/>
-                        <Slider Grid.Row="4" Grid.Column="1" Margin="0,3,0,0"
-                                Value="{Binding Preferences.ModelViewerOptions.ModelTexturePreviewQuality}" 
-                                Minimum="0.01" Maximum="1.0" TickFrequency="0.01" />
-
-                    </Grid>
-
-                </GroupBox>
-
-                <GroupBox Header="Model Export" Grid.Column="2" Margin="0,5,5,5">
+                <GroupBox Header="Model Export Defaults" Grid.Column="0" Margin="5,5,0,5">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
@@ -158,7 +119,60 @@
 
                     </Grid>
                 </GroupBox>
-                
+
+                <GroupBox Header="Model Viewer" Grid.Column="2" Margin="0,5,5,5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Show FPS" />
+                        <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowFps}" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Content="Show Model Info" />
+                        <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding Preferences.ModelViewerOptions.ShowModelInfo}" />
+
+                        <Label Grid.Row="2" Grid.Column="0" Content="FXAA Quality" />
+                        <ComboBox Grid.Row="2" Grid.Column="1" 
+                                  ItemsSource="{Binding RenderFxaaLevels}" 
+                                  SelectedItem="{Binding Preferences.ModelViewerOptions.RenderFxaaQuality}" />
+
+                        <Label Grid.Row="3" Grid.Column="0" 
+                               Content="{Binding Preferences.ModelViewerOptions.ModelTexturePreviewQuality}"
+                               ContentStringFormat="Texture Quality ({0:0%})"/>
+                        <Slider Grid.Row="3" Grid.Column="1" Margin="0,3,0,0"
+                                Value="{Binding Preferences.ModelViewerOptions.ModelTexturePreviewQuality}" 
+                                Minimum="0.01" Maximum="1.0" TickFrequency="0.01" />
+
+                        <Label Grid.Row="4" Grid.Column="0" 
+                               Content="Default to Flycam" />
+                        <CheckBox Grid.Row="4" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.ModelViewerOptions.DefaultToFlycam}" />
+
+                        <Label Grid.Row="5" Grid.Column="0" 
+                               Content="Default Hide LODs" />
+                        <CheckBox Grid.Row="5" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.ModelViewerOptions.DefaultHideLODs}" />
+
+                        <Label Grid.Row="6" Grid.Column="0" 
+                               Content="Default Hide Volumes" />
+                        <CheckBox Grid.Row="6" Grid.Column="1" 
+                                  IsChecked="{Binding Preferences.ModelViewerOptions.DefaultHideVolumes}" />
+
+                    </Grid>
+
+                </GroupBox>
+
             </Grid>
         </TabItem>
 
@@ -174,7 +188,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <GroupBox Header="Texture Export Options" Grid.Column="0" Margin="5,5,0,5">
+                <GroupBox Header="Texture Export Defaults" Grid.Column="0" Margin="5,5,0,5">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />

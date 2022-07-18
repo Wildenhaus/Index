@@ -22,7 +22,7 @@
                         CameraMode="Inspect"
                         CameraRotationMode="Turntable"
                         EnableSwapChainRendering="False"
-                        FXAALevel="{Binding Options.RenderFxaaQuality}"
+                        FXAALevel="{Binding FXAAQuality, ElementName=self}"
                         EffectsManager="{Binding EffectsManager, ElementName=self}"
                         IsHitTestVisible="{Binding UseFlycam, ElementName=self, Converter={StaticResource InverseBoolConverter}}"
                         IsMoveEnabled="True"

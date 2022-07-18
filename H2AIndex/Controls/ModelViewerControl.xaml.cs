@@ -32,6 +32,11 @@ namespace H2AIndex.Controls
       typeof( EffectsManager ),
       typeof( ModelViewerControl ) );
 
+    public static readonly DependencyProperty FXAAQualityProperty = DependencyProperty.Register(
+      nameof( FXAAQuality ),
+      typeof( FXAALevel ),
+      typeof( ModelViewerControl ) );
+
     public static readonly DependencyProperty ModelProperty = DependencyProperty.Register(
       nameof( Model ),
       typeof( SceneNodeGroupModel3D ),
@@ -91,6 +96,12 @@ namespace H2AIndex.Controls
     {
       get => ( EffectsManager ) GetValue( EffectsManagerProperty );
       set => SetValue( EffectsManagerProperty, value );
+    }
+
+    public FXAALevel FXAAQuality
+    {
+      get => ( FXAALevel ) GetValue( FXAAQualityProperty );
+      set => SetValue( FXAAQualityProperty, value );
     }
 
     public SceneNodeGroupModel3D Model

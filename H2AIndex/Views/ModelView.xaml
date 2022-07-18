@@ -92,6 +92,7 @@
                                      Grid.Column="0"
                                      Camera="{Binding Camera}"
                                      EffectsManager="{Binding EffectsManager}"
+                                     FXAAQuality="{Binding Options.RenderFxaaQuality}"
                                      Model="{Binding Model}"
                                      MinMoveSpeed="{Binding MinMoveSpeed}"
                                      MoveSpeed="{Binding MoveSpeed}"

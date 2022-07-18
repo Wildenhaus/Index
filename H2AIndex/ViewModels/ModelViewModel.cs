@@ -253,6 +253,12 @@ namespace H2AIndex.ViewModels
           ApplyTexturesToNode( meshNode );
       }
 
+      if ( Options.DefaultHideLODs )
+        HideLODNodes();
+
+      if ( Options.DefaultHideVolumes )
+        HideVolumeNodes();
+
       App.Current.Dispatcher.Invoke( () =>
       {
         Model.AddNode( scene.Root );
