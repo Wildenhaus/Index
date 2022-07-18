@@ -10,6 +10,8 @@
     <Deterministic>False</Deterministic>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationIcon>Index.ico</ApplicationIcon>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>

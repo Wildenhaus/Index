@@ -85,8 +85,8 @@ namespace H2AIndex.Services
 
     private string GetPreferencesPath()
     {
-      var executableDir = AppDomain.CurrentDomain.BaseDirectory;
-      return Path.Combine( executableDir, "H2AIndex.prefs" );
+      var userPath = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
+      return Path.Combine( userPath, "H2AIndex.prefs" );
     }
 
     private void EnsurePreferencesAreSet()

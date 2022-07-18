@@ -1,9 +1,0 @@
-﻿version: 0.2.{build}-{branch}
-image: Visual Studio 2022
-
-branches:
-  only:
-    - master
-
-platform: x64
-configuration: Release
