@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 using Assimp;
 using Saber3D.Common;
 using Saber3D.Files;
@@ -23,105 +20,14 @@ namespace Testbed
       // Index all game files
       FileContext.OpenDirectory( GAME_PATH );
 
-      //using ( var fs = File.CreateText( @"F:\h2a.txt" ) )
-      //{
-      //  Console.SetOut( fs );
-      //  void Print( IS3DFile file, int level = 0 )
-      //  {
-      //    var sf = file as S3DFile;
-      //    Console.WriteLine( "{0}{1} {2} {3} {4}", new string( ' ', level ), sf.Name, sf._dataStartOffset, sf._dataEndOffset, sf.SizeInBytes );
-      //    foreach ( var child in file.Children )
-      //      Print( child, level + 1 );
-      //  }
-
-      //  var pckFiles = Directory.GetFiles( GAME_PATH, "*.pck", SearchOption.AllDirectories );
-      //  foreach ( var pckFileName in pckFiles )
-      //  {
-      //    var file = FileContext.GetFile<PckFile>( Path.GetFileName( pckFileName ) );
-      //    Print( file );
-      //  }
-
-      //  fs.Flush();
-      //}
-
-      //return;
       TestReadTemplateModels();
       TestReadLevelGeometry();
-      //TestReadTextures();
-      //TestConvertTexturesToDDS();
-      //TestConvertTexturesToTGA();
+      TestReadTextures();
+      TestConvertTexturesToDDS();
+      TestConvertTexturesToTGA();
 
-      //ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
-      //ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
-
-      //H2AFileContext.Global.OpenFile( @"F:\floodcombat_elite__h.tpl" );
-      //var file = H2AFileContext.Global.GetFile( "floodcombat_elite__h.tpl" );
-      //var tpl = new S3DTemplateSerializer().Deserialize( new BinaryReader( file.GetStream() ) );
-
-      //foreach ( var obj in tpl.GeometryGraph.Objects )
-      //  Console.WriteLine( obj.UnkName );
-
-      //H2AFileContext.Global.OpenDirectory( GAME_PATH );
-      //var file = H2AFileContext.Global.GetFile( "warthog__h.tpl" );
-      //using ( var fs = File.Create( @"F:\warthog__h.tpl" ) )
-      //{
-      //  var s = file.GetStream();
-      //  s.CopyTo( fs );
-      //  fs.Flush();
-      //}
-
-      //LoadFbx( @"Z:\Blender\Models\Destiny 2\Enemies\Fallen Marauder\Marauder.fbx" );
-      //LoadFbx( @"G:\h2a\test\dervish__h.fbx" );
-
-      //TestMultithreaded();
-    }
-
-    private static void TestMultithreaded()
-    {
-      //H2AFileContext.Global.OpenFile( @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo2\preload\paks\01b_spacestation.pck" );
-      for ( var i = 0; i < 100; i++ )
-        FileContext.OpenFile( @"G:\Steam\steamapps\common\Halo The Master Chief Collection\halo2\preload\paks\shared.pck" );
-      return;
-      var lgFile = FileContext.GetFiles( ".lg" ).First();
-
-      var tasks = new Task<byte[]>[ 1 ];
-      for ( var i = 0; i < tasks.Length; i++ )
-        tasks[ i ] = HashFile( lgFile );
-
-      Task.WaitAll( tasks );
-
-      var expected = tasks[ 0 ].Result;
-      foreach ( var task in tasks )
-        Debug.Assert( task.Result.SequenceEqual( expected ) );
-    }
-
-    static async Task<byte[]> HashFile( IS3DFile file )
-    {
-      var stream = file.GetStream();
-      using ( var sha = SHA256.Create() )
-      {
-        stream.AcquireLock();
-        var hash = await sha.ComputeHashAsync( stream );
-        stream.ReleaseLock();
-        return hash;
-      }
-    }
-
-    private static void LoadFbx( string path )
-    {
-      Scene scene;
-      using ( var ctx = new AssimpContext() )
-        scene = ctx.ImportFile( path );
-
-      var rootNode = scene.RootNode;
-
-      void Print( Node node, int level = 0 )
-      {
-        Console.WriteLine( "{0}{1}", new string( ' ', level ), node.Name );
-        foreach ( var child in node.Children )
-          Print( child, level + 1 );
-      }
-      Print( rootNode );
+      ExportModelGeometry( "masterchief__h.tpl", @"F:\test.fbx" );
+      ExportLevelGeometry( "newmombasa.lg", @"F:\testLG.fbx" );
     }
 
     private static void ExportModelGeometry( string tplName, string outFbxPath )
