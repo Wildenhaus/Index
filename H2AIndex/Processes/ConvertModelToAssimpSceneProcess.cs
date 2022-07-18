@@ -100,7 +100,7 @@ namespace H2AIndex.Processes
         AddNodes( _context.GeometryGraph.Objects );
         BuildSkinCompounds();
         AddMeshNodes( _context.GeometryGraph.Objects );
-        AddRemainingMeshBones();
+        //AddRemainingMeshBones();
       }
       catch ( Exception ex )
       {
@@ -167,9 +167,6 @@ namespace H2AIndex.Processes
 
       foreach ( var obj in objects )
       {
-        if ( obj.SubMeshes.Any() )
-          continue;
-
         var path = obj.UnkName;
         if ( string.IsNullOrEmpty( path ) )
           continue;
@@ -249,39 +246,19 @@ namespace H2AIndex.Processes
           var meshId = _context.Scene.Meshes.Count - 1;
           node.MeshIndices.Add( meshId );
 
+          node.Transform = obj.MatrixLT.ToAssimp();
+
           var meshName = obj.GetMeshName();
-          if ( mesh.HasBones )
-            node.Transform = obj.MatrixLT.ToAssimp();
-          else
-          {
-            var parentToBoneName = obj.GetBoneName();
-            if ( parentToBoneName == _context.GeometryGraph.RootObject.GetName() )
-            {
-              builder.ParentMeshToBone( _context.GeometryGraph.RootObject );
-              node.Transform = obj.MatrixModel.ToAssimp();
-            }
-            else
-            {
-              node.Transform = obj.MatrixLT.ToAssimp();
-
-              if ( parentToBoneName != null )
-              {
-                var parent = obj.Parent;
-
-                var parentToBoneObject = _context.GeometryGraph.Objects.FirstOrDefault( x => x.GetName() == parentToBoneName );
-                if ( parentToBoneObject != null )
-                  builder.ParentMeshToBone( parentToBoneObject );
-              }
-            }
-          }
+          if ( !mesh.HasBones )
+            builder.ParentMeshToBone( obj.Parent );
 
         }
 
         CompletedUnits++;
       }
 
-      _context.Nodes.Add( obj.Id, node );
-      _context.NodeNames.Add( node.Name, node );
+      //_context.Nodes.Add( obj.Id, node );
+      //_context.NodeNames.Add( node.Name, node );
     }
 
     private void AddRemainingMeshBones()
@@ -371,6 +348,7 @@ namespace H2AIndex.Processes
 
     public Mesh Mesh { get; }
     public Dictionary<short, Bone> Bones { get; }
+    public Dictionary<string, Bone> BoneNames { get; }
     public Dictionary<int, int> VertexLookup { get; }
     public short SkinCompoundId { get; }
 
@@ -394,6 +372,7 @@ namespace H2AIndex.Processes
       Mesh = new Mesh( meshName, PrimitiveType.Triangle );
 
       Bones = new Dictionary<short, Bone>();
+      BoneNames = new Dictionary<string, Bone>();
       VertexLookup = new Dictionary<int, int>();
     }
 
@@ -690,25 +669,11 @@ namespace H2AIndex.Processes
     private Bone GetOrCreateBone( short boneObjectId )
     {
       var boneObject = Graph.Objects[ boneObjectId ];
-
-      var boneName = boneObject.GetBoneName();
-      if ( boneName == null )
+      var boneName = boneObject.GetName();
+      if ( boneName is null )
         boneName = $"Bone{boneObjectId}";
-      else if ( boneObject.GetName() != boneName )
-      {
-        var parentBoneObject = Graph.Objects.FirstOrDefault( x => x.GetName() == boneName );
-        if ( parentBoneObject != null )
-        {
-          boneObject = parentBoneObject;
-          boneObjectId = boneObject.Id;
-        }
-        else
-        {
-          boneName = $"{boneObject.GetName()}__{boneObjectId}";
-        }
-      }
 
-      if ( !Bones.TryGetValue( boneObjectId, out var bone ) )
+      if ( !BoneNames.TryGetValue( boneName, out var bone ) )
       {
         System.Numerics.Matrix4x4.Invert( boneObject.MatrixLT, out var invMatrix );
 
@@ -720,6 +685,7 @@ namespace H2AIndex.Processes
 
         Mesh.Bones.Add( bone );
         Bones.Add( boneObjectId, bone );
+        BoneNames.Add( boneName, bone );
       }
 
       return bone;
