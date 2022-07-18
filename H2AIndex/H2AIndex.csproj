@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <Authors>Haus</Authors>
     <Product>Index</Product>
-    <AssemblyVersion>0.1.*</AssemblyVersion>
+    <AssemblyVersion>0.2.*</AssemblyVersion>
     <Deterministic>False</Deterministic>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationIcon>Index.ico</ApplicationIcon>
