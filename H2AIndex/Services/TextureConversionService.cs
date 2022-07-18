@@ -19,13 +19,13 @@ namespace H2AIndex.Services
   public class TextureConversionService : ITextureConversionService
   {
 
-    public Task<TextureModel> LoadTexture( PictureFile file )
+    public Task<TextureModel> LoadTexture( PictureFile file, float previewQuality = 1f )
     {
       var pict = file.Deserialize();
-      return LoadTexture( file.Name, pict );
+      return LoadTexture( file.Name, pict, previewQuality );
     }
 
-    public async Task<TextureModel> LoadTexture( string fileName, S3DPicture file )
+    public async Task<TextureModel> LoadTexture( string fileName, S3DPicture file, float previewQuality = 1f )
     {
       var ddsImage = CreateDDS( file );
       var metadata = ddsImage.GetMetadata();
@@ -33,7 +33,7 @@ namespace H2AIndex.Services
       var name = Path.GetFileNameWithoutExtension( fileName );
       var model = TextureModel.Create( name, file, ddsImage, metadata );
 
-      await CreateImagePreviews( ddsImage, model );
+      await CreateImagePreviews( ddsImage, model, previewQuality );
 
       return model;
     }
@@ -171,7 +171,7 @@ namespace H2AIndex.Services
       return img;
     }
 
-    private async Task CreateImagePreviews( ScratchImage ddsImage, TextureModel model )
+    private async Task CreateImagePreviews( ScratchImage ddsImage, TextureModel model, float quality = 1f )
     {
       var convertWasRequired = PrepareNonDDSImage( ddsImage, out var compatImage );
 
@@ -180,7 +180,7 @@ namespace H2AIndex.Services
         foreach ( var mip in image.MipMaps )
         {
           var mem = new MemoryStream();
-          using ( var jpgStream = compatImage.SaveToJPGMemory( mip.ImageIndex, 1f ) )
+          using ( var jpgStream = compatImage.SaveToJPGMemory( mip.ImageIndex, quality ) )
           {
             await jpgStream.CopyToAsync( mem );
             mem.Position = 0;

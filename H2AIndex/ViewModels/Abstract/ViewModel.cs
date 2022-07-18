@@ -52,6 +52,7 @@ namespace H2AIndex.ViewModels
     }
 
     public ICommand ShowExceptionModalCommand { get; }
+    public ICommand ShowMessageModalWithKey { get; }
     public ICommand ShowModalCommand { get; }
     public ICommand ShowViewModalCommand { get; }
     public ICommand ShowWebPageCommand { get; }
@@ -67,6 +68,7 @@ namespace H2AIndex.ViewModels
 
       ShowExceptionModalCommand = new Command<Exception>( exception => ShowExceptionModal( exception ) );
       ShowModalCommand = new Command<Type>( modalType => ShowModal( modalType ) );
+      ShowMessageModalWithKey = new Command<string>( resourceKey => ShowMessageModal( resourceKey ) );
       ShowViewModalCommand = new Command<Type>( viewType => ShowViewModal( viewType ) );
       ShowWebPageCommand = new Command<string>( OpenWebPage );
     }
@@ -197,7 +199,7 @@ namespace H2AIndex.ViewModels
       var modal = new MessageModal()
       {
         Title = title,
-        Message = message
+        Message = message.Replace( "\\r", "\r" ).Replace( "\\n", "\n" )
       };
 
       if ( showOnMainView )
@@ -207,6 +209,15 @@ namespace H2AIndex.ViewModels
       }
       else
         return ShowModal( modal );
+    }
+
+    protected Task<object> ShowMessageModal( string resourceKey )
+    {
+      var title = ( string ) App.Current.TryFindResource( $"{resourceKey}_Title" );
+      var message = ( string ) App.Current.TryFindResource( $"{resourceKey}_Message" );
+      var showOnMainView = ( bool ) App.Current.TryFindResource( $"{resourceKey}_ShowOnMainView" );
+
+      return ShowMessageModal( title, message, showOnMainView );
     }
 
     protected Task<object> ShowStatusListModal( StatusList statusList )

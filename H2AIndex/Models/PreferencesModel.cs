@@ -18,7 +18,8 @@ namespace H2AIndex.Models
         {
           ModelExportOptions = ModelExportOptionsModel.Default,
           ModelViewerOptions = ModelViewerOptionsModel.Default,
-          TextureExportOptions = TextureExportOptionsModel.Default
+          TextureExportOptions = TextureExportOptionsModel.Default,
+          TextureViewerOptions = TextureViewerOptionsModel.Default
         };
       }
     }

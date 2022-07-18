@@ -30,16 +30,27 @@
             <GroupBox.Header>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0"
                            Content="Output Directory" />
-                    <CheckBox Grid.Column="1"
-                              Content="Create Directory for Model"
-                              FlowDirection="RightToLeft"
-                              HorizontalAlignment="Stretch"
-                              IsChecked="{Binding ModelOptions.CreateDirectoryForModel}" />
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center">
+                        <Label VerticalAlignment="Center">
+                            <TextBlock>
+                                <Run>Create Folder for Model</Run>
+                                <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                           CommandParameter="STR_ExplainCreateDirectoryForModel">?</Hyperlink>
+                            </TextBlock>
+                        </Label>
+
+                        <CheckBox Grid.Column="1"
+                                  IsChecked="{Binding ModelOptions.CreateDirectoryForModel}" />
+                    </StackPanel>
+                    
                 </Grid>
             </GroupBox.Header>
             <controls:FileBrowserBox x:Name="OutputPath" 
@@ -55,7 +66,8 @@
             <GroupBox.Header>
                 <TextBlock>
                     <Run>File Filters</Run>
-                    <Hyperlink Command="{Binding ExplainFileFiltersCommand}">?</Hyperlink>
+                    <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                               CommandParameter="STR_ExplainFileFilters">?</Hyperlink>
                 </TextBlock>
             </GroupBox.Header>
             <TextBox x:Name="FilterBox" Text="{Binding ModelOptions.Filters}" />
@@ -86,7 +98,6 @@
 
                 <Label Grid.Row="0" Grid.Column="0" Content="File Format" />
                 <ComboBox Grid.Row="0" Grid.Column="1"
-                          SelectedIndex="0"
                           ItemsSource="{Binding ModelFileFormats}"
                           SelectedItem="{Binding ModelOptions.OutputFileFormat}" />
 
@@ -110,7 +121,8 @@
                 <Label Grid.Row="8" Grid.Column="0">
                     <TextBlock>
                         <Run>Remove LODs</Run>
-                        <Hyperlink Command="{Binding ExplainLODsCommand}">?</Hyperlink>
+                        <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                   CommandParameter="STR_ExplainLODs">?</Hyperlink>
                     </TextBlock>
                 </Label>
                 <CheckBox Grid.Row="8" Grid.Column="1"
@@ -119,7 +131,8 @@
                 <Label Grid.Row="10" Grid.Column="0">
                     <TextBlock>
                         <Run>Remove Volumes</Run>
-                        <Hyperlink Command="{Binding ExplainVolumesCommand}">?</Hyperlink>
+                        <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                   CommandParameter="STR_ExplainVolumes">?</Hyperlink>
                     </TextBlock>
                 </Label>
                 <CheckBox Grid.Row="10" Grid.Column="1"
@@ -197,7 +210,8 @@
                        IsEnabled="{Binding ModelOptions.ExportTextures}">
                     <TextBlock>
                         <Run>Export Texture Definitions</Run>
-                        <Hyperlink Command="{Binding ExplainTextureDefinitionsCommand}">?</Hyperlink>
+                        <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                   CommandParameter="STR_ExplainTextureDefinitions">?</Hyperlink>
                     </TextBlock>
                 </Label>
                 <CheckBox Grid.Row="8" Grid.Column="1"

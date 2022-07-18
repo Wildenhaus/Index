@@ -13,8 +13,8 @@ namespace H2AIndex.Services
   public interface ITextureConversionService
   {
 
-    Task<TextureModel> LoadTexture( PictureFile file );
-    Task<TextureModel> LoadTexture( string name, S3DPicture file );
+    Task<TextureModel> LoadTexture( PictureFile file, float previewQuality = 1f );
+    Task<TextureModel> LoadTexture( string name, S3DPicture file, float previewQuality = 1f );
 
     Task<Stream> GetDDSStream( PictureFile file );
     Task<Stream> GetJpgStream( PictureFile file, float quality = 1f );

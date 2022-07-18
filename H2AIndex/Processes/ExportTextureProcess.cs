@@ -73,7 +73,7 @@ namespace H2AIndex.Processes
       if ( !_options.OverwriteExisting && CheckIfFileExists() )
       {
         StatusList.AddWarning( _outputFilePath,
-          "File already exists and the 'Overwrite Existing' options is disabled. Skipping." );
+          "File already exists and the 'Overwrite Existing' option is disabled. Skipping." );
 
         return;
       }

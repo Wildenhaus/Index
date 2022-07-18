@@ -77,6 +77,12 @@ namespace H2AIndex.Processes
 
     protected override async Task OnExecuting()
     {
+      if ( !_modelOptions.OverwriteExisting && CheckIfFileExists() )
+      {
+        StatusList.AddWarning( _outputPath,
+          "File already exists and the 'Overwrite Existing' option is disabled. Skipping." );
+      }
+
       if ( _scene is null )
       {
         var success = await ConvertFileToAssimpScene();
@@ -110,6 +116,11 @@ namespace H2AIndex.Processes
       var fName = Path.ChangeExtension( _file.Name, extension );
 
       return Path.Combine( _modelOptions.OutputPath, fName );
+    }
+
+    private bool CheckIfFileExists()
+    {
+      return File.Exists( _outputPath );
     }
 
     private async Task<bool> ConvertFileToAssimpScene()

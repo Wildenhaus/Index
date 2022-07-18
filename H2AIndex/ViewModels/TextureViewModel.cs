@@ -64,7 +64,8 @@ namespace H2AIndex.ViewModels
         progress.IsIndeterminate = true;
         progress.Status = "Loading Texture";
 
-        Texture = await _textureService.LoadTexture( _file );
+        var previewQuality = GetPreferences().TextureViewerOptions.PreviewQuality;
+        Texture = await _textureService.LoadTexture( _file, previewQuality );
       }
     }
 

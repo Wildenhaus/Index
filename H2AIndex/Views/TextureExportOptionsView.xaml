@@ -41,7 +41,8 @@
             <GroupBox.Header>
                 <TextBlock>
                     <Run>File Filters</Run>
-                    <Hyperlink Command="{Binding ExplainFileFiltersCommand}">?</Hyperlink>
+                    <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                               CommandParameter="STR_ExplainFileFilters">?</Hyperlink>
                 </TextBlock>
             </GroupBox.Header>
             <TextBox x:Name="FilterBox" Text="{Binding Options.Filters}" />
@@ -82,7 +83,8 @@
                        IsEnabled="{Binding Options.ExportTextures}">
                     <TextBlock>
                         <Run>Export Texture Definitions</Run>
-                        <Hyperlink Command="{Binding ExplainTextureDefinitionsCommand}">?</Hyperlink>
+                        <Hyperlink Command="{Binding ShowMessageModalWithKey}"
+                                   CommandParameter="STR_ExplainTextureDefinitions">?</Hyperlink>
                     </TextBlock>
                 </Label>
                 <CheckBox Grid.Row="4" Grid.Column="1"

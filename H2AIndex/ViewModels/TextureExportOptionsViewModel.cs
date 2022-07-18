@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Input;
-using H2AIndex.Common;
 using H2AIndex.Common.Enumerations;
 using H2AIndex.Models;
 using H2AIndex.UI.Modals;
@@ -27,9 +25,6 @@ namespace H2AIndex.ViewModels
 
     public bool IsValidPath { get; set; }
 
-    public ICommand ExplainFileFiltersCommand { get; }
-    public ICommand ExplainTextureDefinitionsCommand { get; }
-
     #endregion
 
     #region Constructor
@@ -37,8 +32,6 @@ namespace H2AIndex.ViewModels
     public TextureExportOptionsViewModel( IServiceProvider serviceProvider )
       : base( serviceProvider )
     {
-      ExplainFileFiltersCommand = new AsyncCommand( ExplainFileFilters );
-      ExplainTextureDefinitionsCommand = new AsyncCommand( ExplainTextureDefinitions );
     }
 
     #endregion
@@ -77,36 +70,6 @@ namespace H2AIndex.ViewModels
       BindingOperations.SetBinding( exportBtn, Button.IsEnabledProperty, exportBtnEnabledBinding );
 
       yield return exportBtn;
-    }
-
-    #endregion
-
-    #region Private Methods
-
-    private async Task ExplainFileFilters()
-    {
-      var message = "This textbox allows you to filter your batch export down to files that match certain criteria. " +
-        "Filters are delimited by a semicolon (;) and are case-insensitive. Wildcard (*) is not supported.\n" +
-        "\n" +
-        "Example Usage: masterchief;dervish\n" +
-        "This will only export files with 'masterchief' and 'dervish' in their names.";
-
-      await ShowMessageModal(
-        title: "File Filters",
-        message: message,
-        showOnMainView: true );
-    }
-
-    private async Task ExplainTextureDefinitions()
-    {
-      var message = "Texture Definitions are text files that describe how materials use a particular texture.\n" +
-        "Little is known about how these work in the engine, but they provide important information " +
-        "when setting up game-accurate shaders.";
-
-      await ShowMessageModal(
-        title: "Export Texture Definitions",
-        message: message,
-        showOnMainView: true );
     }
 
     #endregion
