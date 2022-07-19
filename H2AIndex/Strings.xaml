@@ -5,7 +5,7 @@
     <sys:String x:Key="STR_ExplainCreateDirectoryForModel_Title">Create Folder for Model</sys:String>
     <sys:Boolean x:Key="STR_ExplainCreateDirectoryForModel_ShowOnMainView">True</sys:Boolean>
     <sys:String x:Key="STR_ExplainCreateDirectoryForModel_Message">
-        When this option is checked, models and any additional exported files such as (textures
+        When this option is checked, models and any additional exported files (such as textures
         and materials) will be placed in a new folder named after the model.
     </sys:String>
     
