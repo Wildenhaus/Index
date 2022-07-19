@@ -33,7 +33,9 @@
                 <MenuItem Header="Preferences" Command="{Binding EditPreferencesCommand}" />
             </MenuItem>
             <MenuItem Header="Help">
-                <MenuItem Header="GitHub" />
+                <MenuItem Header="GitHub"
+                          Command="{Binding ShowWebPageCommand}"
+                          CommandParameter="https://github.com/Wildenhaus/Index"/>
                 <MenuItem Header="Discord"
                           Command="{Binding ShowWebPageCommand}"
                           CommandParameter="https://discord.com/invite/haloarchive" />
