@@ -9,7 +9,7 @@ namespace H2AIndex.Common.Enumerations
   {
     DAE,
     FBX,
-    GLTF2,
+    //GLTF2,
     JSON,
     STL,
     X3D,
@@ -27,8 +27,8 @@ namespace H2AIndex.Common.Enumerations
           return "collada";
         case ModelFileFormat.FBX:
           return "fbx";
-        case ModelFileFormat.GLTF2:
-          return "glb2";
+        //case ModelFileFormat.GLTF2:
+        //  return "glb2";
         case ModelFileFormat.JSON:
           return "assjson";
         case ModelFileFormat.STL:
