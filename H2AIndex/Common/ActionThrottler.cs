@@ -24,6 +24,7 @@ namespace H2AIndex.Common
     private readonly Timer _timer;
 
     private int _state;
+    private bool _runAgain;
 
     #endregion
 
@@ -52,6 +53,8 @@ namespace H2AIndex.Common
       var currentState = Interlocked.CompareExchange( ref _state, STATE_EXECUTING, STATE_IDLE );
       if ( currentState == STATE_IDLE )
         _timer.Change( _delay, Timeout.InfiniteTimeSpan );
+      else
+        _runAgain = true;
     }
 
     #endregion
@@ -62,11 +65,14 @@ namespace H2AIndex.Common
     {
       try
       {
+        _runAgain = false;
         _action();
       }
       finally
       {
         Interlocked.CompareExchange( ref _state, STATE_IDLE, STATE_EXECUTING );
+        if ( _runAgain )
+          Execute();
       }
     }
 
