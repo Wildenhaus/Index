@@ -16,8 +16,8 @@ namespace H2AIndex.ViewModels
     {
       get
       {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return $"v{version.Major}.{version.Minor}.{version.Revision}";
+        var version = ((App)App.Current).Version;
+        return $"v{version}";
       }
     }
 

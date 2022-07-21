@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Windows;
 using H2AIndex.Services;
 using H2AIndex.Services.Abstract;
@@ -27,6 +28,8 @@ namespace H2AIndex
       get => _serviceProvider;
     }
 
+    public string Version { get; }
+
     public MainViewModel MainViewModel { get; private set; }
 
     #endregion
@@ -35,6 +38,7 @@ namespace H2AIndex
 
     public App()
     {
+      Version = GetBuildVersion();
     }
 
     #endregion
@@ -104,6 +108,13 @@ namespace H2AIndex
       services.AddTransient<IFileDialogService, FileDialogService>();
       services.AddTransient<ITextureConversionService, TextureConversionService>();
       services.AddTransient<IViewService, ViewService>();
+    }
+
+    private static string GetBuildVersion()
+    {
+      var assembly = Assembly.GetExecutingAssembly();
+      var attr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+      return attr?.InformationalVersion;
     }
 
     #endregion
