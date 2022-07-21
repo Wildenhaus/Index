@@ -72,7 +72,15 @@
                             <DockPanel.InputBindings>
                                 <MouseBinding Command="{Binding CloseCommand}" Gesture="MiddleClick" />
                             </DockPanel.InputBindings>
-                            
+
+                            <DockPanel.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Close" Command="{Binding CloseCommand}" />
+                                    <MenuItem Header="Close All Tabs" Command="{Binding CloseAllCommand}" />
+                                    <MenuItem Header="Close All But This" Command="{Binding CloseAllButThisCommand}" />
+                                </ContextMenu>
+                            </DockPanel.ContextMenu>
+
                             <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" />
                             <Button DockPanel.Dock="Right"
                                     HorizontalAlignment="Right"

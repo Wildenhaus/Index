@@ -11,6 +11,8 @@ namespace H2AIndex.Models
     #region Events
 
     event EventHandler CloseRequested;
+    public event EventHandler CloseAllRequested;
+    public event EventHandler CloseAllButThisRequested;
 
     #endregion
 
@@ -20,6 +22,8 @@ namespace H2AIndex.Models
     IView View { get; }
 
     ICommand CloseCommand { get; }
+    ICommand CloseAllCommand { get; }
+    ICommand CloseAllButThisCommand { get; }
 
     #endregion
 

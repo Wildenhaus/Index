@@ -13,6 +13,8 @@ namespace H2AIndex.Models
     #region Events
 
     public event EventHandler CloseRequested;
+    public event EventHandler CloseAllRequested;
+    public event EventHandler CloseAllButThisRequested;
 
     #endregion
 
@@ -28,6 +30,8 @@ namespace H2AIndex.Models
     public IView View { get; }
 
     public ICommand CloseCommand { get; }
+    public ICommand CloseAllCommand { get; }
+    public ICommand CloseAllButThisCommand { get; }
 
     #endregion
 
@@ -37,7 +41,10 @@ namespace H2AIndex.Models
     {
       Name = name;
       View = view;
+
       CloseCommand = new Command( Close );
+      CloseAllCommand = new Command( CloseAll );
+      CloseAllButThisCommand = new Command( CloseAllButThis );
     }
 
     #endregion
@@ -45,9 +52,13 @@ namespace H2AIndex.Models
     #region Public Methods
 
     public void Close()
-    {
-      CloseRequested?.Invoke( this, EventArgs.Empty );
-    }
+      => CloseRequested?.Invoke( this, EventArgs.Empty );
+
+    public void CloseAll()
+      => CloseAllRequested( this, EventArgs.Empty );
+
+    public void CloseAllButThis()
+      => CloseAllButThisRequested( this, EventArgs.Empty );
 
     #endregion
 
