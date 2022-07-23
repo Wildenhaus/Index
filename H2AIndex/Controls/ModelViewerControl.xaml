@@ -38,9 +38,7 @@
 
             <hx:DirectionalLight3D Direction="{Binding Camera.LookDirection, ElementName=self}" Color="#FFF" />
 
-            <hx:SortingGroupModel3D SortingMethod="BoundingBoxCorners" SortingInterval="2" EnableSorting="True">
-                <hx:Element3DPresenter Content="{Binding Model, ElementName=self}" />
-            </hx:SortingGroupModel3D>
+            <hx:Element3DPresenter Content="{Binding Model, ElementName=self}" />
         </hx:Viewport3DX>
 
         <StackPanel HorizontalAlignment="Left" Margin="5">
