@@ -401,6 +401,9 @@ namespace H2AIndex.Processes
 
     public void ParentMeshToBone( S3DObject boneObject )
     {
+      if ( boneObject.GetBoneName() is null )
+        return;
+
       for ( var i = 0; i < Mesh.VertexCount; i++ )
         AddVertexWeight( boneObject.Id, 1, i );
     }
