@@ -262,6 +262,39 @@ namespace H2AIndex.Processes
           }
         }
       }
+
+      // Issue #20: Add zero weights to any unused bones for animation retargeting
+      var boneObjects = _context.GeometryGraph.Objects
+        .Where( x => x.GetBoneName() == x.GetName() )
+        .ToArray();
+
+      foreach ( var boneObject in boneObjects )
+      {
+        if ( boneLookup.ContainsKey( boneObject.GetName() ) )
+          continue;
+
+        var boneParent = boneObject.Parent;
+        if ( boneParent is null || boneParent.GetBoneName() != boneParent.GetName() )
+          continue;
+
+        foreach ( var mesh in _context.Scene.Meshes )
+        {
+          if ( !mesh.Bones.Any( x => x.Name == boneParent.GetName() ) )
+            continue;
+
+          System.Numerics.Matrix4x4.Invert( boneObject.MatrixLT, out var invMatrix );
+          var bone = new Bone
+          {
+            Name = boneObject.GetName(),
+            OffsetMatrix = invMatrix.ToAssimp()
+          };
+
+          for ( var i = 0; i < mesh.VertexCount; i++ )
+            bone.VertexWeights.Add( new VertexWeight( i, 0f ) );
+
+          mesh.Bones.Add( bone );
+        }
+      }
     }
 
     private void FixupArmature()
