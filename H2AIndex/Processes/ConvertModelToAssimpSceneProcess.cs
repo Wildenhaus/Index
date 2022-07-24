@@ -55,10 +55,7 @@ namespace H2AIndex.Processes
       _context = await DeserializeFile();
 
       ConvertObjects();
-
-      var armatureNode = _context.Scene.RootNode.FindNode( "h" );
-      if ( armatureNode != null )
-        armatureNode.Name = Path.GetFileNameWithoutExtension( _file.Name );
+      FixupArmature();
     }
 
     #endregion
@@ -265,6 +262,38 @@ namespace H2AIndex.Processes
           }
         }
       }
+    }
+
+    private void FixupArmature()
+    {
+      var armatureNode = _context.Scene.RootNode.FindNode( "h" );
+      if ( armatureNode is null )
+        return;
+
+      // Rename armature node
+      armatureNode.Name = Path.GetFileNameWithoutExtension( _file.Name );
+
+      // Fix Scale
+      void SetScale( Node node, float scale = 100f )
+      {
+        var transform = node.Transform;
+        transform.A1 *= scale;
+        transform.A2 *= scale;
+        transform.A3 *= scale;
+        transform.A4 *= scale;
+        transform.B1 *= scale;
+        transform.B2 *= scale;
+        transform.B3 *= scale;
+        transform.B4 *= scale;
+        transform.C1 *= scale;
+        transform.C2 *= scale;
+        transform.C3 *= scale;
+        transform.C4 *= scale;
+        node.Transform = transform;
+      }
+
+      foreach ( var node in _context.Scene.RootNode.Children )
+        SetScale( node );
     }
 
     #endregion
