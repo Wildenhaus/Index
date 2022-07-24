@@ -102,6 +102,7 @@ namespace H2AIndex.Processes
         BuildSkinCompounds();
         AddMeshNodes( _context.GeometryGraph.Objects );
         AddRemainingMeshBones();
+        RenameBones();
       }
       catch ( Exception ex )
       {
@@ -293,6 +294,34 @@ namespace H2AIndex.Processes
             bone.VertexWeights.Add( new VertexWeight( i, 0f ) );
 
           mesh.Bones.Add( bone );
+        }
+      }
+    }
+
+    private void RenameBones()
+    {
+      // Issue #15 - Remove prefix from bones to support 
+      // base Halo 2 animation retargeting.
+
+      // Rename Nodes
+      var nodeQueue = new Queue<Node>();
+      nodeQueue.Enqueue( _context.Scene.RootNode );
+      while ( nodeQueue.TryDequeue( out var node ) )
+      {
+        if ( node.Name.StartsWith( "_b_" ) )
+          node.Name = node.Name.Substring( 3 );
+
+        foreach ( var child in node.Children )
+          nodeQueue.Enqueue( child );
+      }
+
+      // Rename mesh bones
+      foreach ( var mesh in _context.Scene.Meshes )
+      {
+        foreach ( var bone in mesh.Bones )
+        {
+          if ( bone.Name.StartsWith( "_b_" ) )
+            bone.Name = bone.Name.Substring( 3 );
         }
       }
     }
