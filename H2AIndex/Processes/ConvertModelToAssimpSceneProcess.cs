@@ -207,11 +207,11 @@ namespace H2AIndex.Processes
 
     private void AddSubMeshes( S3DObject obj )
     {
-      var node = new Node( $"{obj.GetMeshName()}_{obj.Id}", _context.RootNode );
-      _context.RootNode.Children.Add( node );
-
       foreach ( var submesh in obj.SubMeshes )
       {
+        var node = new Node( $"{obj.GetMeshName()}_{obj.Id}", _context.RootNode );
+        _context.RootNode.Children.Add( node );
+
         var builder = new MeshBuilder( _context, obj, submesh );
         var mesh = builder.Build();
 
