@@ -42,7 +42,6 @@ namespace H2AIndex.ViewModels
 
     private IS3DFile _file;
 
-    private string _searchTerm;
     private ObservableCollection<ModelNodeModel> _nodes;
     private ICollectionView _nodeCollectionView;
 
@@ -76,10 +75,13 @@ namespace H2AIndex.ViewModels
     public int VertexCount { get; set; }
     public int FaceCount { get; set; }
 
+    public string SearchTerm { get; set; }
     public ICommand SearchTermChangedCommand { get; }
 
     public ICommand ShowAllCommand { get; }
     public ICommand HideAllCommand { get; }
+    public ICommand ShowAllSearchResultsCommand { get; }
+    public ICommand HideAllSearchResultsCommand { get; }
     public ICommand HideLODsCommand { get; }
     public ICommand HideVolumesCommand { get; }
     public ICommand ExpandAllCommand { get; }
@@ -112,6 +114,8 @@ namespace H2AIndex.ViewModels
 
       ShowAllCommand = new Command( ShowAllNodes );
       HideAllCommand = new Command( HideAllNodes );
+      ShowAllSearchResultsCommand = new Command( ShowAllSearchResults );
+      HideAllSearchResultsCommand = new Command( HideAllSearchResults );
       HideLODsCommand = new Command( HideLODNodes );
       HideVolumesCommand = new Command( HideVolumeNodes );
       ExpandAllCommand = new Command( ExpandAllNodes );
@@ -162,11 +166,11 @@ namespace H2AIndex.ViewModels
       collectionView.SortDescriptions.Add( new SortDescription( nameof( ModelNodeModel.Name ), ListSortDirection.Ascending ) );
       collectionView.Filter = ( obj ) =>
       {
-        if ( string.IsNullOrEmpty( _searchTerm ) )
+        if ( string.IsNullOrEmpty( SearchTerm ) )
           return true;
 
         var node = obj as ModelNodeModel;
-        return node.Name.Contains( _searchTerm, StringComparison.InvariantCultureIgnoreCase );
+        return node.Name.Contains( SearchTerm, StringComparison.InvariantCultureIgnoreCase );
       };
 
       return collectionView;
@@ -284,6 +288,22 @@ namespace H2AIndex.ViewModels
         node.IsVisible = false;
     }
 
+    private void ShowAllSearchResults()
+    {
+      var searchTerm = SearchTerm;
+      foreach ( var node in Traverse( _nodes ) )
+        if ( node.Name.Contains( searchTerm, StringComparison.InvariantCultureIgnoreCase ) )
+          node.IsVisible = true;
+    }
+
+    private void HideAllSearchResults()
+    {
+      var searchTerm = SearchTerm;
+      foreach ( var node in Traverse( _nodes ) )
+        if ( node.Name.Contains( searchTerm, StringComparison.InvariantCultureIgnoreCase ) )
+          node.IsVisible = false;
+    }
+
     private void HideLODNodes()
     {
       foreach ( var node in Traverse( _nodes ) )
@@ -316,7 +336,7 @@ namespace H2AIndex.ViewModels
 
     private void SearchTermChanged( string searchTerm )
     {
-      _searchTerm = searchTerm;
+      SearchTerm = searchTerm;
       App.Current.Dispatcher.Invoke( _nodeCollectionView.Refresh );
     }
 

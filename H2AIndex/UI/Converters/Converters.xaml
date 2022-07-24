@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:converters="clr-namespace:H2AIndex.UI.Converters">
 
+    <converters:StringNotEmptyOrNullConverter x:Key="StringNotEmptyOrNullConverter" />
+
     <converters:EqualityBoolConverter x:Key="EqualityBoolConverter" />
     <converters:InequalityBoolConverter x:Key="InequalityBoolConverter" />
     <converters:InverseBoolConverter x:Key="InverseBoolConverter" />

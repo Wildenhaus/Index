@@ -146,6 +146,13 @@
                                     <MenuItem Header="Show All" Command="{Binding ShowAllCommand}" />
                                     <MenuItem Header="Hide All" Command="{Binding HideAllCommand}" />
                                     <Separator />
+                                    <MenuItem Header="Show All Search Results" 
+                                              Command="{Binding ShowAllSearchResultsCommand}"
+                                              IsEnabled="{Binding SearchTerm, Converter={StaticResource StringNotEmptyOrNullConverter}}" />
+                                    <MenuItem Header="Hide All Search Results" 
+                                              Command="{Binding HideAllSearchResultsCommand}" 
+                                              IsEnabled="{Binding SearchTerm, Converter={StaticResource StringNotEmptyOrNullConverter}}" />
+                                    <Separator />
                                     <MenuItem Header="Hide LODs" Command="{Binding HideLODsCommand}" />
                                     <MenuItem Header="Hide Volumes" Command="{Binding HideVolumesCommand}" />
                                 </ContextMenu>
