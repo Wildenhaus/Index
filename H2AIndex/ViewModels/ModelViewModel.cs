@@ -223,9 +223,6 @@ namespace H2AIndex.ViewModels
         new System.Windows.Media.Media3D.Vector3D( 0, 1, 0 ), -90 );
       transformGroup.Children.Add( rotTransform );
 
-      var scaleTransform = new System.Windows.Media.Media3D.ScaleTransform3D( 100, 100, 100 );
-      //transformGroup.Children.Add( scaleTransform );
-
       Model.Transform = transformGroup;
     }
 
@@ -401,8 +398,8 @@ namespace H2AIndex.ViewModels
 
       const double BASELINE_MAX_DIM = 2.31;
       const double BASELINE_MIN_SPEED = 0.0001;
-      const double BASELINE_DEFAULT_SPEED = 0.001;
-      const double BASELINE_MAX_SPEED = 1;
+      const double BASELINE_DEFAULT_SPEED = 0.1;
+      const double BASELINE_MAX_SPEED = 5;
 
       var maxDim = Math.Max( maxW, Math.Max( maxH, maxD ) );
       var coef = maxDim / BASELINE_MAX_DIM;
