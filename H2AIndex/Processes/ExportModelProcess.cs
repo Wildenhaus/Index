@@ -228,9 +228,21 @@ namespace H2AIndex.Processes
       var textures = new Dictionary<string, PictureFile>();
 
       // Get base textures
-      var textureNames = _geometryGraph.SubMeshes
-        .Select( x => x.Material.ShadingMaterialTexture )
-        .ToHashSet();
+      var textureNames = new HashSet<string>();
+      var materials = _geometryGraph.SubMeshes.Select( x => x.Material ).Where( x => x != null );
+      foreach ( var material in materials )
+      {
+        textureNames.Add( material.ShadingMaterialTexture );
+
+        if ( material.Layer0 != null )
+          textureNames.Add( material.Layer0.TextureName );
+        if ( material.Layer1 != null )
+          textureNames.Add( material.Layer1.TextureName );
+        if ( material.Layer2 != null )
+          textureNames.Add( material.Layer2.TextureName );
+        if ( material.Layer3 != null )
+          textureNames.Add( material.Layer3.TextureName );
+      }
 
       foreach ( var textureName in textureNames )
       {
