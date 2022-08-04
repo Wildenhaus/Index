@@ -336,7 +336,8 @@ namespace H2AIndex.Processes
       armatureNode.Name = Path.GetFileNameWithoutExtension( _file.Name );
 
       // Fix Scale
-      void SetScale( Node node, float scale = 100f )
+      const float METER_TO_FEET = 3.2808399f;
+      void SetScale( Node node, float scale = METER_TO_FEET * 10 )
       {
         var transform = node.Transform;
         transform.A1 *= scale;
