@@ -43,9 +43,9 @@ namespace Saber3D.Data
     Unk_14            = 1ul << 0x13,
     Unk_15            = 1ul << 0x14,
     Unk_16            = 1ul << 0x15,
-    Unk_17            = 1ul << 0x16,
-    Unk_18            = 1ul << 0x17,
-    Unk_19            = 1ul << 0x18,
+    _COLOR0            = 1ul << 0x16,
+    _COLOR1            = 1ul << 0x17,
+    _COLOR2            = 1ul << 0x18,
 
     _TEX0             = 1ul << 0x19,
     _TEX1             = 1ul << 0x1A,

@@ -44,12 +44,12 @@ namespace Saber3D.Serializers.Geometry
       ReadTangents( reader, data );
 
       // TODO: Not sure what these are. Color?
-      if ( Flags.HasFlag( S3DGeometryBufferFlags.Unk_17 ) )
-        _ = reader.ReadInt32();
-      if ( Flags.HasFlag( S3DGeometryBufferFlags.Unk_18 ) )
-        _ = reader.ReadInt32();
-      if ( Flags.HasFlag( S3DGeometryBufferFlags.Unk_19 ) )
-        _ = reader.ReadInt32();
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._COLOR0 ) )
+        data.Color0 = ReadVertexColor( reader );
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._COLOR1 ) )
+        data.Color1 = ReadVertexColor( reader );
+      if ( Flags.HasFlag( S3DGeometryBufferFlags._COLOR2 ) )
+        data.Color2 = ReadVertexColor( reader );
 
       ReadUVs( reader, data );
 
@@ -100,6 +100,16 @@ namespace Saber3D.Serializers.Geometry
       Assert( w >= -1.01 && w <= 1.01, "Tangent W coord out of bounds." );
 
       return new Vector4( x, y, z, w );
+    }
+
+    private Vector4 ReadVertexColor( BinaryReader reader )
+    {
+      var r = reader.ReadByte() / 255.0f;
+      var g = reader.ReadByte() / 255.0f;
+      var b = reader.ReadByte() / 255.0f;
+      var a = reader.ReadByte() / 255.0f;
+
+      return new Vector4( r, g, b, a );
     }
 
     private void ReadUVs( BinaryReader reader, S3DInterleavedData data )

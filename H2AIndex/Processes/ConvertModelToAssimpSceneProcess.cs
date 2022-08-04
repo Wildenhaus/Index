@@ -653,6 +653,10 @@ namespace H2AIndex.Processes
         //if ( data.Tangent2.HasValue ) System.Diagnostics.Debugger.Break();
         //if ( data.Tangent3.HasValue ) System.Diagnostics.Debugger.Break();
         //if ( data.Tangent4.HasValue ) System.Diagnostics.Debugger.Break();
+
+        if ( datum.Color0.HasValue ) AddVertexColor( 0, datum.Color0.Value );
+        if ( datum.Color1.HasValue ) AddVertexColor( 1, datum.Color0.Value );
+        if ( datum.Color2.HasValue ) AddVertexColor( 2, datum.Color0.Value );
       }
     }
 
@@ -684,6 +688,12 @@ namespace H2AIndex.Processes
        * adjust this accordingly.
        */
       Mesh.UVComponentCount[ uvChannel ] = 2;
+    }
+
+    private void AddVertexColor( byte colorSet, Vector4 vec )
+    {
+      var color = new Color4D( vec.X, vec.Y, vec.Z, vec.W );
+      Mesh.VertexColorChannels[ colorSet ].Add( color );
     }
 
     #endregion
